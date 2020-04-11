@@ -6,7 +6,9 @@ using UnityEngine;
 [CustomEditor(typeof(Line))]
 public class LineInspector : Editor
 {
- 
+    private Vector3 selectedPoint = Vector3.zero;
+    private bool isPointSelected = false;
+
     private void OnSceneGUI()
     {
         Line l = (Line)target;
@@ -21,27 +23,44 @@ public class LineInspector : Editor
         Handles.color = Color.white;
         Handles.DrawLine(worldP0, worldP1);
 
-        /* Create handles for each point */
-        //Handles.DoPositionHandle(worldP0, handleRot); //PositionHandle?
-        //Handles.DoPositionHandle(worldP1, handleRot);
+        //display dot button for each line point; only display handle of selected point
+        //selectedIndex must persist between OnSceneGUI() calls or the handle will only appear for one call
+        /*
+        float size = HandleUtility.GetHandleSize(worldP0);
+        if (Handles.Button(worldP0, handleRot, size * 0.075f, size * 0.15f, Handles.DotHandleCap))
+        {
+            selectedPoint = worldP0;
+            isPointSelected = true;
+        }
+        else
+        {
+            size = HandleUtility.GetHandleSize(worldP1);
+            if (Handles.Button(worldP0, handleRot, size * 0.075f, size * 0.15f, Handles.DotHandleCap))
+            {
+                selectedPoint = worldP1;
+                isPointSelected = true;
+            }
+        }
+        */
 
         /* Allow dragging handles to change line point positions */
         EditorGUI.BeginChangeCheck();
-        worldP0 = Handles.DoPositionHandle(worldP0, handleRot);
+        worldP0 = Handles.DoPositionHandle(worldP0, handleRot); //DoPositionHandle creates an editor Handle at position and rotation
         if(EditorGUI.EndChangeCheck())
         {
-            Undo.RecordObject(l, "Move line point"); //allow handle move to be undone with Undo
+            Undo.RecordObject(l, "Move Line Point"); //allow handle move to be undone with Undo
             EditorUtility.SetDirty(l); //set line to dirty so Unity knows a change was made and asks to save before closing etc.
-            l.p0 = t.InverseTransformPoint(worldP0); //transform point back to local position
+            l.p0 = t.InverseTransformPoint(worldP0); //transform moved world point back to local position and update line point with it 
         }
 
         EditorGUI.BeginChangeCheck();
-        worldP1 = Handles.DoPositionHandle(worldP0, handleRot);
+        worldP1 = Handles.DoPositionHandle(worldP1, handleRot);
         if (EditorGUI.EndChangeCheck())
         {
-            Undo.RecordObject(l, "Move line point");
+            Undo.RecordObject(l, "Move Line Point");
             EditorUtility.SetDirty(l);
             l.p1 = t.InverseTransformPoint(worldP1);
         }
+
     }
 }

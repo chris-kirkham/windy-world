@@ -56,7 +56,9 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\Wind\WindSpline\Editor\BezierCurveInspector.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\Editor\BezierSplineInspector.cs" />
      <Compile Include="Assets\Scripts\Wind\WindSpline\Editor\LineInspector.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\Editor\SplineGeneralUIParams.cs" />
  <Reference Include="UnityEditor.TestRunner">
  <HintPath>C:/Users/Public/Documents/Unity Projects/Windy World/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
  </Reference>

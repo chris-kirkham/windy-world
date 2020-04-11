@@ -60,9 +60,10 @@
      <Compile Include="Assets\Scripts\Wind\WindSpatialHash\SpatialHash.cs" />
      <Compile Include="Assets\Scripts\Wind\WindSpatialHash\SpatialHashDebug.cs" />
      <Compile Include="Assets\Scripts\Wind\WindSpatialHash\WindFieldHash.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpline\BezierCurve.cs" />
      <Compile Include="Assets\Scripts\Wind\WindSpline\BezierCurves.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpline\Line.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\MonoBehaviour\BezierCurve.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\MonoBehaviour\BezierSpline.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\MonoBehaviour\Line.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/Public/Documents/Unity Projects/Windy World/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>
