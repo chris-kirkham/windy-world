@@ -56,14 +56,20 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpatialHash\HashObject.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpatialHash\SpatialHash.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpatialHash\SpatialHashDebug.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpatialHash\WindFieldHash.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpline\BezierCurves.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpline\MonoBehaviour\BezierCurve.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpline\MonoBehaviour\BezierSpline.cs" />
-     <Compile Include="Assets\Scripts\Wind\WindSpline\MonoBehaviour\Line.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\Debug\WindFieldDebug.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\HashCell.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\HashObject.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\SpatialHash.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\SpatialHashDebug.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\WindFieldObject.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\WindField.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindField\WindFieldCell.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\BaseCurves\BezierCurve.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\BaseCurves\BezierSpline.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\BaseCurves\Line.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\BaseCurves\Points.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\Static\BezierCurves.cs" />
+     <Compile Include="Assets\Scripts\Wind\WindSpline\WindSpline.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/Public/Documents/Unity Projects/Windy World/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>

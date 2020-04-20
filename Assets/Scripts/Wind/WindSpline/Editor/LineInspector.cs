@@ -6,8 +6,7 @@ using UnityEngine;
 [CustomEditor(typeof(Line))]
 public class LineInspector : Editor
 {
-    private Vector3 selectedPoint = Vector3.zero;
-    private bool isPointSelected = false;
+    private Vector3? selectedPoint = null;
 
     private void OnSceneGUI()
     {

@@ -23,7 +23,7 @@ public class BezierCurveInspector : Editor
         }
 
         /* Draw handle line */
-        Handles.color = SplineGeneralUIParams.handleLineColour;
+        Handles.color = SplineUIParams.handleLineColour;
         for (int i = 1; i < worldPoints.Length; i++)
         {
             Handles.DrawLine(worldPoints[i - 1], worldPoints[i]);
@@ -37,9 +37,9 @@ public class BezierCurveInspector : Editor
             //display dot button for each curve point; only display handle of selected point
             //selectedIndex must persist between OnSceneGUI() calls or the handle will only appear for one call
             float size = HandleUtility.GetHandleSize(p);
-            Handles.color = SplineGeneralUIParams.handleColour;
-            if (Handles.Button(p, handleRot, size * SplineGeneralUIParams.handleSize,
-                            size * SplineGeneralUIParams.handlePickSize, Handles.DotHandleCap)) selectedIndex = i;
+            Handles.color = SplineUIParams.handleColour;
+            if (Handles.Button(p, handleRot, size * SplineUIParams.handleSize,
+                            size * SplineUIParams.handlePickSize, Handles.DotHandleCap)) selectedIndex = i;
 
             if(i == selectedIndex)
             {
@@ -55,9 +55,8 @@ public class BezierCurveInspector : Editor
         }
 
         /* draw curve as line segments */
-        float curveSegments = 10 + (10 * Vector3.SqrMagnitude(worldPoints[worldPoints.Length - 1] - worldPoints[0]));
-        float segmentLength = 1 / curveSegments;
-        Handles.color = SplineGeneralUIParams.curveColour;
+        float segmentLength = SplineUIParams.GetCurveSegmentLength(worldPoints);
+        Handles.color = SplineUIParams.curveColour;
         for(float i = segmentLength; i <= 1; i += segmentLength)
         {
             Handles.DrawLine(curve.GetWorldPoint(i - segmentLength), curve.GetWorldPoint(i));
