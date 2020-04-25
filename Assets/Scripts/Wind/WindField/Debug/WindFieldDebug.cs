@@ -5,7 +5,6 @@ using UnityEngine;
 /// <summary>
 /// Displays visual debug information for wind fields.
 /// </summary>
-[ExecuteInEditMode]
 [RequireComponent(typeof(WindField))]
 public class WindFieldDebug : MonoBehaviour
 {
@@ -15,7 +14,7 @@ public class WindFieldDebug : MonoBehaviour
     private Dictionary<Vector3Int, GameObject> arrowField; 
     public bool showWindArrows = false;
 
-    private float updateInterval = 0.1f;
+    private float updateInterval = 0.001f;
 
     void Start()
     {
@@ -39,11 +38,12 @@ public class WindFieldDebug : MonoBehaviour
                 if (!arrowField.ContainsKey(key))
                 {
                     arrowField[key] = Instantiate(windArrow);
+                    arrowField[key].transform.localScale *= (0.25f * windField.cellSize);
                 }
 
-                arrowField[key].transform.position = windField.GetCellWorldPosition(key); 
+                arrowField[key].transform.position = windField.GetCellWorldPosition(key);
                 arrowField[key].transform.rotation = Quaternion.LookRotation(kv.Value.GetWind());
-
+                
                 yield return null;
             }
 
