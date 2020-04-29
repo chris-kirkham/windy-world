@@ -11,7 +11,7 @@ public class WindFieldDebug : MonoBehaviour
     //Arrow model to visualise wind directions
     private WindField windField;
     private GameObject windArrow;
-    private Dictionary<Vector3Int, GameObject> arrowField; 
+    private Dictionary<WFHashKey, GameObject> arrowField; 
     public bool showWindArrows = false;
 
     private float updateInterval = 0.001f;
@@ -20,7 +20,7 @@ public class WindFieldDebug : MonoBehaviour
     {
         windField = GetComponent<WindField>();
         windArrow = Resources.Load<GameObject>("Debug/Wind/WindArrow");
-        arrowField = new Dictionary<Vector3Int, GameObject>();
+        arrowField = new Dictionary<WFHashKey, GameObject>();
 
         StartCoroutine(UpdateWindArrows());
     }
@@ -32,9 +32,9 @@ public class WindFieldDebug : MonoBehaviour
             //Update wind arrow visualisation with current wind directions. Definitely a faster way to do this
             //(e.g. have something in WindField that stores only updated wind directions (inc. new cells) in a List<key, windDir>
             //and only loop through those)
-            foreach (KeyValuePair<Vector3Int, WindFieldCell> kv in windField.GetCellDict())
+            foreach (KeyValuePair<WFHashKey, WindFieldCell> kv in windField.GetCellDict())
             {
-                Vector3Int key = kv.Key;
+                WFHashKey key = kv.Key;
                 if (!arrowField.ContainsKey(key))
                 {
                     arrowField[key] = Instantiate(windArrow);

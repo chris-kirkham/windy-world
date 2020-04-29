@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Base class to 
-/// </summary>
-
 public class HashCell
 {
     public float sizeX, sizeY, sizeZ;
