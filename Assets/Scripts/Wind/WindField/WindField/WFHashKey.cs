@@ -7,17 +7,45 @@ using UnityEngine;
 /// </summary>
 public struct WFHashKey
 {
-    private Vector3Int key;
-    public int x, y, z; //Convenience variables for accessing key's coords
+    private Vector3Int[] key;
 
     //constructor generates the hash key
-    public WFHashKey(Vector3 pos, float cellSize) : this()
+    public WFHashKey(Vector3 pos, float rootCellSize, uint depth) : this()
     {
-        key = new Vector3Int(FastFloor(pos.x / cellSize), FastFloor(pos.y / cellSize), FastFloor(pos.z / cellSize));
-        x = key.x;
-        y = key.y;
-        z = key.z;
+        this.key = new Vector3Int[depth + 1]; //depth starts at 0 (root)
+        
+        //root cells are not relative to any parent
+        key[0] = GetHashCell(pos, rootCellSize);
+        Vector3 parentPos = (Vector3)key[0] * rootCellSize;
+
+        for(int i = 1; i <= depth; i++)
+        {
+            float thisCellSize = rootCellSize / (2 * i);
+            Vector3 relPos = pos - parentPos; //all child cell keys should be relative to their parent (so they will be in the range (0,0,0)..(1,1,1))
+            key[i] = GetHashCell(relPos, thisCellSize);
+            parentPos += (Vector3)key[i] * thisCellSize;
+        }
     }
+
+    /*
+    public WFHashKey(Vector3 pos, float rootCellSize, uint depth) : this()
+    {
+        this.key = new Vector3Int[depth + 1]; //depth starts at 0 (root)
+        Vector3Int flooredPos = new Vector3Int(FastFloor(pos.x), FastFloor(pos.y), FastFloor(pos.z));
+
+        //root cells are not relative to any parent
+        key[0] = flooredPos / rootCellSize;
+        Vector3 parentPos = (Vector3)key[0] * rootCellSize;
+
+        for (int i = 1; i <= depth; i++)
+        {
+            float thisCellSize = rootCellSize / (2 * i);
+            Vector3 relPos = pos - parentPos; //all child cell keys should be relative to their parent (so they will be in the range (0,0,0)..(1,1,1))
+            key[i] = GetHashCell(relPos, thisCellSize);
+            parentPos += (Vector3)key[i] * thisCellSize;
+        }
+    }
+    */
 
     /*
     public WFHashKey(WindFieldPoint wfObj) : this()
@@ -35,22 +63,53 @@ public struct WFHashKey
 
     public bool Equals(WFHashKey other)
     {
-        return other.key == key;
+        Vector3Int[] otherKey = other.GetKey();
+        if (key.Length != otherKey.Length) return false;
+
+        for(int i = 0; i < key.Length; i++)
+        {
+            if (key[i] != otherKey[i]) return false;
+        }
+
+        return true;
     }
 
+    //https://stackoverflow.com/questions/263400/what-is-the-best-algorithm-for-overriding-gethashcode
     public override int GetHashCode()
     {
-        return key.GetHashCode();
+        int hash = 17;
+        foreach(Vector3Int elem in key)
+        {
+            hash = hash * 29 * elem.GetHashCode();
+        }
+
+        return hash;
     }
 
     public static bool operator ==(WFHashKey l, WFHashKey r)
     {
-        return l.key == r.key;
+        return Equals(l, r);
     }
 
     public static bool operator !=(WFHashKey l, WFHashKey r)
     {
-        return l.key != r.key;
+        return !Equals(l, r);
+    }
+
+    public Vector3Int this[int i]
+    {
+        get => key[i];
+    }
+
+    public Vector3Int[] GetKey()
+    {
+        return key;
+    }
+
+    //Get the cell index for a given position and cell size
+    private Vector3Int GetHashCell(Vector3 pos, float cellSize)
+    {
+        return new Vector3Int(FastFloor(pos.x / cellSize), FastFloor(pos.y / cellSize), FastFloor(pos.z / cellSize));
     }
 
     //from https://www.codeproject.com/Tips/700780/Fast-floor-ceiling-functions

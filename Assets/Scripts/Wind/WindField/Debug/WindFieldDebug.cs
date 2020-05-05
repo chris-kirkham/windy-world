@@ -38,11 +38,13 @@ public class WindFieldDebug : MonoBehaviour
                 if (!arrowField.ContainsKey(key))
                 {
                     arrowField[key] = Instantiate(windArrow);
-                    arrowField[key].transform.localScale *= (0.25f * windField.cellSize);
+                    arrowField[key].transform.localScale *= (0.25f * windField.rootCellSize);
                 }
 
-                arrowField[key].transform.position = windField.GetCellWorldPosition(key);
-                arrowField[key].transform.rotation = Quaternion.LookRotation(kv.Value.GetWind());
+                arrowField[key].transform.position = windField.GetCellWorldPositionCentre(key);
+
+                Vector3 wind = kv.Value.GetWind();
+                if(wind != Vector3.zero) arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
                 
                 yield return null;
             }
@@ -52,7 +54,18 @@ public class WindFieldDebug : MonoBehaviour
 
         arrowField.Clear();
 
-        //why is this not necessary?
-        //yield return null;
+        //yield return null; //why is this not necessary?
     }
+
+    
+    private void OnDrawGizmos()
+    {
+        foreach (KeyValuePair<WFHashKey, WindFieldCell> kv in windField.GetCellDict())
+        {
+            float depth = kv.Key.GetKey().Length;
+            Gizmos.color = Color.HSVToRGB(1 / depth, 1, 1);
+            Gizmos.DrawWireCube(windField.GetCellWorldPositionCentre(kv.Key), Vector3.one * (windField.rootCellSize / 2 * depth));
+        }
+    }
+    
 }

@@ -109,11 +109,8 @@ public class BezierSplineInspector : Editor
                     //show normals
                 }
                 
-                
                 //GameObject windArrow = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Models/Editor/WindVis/WindArrow.prefab");
                 //Instantiate(windArrow, spline.GetWorldPoint(i, t - segmentLength), Quaternion.identity);
-                //Handles.DrawLine(spline.GetWorldPoint(i, t - segmentLength) + Vector3.right, spline.GetWorldPoint(i, t) + Vector3.right);
-                //Handles.DrawLine(spline.GetWorldPoint(i, t - segmentLength) + Vector3.left, spline.GetWorldPoint(i, t) + Vector3.left);
 }
         }
 

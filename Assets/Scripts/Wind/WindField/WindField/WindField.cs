@@ -11,47 +11,83 @@ using UnityEngine;
  */ 
 public class WindField : MonoBehaviour
 {
-    public float cellSize = 1;
-    public Vector3Int initNumCells;
+    public float rootCellSize = 1;
+    public Vector3Int initNumRootCells;
+
+    public Vector3 globalWind; //the default global wind vector applied to all cells. 
 
     private Dictionary<WFHashKey, WindFieldCell> cells;
 
     private void Awake()
     {
         //create initial cells
-        cells = new Dictionary<WFHashKey, WindFieldCell>(initNumCells.x * initNumCells.y * initNumCells.z);
-        Vector3Int halfNumCells = initNumCells / 2;
+        cells = new Dictionary<WFHashKey, WindFieldCell>(initNumRootCells.x * initNumRootCells.y * initNumRootCells.z);
+        Vector3Int halfNumCells = initNumRootCells / 2;
+
         for (int i = -halfNumCells.x; i < halfNumCells.x; i++)
         {
             for (int j = -halfNumCells.y; j < halfNumCells.y; j++)
             {
                 for (int k = -halfNumCells.z; k < halfNumCells.z; k++)
                 {
-                    WFHashKey key = Key(new Vector3(i * cellSize, j * cellSize, k * cellSize));
-                    cells.Add(key, new WindFieldCell()); //initialise empty cell
+                    //WFHashKey key = KeyAtDepth(new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize), 0);
+                    //cells.Add(key, new WindFieldCell()); //initialise empty root cell
+                    WindFieldPoint point = new WindFieldPoint(new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize), Vector3.forward, 0, 1, WindProducerMode.PositionStatic);
+                    Add(point);
                 }
             }
         }
+
+        Debug.Log("Cells: " + cells.Count);
     }
 
     /*----PUBLIC FUNCTIONS----*/
-    
-    //Adds a given WindFieldPoint to its corresponding cell (creates new cell if one doesn't exist at generated hash position)
+    //Adds a given WindFieldPoint to the cell corresponding to its position and depth, creating that cell and its parent(s) if they don't exist.
+    //TODO: getting a new key each time is very inefficient compared to getting the deepest key initially and removing from that. 
     public void Add(WindFieldPoint obj)
     {
-        WFHashKey key = Key(obj.pos);
+        WFHashKey key = KeyAtDepth(obj.position, obj.depth);
 
-        if (cells.ContainsKey(key))
+        if (cells.ContainsKey(key)) //if cell already exists, add the object to that cell
         {
             cells[key].Add(obj);
         }
         else
         {
-            cells.Add(key, new WindFieldCell());
-            cells[key].Add(obj);
+            //if obj is at root, no need to check for parents
+            if(obj.depth == 0)
+            {
+                cells.Add(key, new WindFieldCell());
+                cells[key].Add(obj);
+            }
+            else
+            {
+                //find deepest parent of object's cell
+                uint depth = obj.depth - 1;
+                while (!cells.ContainsKey(KeyAtDepth(obj.position, depth)) && depth > 0) depth--;
+
+                //if no parent cell, create one at root depth
+                if (depth == 0)
+                {
+                    cells.Add(KeyAtDepth(obj.position, 0), new WindFieldCell());
+                    depth++;
+                }
+
+                //create cells from deepest parent's depth + 1 to object's depth, adding each parent's wind data to the child cell 
+                //Debug.Log("Depth = " + depth + ", obj.depth = " + obj.depth);
+                for (; depth <= obj.depth; depth++)
+                {
+                    cells.Add(KeyAtDepth(obj.position, depth), new WindFieldCell(cells[KeyAtDepth(obj.position, depth - 1)]));
+                }
+
+                //add object to newly-created cell
+                cells[key].Add(obj);
+            }
+
+            
         }
     }
-        
+
     //Adds given WindFieldPoints to their corresponding cells (creates new cell(s) if none exist at generated hash position(s))
     public void Add(WindFieldPoint[] objs)
     {
@@ -61,36 +97,88 @@ public class WindField : MonoBehaviour
         }
     }
     
-    
-    
     /*----GETTERS AND SETTERS----*/
-    //Gets the wind field cell at the given world position
-    public WindFieldCell GetCell(Vector3 pos)
+    //Gets the wind vector at the given world position. If no cell exists at the given position, returns (0, 0, 0)
+    public Vector3 GetWind(Vector3 pos)
     {
-        return cells[Key(pos)];
+        WindFieldCell cell;
+        return TryGetCell(pos, out cell) ? cell.GetWind() : Vector3.zero;   
     }
 
-    //Gets the gameplay wind vector at the given world position
-    public Vector3 GetGameplayWind(Vector3 pos)
+    public Dictionary<WFHashKey, WindFieldCell> GetCellDict()
     {
-        return GetCell(pos).GetWind();
+        return cells;
     }
-
-    public List<KeyValuePair<WFHashKey, WindFieldCell>> GetCellDict()
-    {
-        return cells.ToList();
-    }
-
+    
+    //Get the world position of the cell with the given hash key. Note that this returns the
+    //leastmost corner of the cell, not its centre (so a cell with bounds from (0,0,0) to (1,1,1)
+    //would return (0,0,0), not (0.5,0.5,0.5))
     public Vector3 GetCellWorldPosition(WFHashKey key)
     {
-        return new Vector3(key.x * cellSize, key.y * cellSize, key.z * cellSize);
+        Vector3Int[] k = key.GetKey();
+        Vector3 worldPos = (Vector3)k[0] * rootCellSize;
+
+        for(int i = 1; i < k.Length; i++)
+        {
+            worldPos += (Vector3)k[i] * (rootCellSize / (2 * i));
+        }
+
+        return worldPos;
     }
+
+    //Get the world position of the centre of the cell with the given hash key.
+    public Vector3 GetCellWorldPositionCentre(WFHashKey key)
+    {
+        Vector3Int[] k = key.GetKey();
+        Vector3 worldPos = ((Vector3)k[0] * rootCellSize);
+
+        for (int i = 1; i < k.Length; i++)
+        {
+            worldPos += (Vector3)k[i] * (rootCellSize / (2 * i));
+        }
+
+        //add half of deepest cell size in each dimension to get centre of deepest cell
+        float halfFinalCellSize = k.Length == 1 ? rootCellSize / 2 : (rootCellSize / (2 * (k.Length - 1))) / 2;
+        return worldPos + new Vector3(halfFinalCellSize, halfFinalCellSize, halfFinalCellSize);
+    }
+
 
     /*----PRIVATE UTILITY FUNCTIONS----*/
-    //generate a key for the given Vector3
-    private WFHashKey Key(Vector3 pos)
+    //Gets the wind field cell at the given position, or null if no such cell exists
+    private bool TryGetCell(Vector3 pos, out WindFieldCell cell)
     {
-        return new WFHashKey(pos, cellSize);
-    }
+        //if root cell exists at this key, cell will be set to it; if not, there is no cell at this position so return false
+        if (cells.TryGetValue(KeyAtDepth(pos, 0), out cell))
+        {
+            uint depth = 1;
+            while (cell.HasChild())
+            {
+                cell = cells[KeyAtDepth(pos, depth)]; //this may fail if using the method where a cell doesn't need to have all eight children
+                
+                //if using method where a cell may have children but not necessarily all eight, this is necessary
+                /*
+                WFHashKey key = KeyAtDepth(pos, depth);
+                if(cells.ContainsKey(key))
+                {
+                    cell = cells[key];
+                    depth++;
+                }
+                else
+                {
+                    return true;
+                }
+                */
+            }
 
+            return true;
+        }
+
+        return false;
+    }
+        
+    //Generate the key at a given position and depth
+    private WFHashKey KeyAtDepth(Vector3 pos, uint depth)
+    {
+        return new WFHashKey(pos, rootCellSize, depth);
+    }
 }
