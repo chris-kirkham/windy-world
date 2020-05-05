@@ -57,14 +57,15 @@ public class WindFieldDebug : MonoBehaviour
         //yield return null; //why is this not necessary?
     }
 
-    
     private void OnDrawGizmos()
     {
         foreach (KeyValuePair<WFHashKey, WindFieldCell> kv in windField.GetCellDict())
         {
             float depth = kv.Key.GetKey().Length;
             Gizmos.color = Color.HSVToRGB(1 / depth, 1, 1);
-            Gizmos.DrawWireCube(windField.GetCellWorldPositionCentre(kv.Key), Vector3.one * (windField.rootCellSize / 2 * depth));
+            //Gizmos.color = Color.white * (1 / depth);
+            Gizmos.DrawWireCube(windField.GetCellWorldPositionCentre(kv.Key), Vector3.one * (windField.rootCellSize / Mathf.Pow(2, depth)));
+            //Gizmos.DrawSphere(windField.GetCellWorldPosition(kv.Key), 0.25f * (windField.rootCellSize / Mathf.Pow(2, depth)));
         }
     }
     

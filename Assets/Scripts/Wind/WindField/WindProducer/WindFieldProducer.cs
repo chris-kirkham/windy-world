@@ -17,7 +17,7 @@ public abstract class WindFieldProducer : MonoBehaviour
     {
         if (windField == null) Debug.LogError("No wind field given for WindFieldProducer " + ToString() + "!");
 
-        cellSize = windField.rootCellSize / (2 * cellDepth);
+        cellSize = windField.rootCellSize / Mathf.Pow(2, cellDepth);
     }
 
 

@@ -24,19 +24,22 @@ public class WindField : MonoBehaviour
         cells = new Dictionary<WFHashKey, WindFieldCell>(initNumRootCells.x * initNumRootCells.y * initNumRootCells.z);
         Vector3Int halfNumCells = initNumRootCells / 2;
 
+        /*
         for (int i = -halfNumCells.x; i < halfNumCells.x; i++)
         {
             for (int j = -halfNumCells.y; j < halfNumCells.y; j++)
             {
                 for (int k = -halfNumCells.z; k < halfNumCells.z; k++)
                 {
-                    //WFHashKey key = KeyAtDepth(new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize), 0);
-                    //cells.Add(key, new WindFieldCell()); //initialise empty root cell
-                    WindFieldPoint point = new WindFieldPoint(new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize), Vector3.forward, 0, 1, WindProducerMode.PositionStatic);
+                    WindFieldPoint point = new WindFieldPoint(new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize), Vector3.forward, 0, 2, WindProducerMode.PositionStatic);
                     Add(point);
                 }
             }
         }
+        */
+
+        WindFieldPoint point = new WindFieldPoint(Vector3.one * 5.05f, Vector3.forward, 0, 5, WindProducerMode.PositionStatic);
+        Add(point);
 
         Debug.Log("Cells: " + cells.Count);
     }
@@ -47,6 +50,7 @@ public class WindField : MonoBehaviour
     public void Add(WindFieldPoint obj)
     {
         WFHashKey key = KeyAtDepth(obj.position, obj.depth);
+        Debug.Log(String.Join(", ", key.GetKey()));
 
         if (cells.ContainsKey(key)) //if cell already exists, add the object to that cell
         {
@@ -117,10 +121,12 @@ public class WindField : MonoBehaviour
     {
         Vector3Int[] k = key.GetKey();
         Vector3 worldPos = (Vector3)k[0] * rootCellSize;
+        float cellSize = rootCellSize / 2;
 
-        for(int i = 1; i < k.Length; i++)
+        for (int i = 1; i < k.Length; i++)
         {
-            worldPos += (Vector3)k[i] * (rootCellSize / (2 * i));
+            worldPos += (Vector3)k[i] * cellSize;
+            cellSize /= 2;
         }
 
         return worldPos;
@@ -131,14 +137,16 @@ public class WindField : MonoBehaviour
     {
         Vector3Int[] k = key.GetKey();
         Vector3 worldPos = ((Vector3)k[0] * rootCellSize);
-
+        float cellSize = rootCellSize / 2;
+        
         for (int i = 1; i < k.Length; i++)
         {
-            worldPos += (Vector3)k[i] * (rootCellSize / (2 * i));
+            worldPos += (Vector3)k[i] * cellSize;
+            cellSize /= 2;
         }
 
         //add half of deepest cell size in each dimension to get centre of deepest cell
-        float halfFinalCellSize = k.Length == 1 ? rootCellSize / 2 : (rootCellSize / (2 * (k.Length - 1))) / 2;
+        float halfFinalCellSize = k.Length == 1 ? rootCellSize / 2 : cellSize / 2;
         return worldPos + new Vector3(halfFinalCellSize, halfFinalCellSize, halfFinalCellSize);
     }
 
@@ -153,10 +161,9 @@ public class WindField : MonoBehaviour
             uint depth = 1;
             while (cell.HasChild())
             {
-                cell = cells[KeyAtDepth(pos, depth)]; //this may fail if using the method where a cell doesn't need to have all eight children
+                //cell = cells[KeyAtDepth(pos, depth)]; //this may fail if using the method where a cell doesn't need to have all eight children
                 
                 //if using method where a cell may have children but not necessarily all eight, this is necessary
-                /*
                 WFHashKey key = KeyAtDepth(pos, depth);
                 if(cells.ContainsKey(key))
                 {
@@ -167,7 +174,7 @@ public class WindField : MonoBehaviour
                 {
                     return true;
                 }
-                */
+                
             }
 
             return true;
@@ -180,5 +187,11 @@ public class WindField : MonoBehaviour
     private WFHashKey KeyAtDepth(Vector3 pos, uint depth)
     {
         return new WFHashKey(pos, rootCellSize, depth);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(Vector3.one * 5.05f, 0.05f);
     }
 }
