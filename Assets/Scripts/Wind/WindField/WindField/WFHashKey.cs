@@ -13,24 +13,32 @@ public struct WFHashKey
     public WFHashKey(Vector3 pos, float rootCellSize, uint depth) : this()
     {
         this.key = new Vector3Int[depth + 1]; //depth starts at 0 (root)
-        
+        Vector3[] DEBUG_cellPositions = new Vector3[depth + 1];
+
         //root cells are not relative to any parent
         key[0] = GetHashCell(pos, rootCellSize);
-        Vector3 parentPos = (Vector3)key[0] * rootCellSize;
 
-        Debug.Log("root cell size = " + rootCellSize);
+        DEBUG_cellPositions[0] = (Vector3)key[0] * rootCellSize;
+
+        Vector3 parentPos = (Vector3)key[0] * rootCellSize;
         float thisCellSize = rootCellSize / 2;
+        
         for(int i = 1; i <= depth; i++)
         {
             Vector3 relPos = pos - parentPos; //all child cell keys should be relative to their parent (so they will be in the range (0,0,0)..(1,1,1))
             key[i] = GetHashCell(relPos, thisCellSize);
             parentPos += (Vector3)key[i] * thisCellSize;
-            
-            Debug.Log("parent position = " + parentPos);
-            Debug.Log("cell size at depth " + i + " = " + thisCellSize);
+
+            //Debug.Log("parent position = " + parentPos);
+            //Debug.Log("cell size at depth " + i + " = " + thisCellSize);
+
+            DEBUG_cellPositions[i] = DEBUG_cellPositions[i - 1] + (Vector3)key[i] * thisCellSize;
 
             thisCellSize /= 2;
         }
+
+        Debug.Log("Cell positions = [" + string.Join(", ", DEBUG_cellPositions) + "]");
+        Debug.Log("Key = [" + string.Join(", ", key) + "]");
     }
 
     /*

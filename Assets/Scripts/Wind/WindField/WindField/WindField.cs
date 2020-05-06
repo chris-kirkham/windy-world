@@ -18,13 +18,17 @@ public class WindField : MonoBehaviour
 
     private Dictionary<WFHashKey, WindFieldCell> cells;
 
+    //DEBUG
+    private Vector3 DEBUG_testWFPoint1 = new Vector3(5.01f, 6.02f, 1.05f);
+    private Vector3 DEBUG_testWFPoint2 = new Vector3(1.01f, 10.02f, 5.05f);
+
     private void Awake()
     {
         //create initial cells
         cells = new Dictionary<WFHashKey, WindFieldCell>(initNumRootCells.x * initNumRootCells.y * initNumRootCells.z);
+        /*
         Vector3Int halfNumCells = initNumRootCells / 2;
 
-        /*
         for (int i = -halfNumCells.x; i < halfNumCells.x; i++)
         {
             for (int j = -halfNumCells.y; j < halfNumCells.y; j++)
@@ -38,8 +42,11 @@ public class WindField : MonoBehaviour
         }
         */
 
-        WindFieldPoint point = new WindFieldPoint(Vector3.one * 5.05f, Vector3.forward, 0, 5, WindProducerMode.PositionStatic);
-        Add(point);
+        //DEBUG
+        WindFieldPoint point1 = new WindFieldPoint(DEBUG_testWFPoint1, Vector3.forward, 0, 5, WindProducerMode.PositionStatic);
+        WindFieldPoint point2 = new WindFieldPoint(DEBUG_testWFPoint2, Vector3.forward, 0, 3, WindProducerMode.PositionStatic);
+        Add(point1);
+        Add(point2);
 
         Debug.Log("Cells: " + cells.Count);
     }
@@ -50,7 +57,6 @@ public class WindField : MonoBehaviour
     public void Add(WindFieldPoint obj)
     {
         WFHashKey key = KeyAtDepth(obj.position, obj.depth);
-        Debug.Log(String.Join(", ", key.GetKey()));
 
         if (cells.ContainsKey(key)) //if cell already exists, add the object to that cell
         {
@@ -191,7 +197,9 @@ public class WindField : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(Vector3.one * 5.05f, 0.05f);
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawSphere(DEBUG_testWFPoint1, 0.1f);
+        Gizmos.color = Color.green;
+        Gizmos.DrawSphere(DEBUG_testWFPoint2, 0.1f);
     }
 }
