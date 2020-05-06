@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -26,21 +25,26 @@ public class WindField : MonoBehaviour
     {
         //create initial cells
         cells = new Dictionary<WFHashKey, WindFieldCell>(initNumRootCells.x * initNumRootCells.y * initNumRootCells.z);
-        /*
-        Vector3Int halfNumCells = initNumRootCells / 2;
 
+        Vector3Int halfNumCells = initNumRootCells / 2;
         for (int i = -halfNumCells.x; i < halfNumCells.x; i++)
         {
             for (int j = -halfNumCells.y; j < halfNumCells.y; j++)
             {
                 for (int k = -halfNumCells.z; k < halfNumCells.z; k++)
                 {
-                    WindFieldPoint point = new WindFieldPoint(new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize), Vector3.forward, 0, 2, WindProducerMode.PositionStatic);
+                    WindFieldPoint point = new WindFieldPoint
+                    (
+                        new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize) + new Vector3(Random.Range(0, rootCellSize), Random.Range(0, rootCellSize), Random.Range(0, rootCellSize)),
+                        Vector3.forward,
+                        0,
+                        3,
+                        WindProducerMode.PositionStatic
+                    );
                     Add(point);
                 }
             }
         }
-        */
 
         //DEBUG
         WindFieldPoint point1 = new WindFieldPoint(DEBUG_testWFPoint1, Vector3.forward, 0, 5, WindProducerMode.PositionStatic);
@@ -64,6 +68,8 @@ public class WindField : MonoBehaviour
         }
         else
         {
+            //THIS BIT GAVE A "TRYING TO ADD KEY THAT ALREADY EXISTS" ERROR ONCE!!!! FIX IT
+
             //if obj is at root, no need to check for parents
             if(obj.depth == 0)
             {
@@ -76,10 +82,11 @@ public class WindField : MonoBehaviour
                 uint depth = obj.depth - 1;
                 while (!cells.ContainsKey(KeyAtDepth(obj.position, depth)) && depth > 0) depth--;
 
+
                 //if no parent cell, create one at root depth
                 if (depth == 0)
                 {
-                    cells.Add(KeyAtDepth(obj.position, 0), new WindFieldCell());
+                    if(!cells.ContainsKey(KeyAtDepth(obj.position, depth))) cells.Add(KeyAtDepth(obj.position, 0), new WindFieldCell());
                     depth++;
                 }
 
@@ -94,7 +101,6 @@ public class WindField : MonoBehaviour
                 cells[key].Add(obj);
             }
 
-            
         }
     }
 
