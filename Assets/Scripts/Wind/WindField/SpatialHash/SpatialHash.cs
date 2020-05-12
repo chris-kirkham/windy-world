@@ -65,7 +65,6 @@ public class SpatialHash<T> : MonoBehaviour where T : HashCell, new()
     {
         //delete timed-out cells
         List<Vector3Int> cellsToRemove = new List<Vector3Int>();
-
         foreach (KeyValuePair<Vector3Int, T> item in cells)
         {
             item.Value.UpdateTimeout(Time.deltaTime);
@@ -80,7 +79,7 @@ public class SpatialHash<T> : MonoBehaviour where T : HashCell, new()
 
         ClearBuckets();
 
-        /**/
+        /*Add updated objects back into cells*/
         if (!useAABB)
         {
             foreach (GameObject obj in includedObjs)

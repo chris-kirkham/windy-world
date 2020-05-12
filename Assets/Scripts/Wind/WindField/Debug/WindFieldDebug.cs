@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -11,18 +12,24 @@ public class WindFieldDebug : MonoBehaviour
     //Arrow model to visualise wind directions
     private WindField windField;
     private GameObject windArrow;
-    private Dictionary<WFHashKey, GameObject> arrowField; 
+    private Dictionary<WindField_HashKey, GameObject> arrowField; 
     public bool showWindArrows = false;
+    
     public bool showCellBorders = true;
+    private List<Vector3[]> cellVertices; //list of vertices for each cell in the wind field 
 
-    private float updateInterval = 0.1f;
+    private float updateInterval = 0.5f;
+
 
     void Start()
     {
         windField = GetComponent<WindField>();
         windArrow = Resources.Load<GameObject>("Debug/Wind/WindArrow");
-        arrowField = new Dictionary<WFHashKey, GameObject>();
+        arrowField = new Dictionary<WindField_HashKey, GameObject>();
 
+        cellVertices = new List<Vector3[]>();
+
+        StartCoroutine(UpdateCellVertices());
         StartCoroutine(UpdateWindArrows());
     }
 
@@ -33,9 +40,9 @@ public class WindFieldDebug : MonoBehaviour
             //Update wind arrow visualisation with current wind directions. Definitely a faster way to do this
             //(e.g. have something in WindField that stores only updated wind directions (inc. new cells) in a List<key, windDir>
             //and only loop through those)
-            foreach (KeyValuePair<WFHashKey, WindFieldCell> kv in windField.GetCellDict())
+            foreach (KeyValuePair<WindField_HashKey, WindField_Cell> kv in windField.GetCellDict())
             {
-                WFHashKey key = kv.Key;
+                WindField_HashKey key = kv.Key;
                 if (!arrowField.ContainsKey(key))
                 {
                     arrowField[key] = Instantiate(windArrow);
@@ -58,24 +65,42 @@ public class WindFieldDebug : MonoBehaviour
         //yield return null; //why is this not necessary?
     }
 
+    private IEnumerator UpdateCellVertices()
+    {
+        List<Vector3[]> verts = new List<Vector3[]>();
+        List<KeyValuePair<WindField_HashKey, WindField_Cell>> kv = windField.GetCellDict().ToList();
+        for (int i = 0; i < kv.Count; i++)
+        {
+            float depth = kv[i].Key.GetKey().Length - 1;
+            Vector3 worldPos = windField.GetCellWorldPosition(kv[i].Key);
+            float cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
+            verts.Add(GetCellVertices(worldPos, cellSize));
+        }
+
+        this.cellVertices = verts;
+
+        yield return new WaitForSecondsRealtime(updateInterval);
+    }
+
     private void Update()
     {
         if(showCellBorders)
         {
-            foreach (KeyValuePair<WFHashKey, WindFieldCell> kv in windField.GetCellDict())
+            foreach (Vector3[] verts in cellVertices)
             {
-                float depth = kv.Key.GetKey().Length - 1;
-                float cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
-                Vector3 worldPos = windField.GetCellWorldPosition(kv.Key);
-                DrawCellDebug(GetCellVertices(worldPos, cellSize), Color.HSVToRGB(1 - (depth / 5), 1, 1));
+                //hacky way of getting a colour that represents cell depth (get distance between cell corners and divide them by root cell size)
+                Vector3 rgb = (verts[6] - verts[0]) / windField.rootCellSize;
+                Color c = new Color(rgb.x, rgb.y, rgb.z);
+                
+                DrawCellDebug(verts, c);
             }
         }
     }
 
     //Gets a cell's vertices, assuming its input pos is bottom-left vertex
-    List<Vector3> GetCellVertices(Vector3 pos, float cellSize)
+    Vector3[] GetCellVertices(Vector3 pos, float cellSize)
     {
-        List<Vector3> vertices = new List<Vector3>();
+        Vector3[] vertices = new Vector3[8];
 
         float x = pos.x;
         float y = pos.y;
@@ -83,22 +108,29 @@ public class WindFieldDebug : MonoBehaviour
 
         //add each vertex of cell bounds cube (comment coords are relative vertex positions)
         //lower vertices added counterclockwise, then upper vertices added counterclockwise
-        vertices.Add(new Vector3(x, y, z)); //(0, 0, 0)
-        vertices.Add(new Vector3(x + cellSize, y, z)); //(1, 0, 0)
-        vertices.Add(new Vector3(x + cellSize, y, z + cellSize)); //(1, 0, 1)
-        vertices.Add(new Vector3(x, y, z + cellSize)); //(0, 0, 1)
-        vertices.Add(new Vector3(x, y + cellSize, z)); //(0, 1, 0)
-        vertices.Add(new Vector3(x + cellSize, y + cellSize, z)); //(1, 1, 0)
-        vertices.Add(new Vector3(x + cellSize, y + cellSize, z + cellSize)); //(1, 1, 1)
-        vertices.Add(new Vector3(x, y + cellSize, z + cellSize)); //(0, 1, 1)
-        vertices.Add(new Vector3(x, y + cellSize, z)); //(0, 1, 0)
+        vertices[0] = new Vector3(x, y, z); //(0, 0, 0)
+        vertices[1] = new Vector3(x + cellSize, y, z); //(1, 0, 0)
+        vertices[2] = new Vector3(x + cellSize, y, z + cellSize); //(1, 0, 1)
+        vertices[3] = new Vector3(x, y, z + cellSize); //(0, 0, 1)
+        vertices[4] = new Vector3(x, y + cellSize, z); //(0, 1, 0)
+        vertices[5] = new Vector3(x + cellSize, y + cellSize, z); //(1, 1, 0)
+        vertices[6] = new Vector3(x + cellSize, y + cellSize, z + cellSize); //(1, 1, 1)
+        vertices[7] = new Vector3(x, y + cellSize, z + cellSize); //(0, 1, 1)
 
         return vertices;
     }
 
     //Draws cell edges using Debug.DrawLine, given the list of vertices from GetCellVertices()
-    void DrawCellDebug(List<Vector3> verts, Color c)
+    void DrawCellDebug(Vector3[] verts, Color c)
     {
+        /*
+        if(verts.Length != 8)
+        {
+            Debug.LogError("Incorrect number of vertices passed to DrawCellDebug! (" + verts.Length + ", should be 8)");
+            return;
+        }
+        */
+
         //bottom edges
         Debug.DrawLine(verts[0], verts[1], c);
         Debug.DrawLine(verts[1], verts[2], c);
