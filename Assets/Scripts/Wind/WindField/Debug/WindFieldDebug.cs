@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 /// <summary>
 /// Displays visual debug information for wind fields.
@@ -16,9 +17,10 @@ public class WindFieldDebug : MonoBehaviour
     public bool showWindArrows = false;
     
     public bool showCellBorders = true;
+    [Range(0, 1)] public float opacity = 1f;
     private List<Vector3[]> cellVertices; //list of vertices for each cell in the wind field 
 
-    private float updateInterval = 0.5f;
+    private float updateInterval = 0f;
 
 
     void Start()
@@ -51,10 +53,11 @@ public class WindFieldDebug : MonoBehaviour
 
                 arrowField[key].transform.position = windField.GetCellWorldPosition(key);
 
-                Vector3 wind = kv.Value.GetWind();
-                if(wind != Vector3.zero) arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
+                //Vector3 wind = kv.Value.GetWind();
+                Vector3 wind = windField.GetWind(windField.GetCellWorldPosition(key));
+                if (wind != Vector3.zero) arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
                 
-                yield return null;
+                //yield return null;
             }
 
             yield return new WaitForSecondsRealtime(updateInterval);
@@ -67,31 +70,34 @@ public class WindFieldDebug : MonoBehaviour
 
     private IEnumerator UpdateCellVertices()
     {
-        List<Vector3[]> verts = new List<Vector3[]>();
-        List<KeyValuePair<WindField_HashKey, WindField_Cell>> kv = windField.GetCellDict().ToList();
-        for (int i = 0; i < kv.Count; i++)
+        while(showCellBorders)
         {
-            float depth = kv[i].Key.GetKey().Length - 1;
-            Vector3 worldPos = windField.GetCellWorldPosition(kv[i].Key);
-            float cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
-            verts.Add(GetCellVertices(worldPos, cellSize));
+            List<Vector3[]> verts = new List<Vector3[]>();
+            List<KeyValuePair<WindField_HashKey, WindField_Cell>> kv = windField.GetCellDict().ToList();
+            for (int i = 0; i < kv.Count; i++)
+            {
+                float depth = kv[i].Key.GetKey().Length - 1;
+                Vector3 worldPos = windField.GetCellWorldPosition(kv[i].Key);
+                float cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
+                verts.Add(GetCellVertices(worldPos, cellSize));
+            }
+
+            cellVertices = verts;
+
+            yield return new WaitForSecondsRealtime(updateInterval);
         }
-
-        this.cellVertices = verts;
-
-        yield return new WaitForSecondsRealtime(updateInterval);
+        
     }
 
     private void Update()
     {
-        if(showCellBorders)
+        if(showCellBorders && opacity > 0)
         {
             foreach (Vector3[] verts in cellVertices)
             {
                 //hacky way of getting a colour that represents cell depth (get distance between cell corners and divide them by root cell size)
                 Vector3 rgb = (verts[6] - verts[0]) / windField.rootCellSize;
-                Color c = new Color(rgb.x, rgb.y, rgb.z);
-                
+                Color c = new Color(rgb.x, rgb.y, rgb.z, opacity);
                 DrawCellDebug(verts, c);
             }
         }

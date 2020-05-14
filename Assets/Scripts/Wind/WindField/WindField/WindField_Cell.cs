@@ -12,8 +12,6 @@ public class WindField_Cell
     private Vector3 windStatic;
 
     private List<WindField_WindPoint> windObjsDynamic { get; }
-    //private List<WindField_WindPoint> windObjsPositionStatic { get; }
-    //private List<WindFieldPoint> windObjsStatic { get; }
 
     public bool hasChild;
 
@@ -34,7 +32,6 @@ public class WindField_Cell
 
         windStatic = Vector3.zero;
         foreach(WindField_WindPoint w in windObjsStatic) windStatic += w.wind;
-
 
         hasChild = false;
     }
@@ -66,17 +63,17 @@ public class WindField_Cell
         }
     }
 
-    public void AddDynamic(WindField_WindPoint obj)
+    private void AddDynamic(WindField_WindPoint obj)
     {
         windObjsDynamic.Add(obj);
     }
     
-    public void AddStatic(WindField_WindPoint obj)
+    private void AddStatic(WindField_WindPoint obj)
     {
         windStatic += obj.wind;
     }
 
-    public void UpdateWindDynamic()
+    private void UpdateWindDynamic()
     {
         windDynamic = Vector3.zero;
 
@@ -85,30 +82,16 @@ public class WindField_Cell
             windDynamic += w.wind;
         }
     }
-
-    /*
-    public void UpdateWindPositionStatic()
-    {
-        windPositionStatic = Vector3.zero;
-
-        foreach (WindField_WindPoint w in windObjsPositionStatic)
-        {
-            windPositionStatic += w.wind;
-        }
-    }
-    */
-
     public void ClearDynamic()
     {
         windObjsDynamic.Clear();
     }
 
-    /*
-    public void ClearPositionStatic()
+    //Returns true if the cell contains no dynamic wind points and its static wind vector is zero. 
+    public bool IsEmpty()
     {
-        windObjsPositionStatic.Clear();
+        return (windObjsDynamic.Count == 0) && (windStatic == Vector3.zero);
     }
-    */
 
     /*----GETTERS----*/
     public Vector3 GetWind()

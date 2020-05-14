@@ -65,7 +65,6 @@ public static class Perlin
         return Noise(coord.x, coord.y, coord.z);
     }
 
-
     public static Vector2 PointOnUnitCircle(Vector2 coord)
     {
         float theta = Noise(coord) * tau;
