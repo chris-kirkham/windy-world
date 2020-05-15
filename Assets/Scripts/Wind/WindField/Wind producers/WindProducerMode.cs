@@ -15,4 +15,4 @@
  * Use this if the object and its wind info will not change during gameplay (e.g. a static wind area)   
  **/
 public enum WindProducerMode { Static, Dynamic };
-//public enum WindProducerMode { Static, PositionStatic, Dynamic };
+

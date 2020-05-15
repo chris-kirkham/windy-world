@@ -25,16 +25,16 @@ public class WindField : MonoBehaviour
     public float noiseFrequency = 0.01f;
     public float noiseStrength = 1f;
 
-    private Dictionary<WindField_HashKey, WindField_Cell> cells;
-    private List<WindField_WindProducer> dynamicProducers;
+    private Dictionary<WF_HashKey, WF_Cell> cells;
+    private List<WF_WindProducer> dynamicProducers;
     //private List<WindField_WindPoint> dynamicWindPoints; //stores dynamic-mode WindFieldPoints included in the wind field - these need to be updated every update interval
     private float updateInterval = 0.2f;
 
     private void Awake()
     {
         //create initial cells
-        cells = new Dictionary<WindField_HashKey, WindField_Cell>(initNumRootCells.x * initNumRootCells.y * initNumRootCells.z);
-        dynamicProducers = new List<WindField_WindProducer>();
+        cells = new Dictionary<WF_HashKey, WF_Cell>(initNumRootCells.x * initNumRootCells.y * initNumRootCells.z);
+        dynamicProducers = new List<WF_WindProducer>();
 
         Vector3Int halfNumCells = initNumRootCells / 2;
         for (int i = -halfNumCells.x; i < halfNumCells.x; i++)
@@ -43,7 +43,7 @@ public class WindField : MonoBehaviour
             {
                 for (int k = -halfNumCells.z; k < halfNumCells.z; k++)
                 {
-                    WindField_WindPoint point = new WindField_WindPoint
+                    WF_WindPoint point = new WF_WindPoint
                     (
                         //new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize) + new Vector3(Random.Range(0, rootCellSize), Random.Range(0, rootCellSize), Random.Range(0, rootCellSize)),
                         new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize),
@@ -68,16 +68,16 @@ public class WindField : MonoBehaviour
         while(true)
         {
             //clear dynamic wind points in cells and re-add updated points
-            foreach (WindField_Cell cell in cells.Values) cell.ClearDynamic();
-            foreach (WindField_WindProducer p in dynamicProducers) AddToCell(p.GetWindFieldPoints());
+            foreach (WF_Cell cell in cells.Values) cell.ClearDynamic();
+            foreach (WF_WindProducer p in dynamicProducers) AddToCell(p.GetWindFieldPoints());
 
             //delete any now-empty non-parent cells
-            List<WindField_HashKey> cellsToRemove = new List<WindField_HashKey>();
-            foreach (KeyValuePair<WindField_HashKey, WindField_Cell> cell in cells) 
+            List<WF_HashKey> cellsToRemove = new List<WF_HashKey>();
+            foreach (KeyValuePair<WF_HashKey, WF_Cell> cell in cells) 
             {
                 if(cell.Value.IsEmpty() && !cell.Value.hasChild) cellsToRemove.Add(cell.Key);
             }
-            foreach (WindField_HashKey key in cellsToRemove)
+            foreach (WF_HashKey key in cellsToRemove)
             {
                 //TODO: CHECK IF PARENT NOW HAS NO CHILDREN AND SET ITS hasChild TO FALSE IF SO (extend cell from monobehaviour and set it to check children/set this stuff automatically on update?)
                 cells.Remove(key);
@@ -91,7 +91,7 @@ public class WindField : MonoBehaviour
     /*----PUBLIC FUNCTIONS----*/
     //Includes the given WindFieldPoint in the wind field: if dynamic, adds the point to the dynamic wind objects list and then to its corresponding cell;
     //if static, just adds the point to its cell (since static wind points are never updated, there is no need to keep track of them outside their cells) 
-    public void Include(WindField_WindProducer windProducer)
+    public void Include(WF_WindProducer windProducer)
     {
         if (windProducer.mode == WindProducerMode.Dynamic) dynamicProducers.Add(windProducer);
         AddToCell(windProducer.GetWindFieldPoints());
@@ -100,9 +100,9 @@ public class WindField : MonoBehaviour
 
     //Adds a given WindFieldPoint to the cell corresponding to its position and depth, creating that cell and its parent(s) if they don't exist.
     //TODO: getting a new key each time is very inefficient compared to getting the deepest key initially and removing elements from that. 
-    public void AddToCell(WindField_WindPoint obj)
+    public void AddToCell(WF_WindPoint obj)
     {
-        WindField_HashKey key = KeyAtDepth(obj.position, obj.depth);
+        WF_HashKey key = KeyAtDepth(obj.position, obj.depth);
         //Debug.Log("Adding object at " + obj.position + "at depth " + obj.depth + "; key = " + key);
 
         if (cells.ContainsKey(key)) //if cell already exists, add the object to that cell
@@ -114,7 +114,7 @@ public class WindField : MonoBehaviour
             //if obj is at root, no need to check for parents
             if(obj.depth == 0)
             {
-                cells.Add(key, new WindField_Cell());
+                cells.Add(key, new WF_Cell());
                 cells[key].Add(obj);
             }
             else
@@ -126,8 +126,8 @@ public class WindField : MonoBehaviour
                 //if no parent, create one at root depth
                 if(depth == 0)
                 {
-                    WindField_HashKey k0 = KeyAtDepth(obj.position, 0);
-                    cells.Add(k0, new WindField_Cell());
+                    WF_HashKey k0 = KeyAtDepth(obj.position, 0);
+                    cells.Add(k0, new WF_Cell());
                     cells[k0].hasChild = true;
                     depth++;
                 }
@@ -135,16 +135,16 @@ public class WindField : MonoBehaviour
                 //add parent cells down to obj.depth < 1
                 while(depth < obj.depth)
                 {
-                    WindField_HashKey kDepth = KeyAtDepth(obj.position, depth);
+                    WF_HashKey kDepth = KeyAtDepth(obj.position, depth);
                     //cells.Add(kDepth, new WindField_Cell(cells[KeyAtDepth(obj.position, depth - 1)])); //initialise child cell with parent's wind info
-                    cells.Add(kDepth, new WindField_Cell());
+                    cells.Add(kDepth, new WF_Cell());
                     cells[kDepth].hasChild = true;
                     depth++;
                 }
 
                 //add cell at obj.depth
                 //cells.Add(key, new WindField_Cell(cells[KeyAtDepth(obj.position, depth - 1)]));
-                cells.Add(key, new WindField_Cell());
+                cells.Add(key, new WF_Cell());
                 cells[key].Add(obj); //add object to newly-created cell
             }
 
@@ -152,9 +152,9 @@ public class WindField : MonoBehaviour
     }
 
     //Adds given WindFieldPoints to their corresponding cells (creates new cell(s) if none exist at generated hash position(s))
-    public void AddToCell(WindField_WindPoint[] objs)
+    public void AddToCell(WF_WindPoint[] objs)
     {
-        foreach (WindField_WindPoint obj in objs) AddToCell(obj);
+        foreach (WF_WindPoint obj in objs) AddToCell(obj);
     }
     
 
@@ -167,14 +167,13 @@ public class WindField : MonoBehaviour
 
         //adds the wind vectors from root cell down to its deepest child at the given position, plus the global wind vector (if using).
         //If no root at this position, returns either the global wind vec or zero.
-        WindField_Cell cell;
+        WF_Cell cell;
         Vector3 wind = useGlobalWind ? globalWind : Vector3.zero;
         
         if(addNoise)
         {
             Vector3 coords = pos;
-            if (useTimeOffset) coords += (Vector3.one * Time.time);
-            wind += WindNoise.Directional3D(coords, noiseFrequency) * noiseStrength;
+            wind += WindNoise.Directional3D(coords, noiseFrequency, useTimeOffset ? Time.time : 0) * noiseStrength;
         }
 
         if (cells.TryGetValue(KeyAtDepth(pos, 0), out cell))
@@ -186,7 +185,7 @@ public class WindField : MonoBehaviour
                 //cell = cells[KeyAtDepth(pos, depth)]; //this may fail if using the method where a cell doesn't need to have all eight children
 
                 //if using method where a cell may have children but not necessarily all eight, this is necessary
-                WindField_HashKey key = KeyAtDepth(pos, depth);
+                WF_HashKey key = KeyAtDepth(pos, depth);
                 if (cells.ContainsKey(key))
                 {
                     cell = cells[key];
@@ -203,7 +202,7 @@ public class WindField : MonoBehaviour
         return wind;
     }
 
-    public Dictionary<WindField_HashKey, WindField_Cell> GetCellDict()
+    public Dictionary<WF_HashKey, WF_Cell> GetCellDict()
     {
         return cells;
     }
@@ -211,7 +210,7 @@ public class WindField : MonoBehaviour
     //Get the world position of the cell with the given hash key. Note that this returns the
     //leastmost corner of the cell, not its centre (so a cell with bounds from (0,0,0) to (1,1,1)
     //would return (0,0,0), not (0.5,0.5,0.5))
-    public Vector3 GetCellWorldPosition(WindField_HashKey key)
+    public Vector3 GetCellWorldPosition(WF_HashKey key)
     {
         Vector3Int[] k = key.GetKey();
         Vector3 worldPos = (Vector3)k[0] * rootCellSize;
@@ -227,7 +226,7 @@ public class WindField : MonoBehaviour
     }
 
     //Get the world position of the centre of the cell with the given hash key.
-    public Vector3 GetCellWorldPositionCentre(WindField_HashKey key)
+    public Vector3 GetCellWorldPositionCentre(WF_HashKey key)
     {
         Vector3Int[] k = key.GetKey();
         Vector3 worldPos = ((Vector3)k[0] * rootCellSize);
@@ -248,7 +247,7 @@ public class WindField : MonoBehaviour
     /*----PRIVATE UTILITY FUNCTIONS----*/
 
     //Gets the wind field cell at the given position, or null if no such cell exists
-    private bool TryGetCell(Vector3 pos, out WindField_Cell cell)
+    private bool TryGetCell(Vector3 pos, out WF_Cell cell)
     {
         //if root cell exists at this key, cell will be set to it; if not, there is no cell at this position so return false
         if (cells.TryGetValue(KeyAtDepth(pos, 0), out cell))
@@ -259,7 +258,7 @@ public class WindField : MonoBehaviour
                 //cell = cells[KeyAtDepth(pos, depth)]; //this may fail if using the method where a cell doesn't need to have all eight children
                 
                 //if using method where a cell may have children but not necessarily all eight, this is necessary
-                WindField_HashKey key = KeyAtDepth(pos, depth);
+                WF_HashKey key = KeyAtDepth(pos, depth);
                 if(cells.ContainsKey(key))
                 {
                     cell = cells[key];
@@ -279,9 +278,9 @@ public class WindField : MonoBehaviour
     }
         
     //Generate the key at a given position and depth
-    private WindField_HashKey KeyAtDepth(Vector3 pos, uint depth)
+    private WF_HashKey KeyAtDepth(Vector3 pos, uint depth)
     {
-        return new WindField_HashKey(pos, rootCellSize, depth);
+        return new WF_HashKey(pos, rootCellSize, depth);
     }
 
 }

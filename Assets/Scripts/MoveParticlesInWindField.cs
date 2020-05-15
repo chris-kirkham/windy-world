@@ -12,7 +12,7 @@ public class MoveParticlesInWindField : MonoBehaviour
     private void Start()
     {
         particleSystem = GetComponent<ParticleSystem>();
-        if (windField == null) Debug.LogError("No wind field given for WindFieldProducer " + ToString() + "!");
+        if (windField == null) Debug.LogError("No wind field given for particles " + ToString() + "!");
     }
 
     private void Update()

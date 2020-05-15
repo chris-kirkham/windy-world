@@ -15,7 +15,6 @@ public class BezierSplineInspector : Editor
 
     private void OnSceneGUI()
     {
-        
         BezierSpline spline = (BezierSpline)target;
         Transform transform = spline.transform;
         Quaternion handleRot = Tools.pivotRotation == PivotRotation.Local ? transform.rotation : Quaternion.identity;
@@ -30,7 +29,6 @@ public class BezierSplineInspector : Editor
 
             worldCurves.Add(worldCurve);
         }
-
 
         /* Loop through each world space curve in the spline and update handles/lines/curves for it */
         for(int i = 0; i < worldCurves.Count; i++)

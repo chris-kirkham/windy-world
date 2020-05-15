@@ -6,18 +6,18 @@ using UnityEngine;
 /// Represents a single point of wind in space, which will be added to the wind field at the given depth
 /// </summary>
 [ExecuteInEditMode]
-public class WindPoint : WindField_WindProducer
+public class WindPoint : WF_WindProducer
 {
     public bool useRotationAsWindVector = true;
     public Vector3 wind;
     public float windStrength = 1;
 
-    protected override WindField_WindPoint[] CalcWindFieldPoints()
+    protected override WF_WindPoint[] CalcWindFieldPoints()
     {
-        return new WindField_WindPoint[1] { new WindField_WindPoint(transform.position, wind, priority, depth, mode) };
+        return new WF_WindPoint[1] { new WF_WindPoint(transform.position, wind, priority, depth, mode) };
     }
 
-    private void OnValidate()
+    private void Update()
     {
         if(useRotationAsWindVector) wind = transform.rotation * Vector3.forward * windStrength;
     }

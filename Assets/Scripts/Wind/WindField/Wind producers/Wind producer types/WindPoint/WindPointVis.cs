@@ -17,10 +17,12 @@ public class WindPointVis : MonoBehaviour
     void Start()
     {
         windPoint = GetComponent<WindPoint>();
+        windArrow = transform.Find("WindArrow").gameObject;
         if (windArrow == null)
         {
+            Debug.Log("WindPointVis: WindArrow child cannot be found. Did you delete it?");
             windArrow = Instantiate(Resources.Load<GameObject>("Debug/Wind/WindArrow"), windPoint.transform.position, Quaternion.LookRotation(windPoint.wind, Vector3.up));
-            windArrow.transform.parent = transform.parent; //WindArea should have an empty holder parent; set the wind arrow's parent to it also 
+            windArrow.transform.parent = transform.parent;
         }
 
         initArrowScale = windArrow.transform.localScale;
@@ -31,7 +33,7 @@ public class WindPointVis : MonoBehaviour
         windArrow.transform.position = windPoint.transform.position;
         if(windPoint.wind != Vector3.zero) windArrow.transform.rotation = Quaternion.LookRotation(windPoint.wind, Vector3.up);
         float cellSize = windPoint.windField.rootCellSize / Mathf.Pow(2, windPoint.depth);
-        windArrow.transform.localScale = Vector3.Min(initArrowScale * cellSize, initArrowScale * windPoint.wind.magnitude);
+        //windArrow.transform.localScale = Vector3.Min(initArrowScale * cellSize, initArrowScale * windPoint.wind.magnitude);
     }
 
     private void OnDestroy()

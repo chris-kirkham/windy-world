@@ -2,59 +2,46 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public class WindSpline : MonoBehaviour
+[RequireComponent(typeof(BezierSpline))]
+public class WindSpline : WF_WindProducer
 {
     private BezierSpline spline;
 
-    /* start/end planes - planes whose centres are the first/last points of the spline;
-     * they are oriented perpendicular to the lines p[0]->[1]/p[last - 1]->[last] respectively. 
-     * Vertices are wound clockwise from top-left. */
-    private Vector3[] startPlane;
-    private Vector3[] endPlane;
+    public float windStrength = 1;
 
-    private float width;
-    private float halfWidth;
-    public float Width
+    [Range(1, 10)] public int samplesPerCurve = 1;
+    private float tInterval;
+    void Awake()
     {
-        get { return width; }
-        set { width = value; halfWidth = value / 2; }
+        spline = GetComponent<BezierSpline>();
+        tInterval = 1f / (float)samplesPerCurve;
     }
 
-    void Start()
+    /*
+    protected override WF_WindPoint[] CalcWindFieldPoints()
     {
-        spline = new BezierSpline();
-        startPlane = new Vector3[4];
-        endPlane = new Vector3[4];
-    }
+        //approximate length of each curve by summing distance between control points
+        foreach(Points curve in spline.curves)
+        {
+            float curveLength = 0f;
+            Vector3[] points = curve.points;
+            for(int i = 1; i < points.Length; i++) curveLength += Vector3.Distance(points[i - 1], points[i]);
 
-    public void GetHashPoints(Vector3 hashCellSize)
+        }
+
+    }
+    */
+
+    //fast but very simple way of getting wind points, with no guarantee that the number of points will match up with the wind field cells
+    protected override WF_WindPoint[] CalcWindFieldPoints()
     {
+        List<WF_WindPoint> points = new List<WF_WindPoint>();
+        for(int i = 0; i < spline.curves.Count; i++)
+        {
+            for (float t = 0; t < 1; t += tInterval) points.Add(new WF_WindPoint(spline.GetWorldPoint(i, t), spline.GetDir(i, t) * windStrength, depth, mode));
+        }
 
+        return points.ToArray();
     }
-
-    private Vector3[] ConstructPlane(Vector3 midPoint, float halfSize, Vector3 normalDir)
-    {
-        //relative left and up directions to perpDir
-        Vector3 left = Vector3.Cross(normalDir, Vector3.up).normalized * halfSize;
-        Vector3 up = Vector3.Cross(normalDir, left).normalized * halfSize;
-
-        //Plane vertices - clockwise from top left
-        Vector3[] plane = new Vector3[4];
-        plane[0] = midPoint + left + up;
-        plane[1] = midPoint - left + up;
-        plane[2] = midPoint - left - up;
-        plane[3] = midPoint + left - up;
-
-        return plane;
-    }
-
-    void OnDrawGizmos()
-    {
-        //left/up of start and end planes
-
-        //vertices of start and end planes
-    }
-
 
 }

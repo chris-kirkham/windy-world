@@ -13,7 +13,8 @@ public class WindFieldDebug : MonoBehaviour
     //Arrow model to visualise wind directions
     private WindField windField;
     private GameObject windArrow;
-    private Dictionary<WindField_HashKey, GameObject> arrowField; 
+    private Dictionary<WF_HashKey, GameObject> arrowField;
+    private GameObject arrowFieldContainer; //empty parent object to hold arrows (just to keep editor tidy)
     public bool showWindArrows = false;
     
     public bool showCellBorders = true;
@@ -27,8 +28,8 @@ public class WindFieldDebug : MonoBehaviour
     {
         windField = GetComponent<WindField>();
         windArrow = Resources.Load<GameObject>("Debug/Wind/WindArrow");
-        arrowField = new Dictionary<WindField_HashKey, GameObject>();
-
+        arrowField = new Dictionary<WF_HashKey, GameObject>();
+        arrowFieldContainer = new GameObject("Wind field debug arrows");
         cellVertices = new List<Vector3[]>();
 
         StartCoroutine(UpdateCellVertices());
@@ -42,9 +43,9 @@ public class WindFieldDebug : MonoBehaviour
             //Update wind arrow visualisation with current wind directions. Definitely a faster way to do this
             //(e.g. have something in WindField that stores only updated wind directions (inc. new cells) in a List<key, windDir>
             //and only loop through those)
-            foreach (KeyValuePair<WindField_HashKey, WindField_Cell> kv in windField.GetCellDict())
+            foreach (KeyValuePair<WF_HashKey, WF_Cell> kv in windField.GetCellDict())
             {
-                WindField_HashKey key = kv.Key;
+                WF_HashKey key = kv.Key;
                 if (!arrowField.ContainsKey(key))
                 {
                     arrowField[key] = Instantiate(windArrow);
@@ -56,16 +57,18 @@ public class WindFieldDebug : MonoBehaviour
                 //Vector3 wind = kv.Value.GetWind();
                 Vector3 wind = windField.GetWind(windField.GetCellWorldPosition(key));
                 if (wind != Vector3.zero) arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
-                
-                //yield return null;
+
+                arrowField[key].transform.SetParent(arrowFieldContainer.transform);
+
             }
 
             yield return new WaitForSecondsRealtime(updateInterval);
         }
 
+        foreach (GameObject arrow in arrowField.Values) Destroy(arrow);
         arrowField.Clear();
-
-        //yield return null; //why is this not necessary?
+        
+        yield return new WaitForSecondsRealtime(updateInterval);
     }
 
     private IEnumerator UpdateCellVertices()
@@ -73,7 +76,7 @@ public class WindFieldDebug : MonoBehaviour
         while(showCellBorders)
         {
             List<Vector3[]> verts = new List<Vector3[]>();
-            List<KeyValuePair<WindField_HashKey, WindField_Cell>> kv = windField.GetCellDict().ToList();
+            List<KeyValuePair<WF_HashKey, WF_Cell>> kv = windField.GetCellDict().ToList();
             for (int i = 0; i < kv.Count; i++)
             {
                 float depth = kv[i].Key.GetKey().Length - 1;
@@ -86,7 +89,9 @@ public class WindFieldDebug : MonoBehaviour
 
             yield return new WaitForSecondsRealtime(updateInterval);
         }
-        
+
+        yield return new WaitForSecondsRealtime(updateInterval);
+
     }
 
     private void Update()

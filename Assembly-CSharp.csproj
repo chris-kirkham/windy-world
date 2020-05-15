@@ -72,6 +72,9 @@
     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\HashObject.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\SpatialHash.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\SpatialHash\SpatialHashDebug.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WF_WindPoint.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WF_WindProducer.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WF_WindProducer_Debug.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindArea\Debug\WindAreaVis.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindArea\WindArea.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindPoint\WindPoint.cs" />
@@ -82,12 +85,11 @@
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\BaseCurves\Points.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Static\BezierCurves.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\WindSpline.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WindField_WindPoint.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WindField_WindProducer.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\WindSplineArea.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WindProducerMode.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\WindField\WF_Cell.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\WindField\WF_HashKey.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\WindField.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\WindField\WindField_Cell.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\WindField\WindField_HashKey.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
