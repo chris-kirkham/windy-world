@@ -3,19 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Abstract base class for visual debug of wind producers (WF_WindProducer-derived classes)
+/// Base class for visual debug of wind producers (WF_WindProducer-derived classes)
 /// </summary>
 [RequireComponent(typeof(WF_WindProducer))]
 [ExecuteInEditMode]
-public abstract class WF_WindProducer_Debug : MonoBehaviour
+public class WF_WindProducer_Debug : MonoBehaviour
 {
     private WF_WindProducer windProducer;
     private GameObject[] windArrows; //wind arrow visualiser models
+    private GameObject windArrowContainer; //empty GameObject to be the parent of wind arrows - just to clean up editor
     private GameObject windArrowModel;
     private Vector3 initArrowScale;
 
     public bool showWindArrows = true;
     public float updateInterval = 0f;
+    private bool resetWindArrows = false; //flagged to reset arrows when showWindArrows is disabled
 
     private void Start()
     {
@@ -24,9 +26,11 @@ public abstract class WF_WindProducer_Debug : MonoBehaviour
         windArrowModel = Resources.Load<GameObject>("Debug/Wind/WindArrow");
         WF_WindPoint[] windPoints = windProducer.GetWindFieldPoints();
         windArrows = new GameObject[windPoints.Length];
+        windArrowContainer = new GameObject(windProducer.ToString() + " debug wind arrows");
         for(int i = 0; i < windPoints.Length; i++)
         {
             windArrows[i] = Instantiate(windArrowModel, windPoints[i].position, Quaternion.LookRotation(windPoints[i].wind));
+            windArrows[i].transform.SetParent(windArrowContainer.transform);
         }
 
         StartCoroutine(UpdateVis());
@@ -38,8 +42,9 @@ public abstract class WF_WindProducer_Debug : MonoBehaviour
         {
             WF_WindPoint[] windPointsUpdated = windProducer.GetWindFieldPoints();
             
-            //this probably won't happen (often), but if it turns out to, maybe write a more efficient way of doing this (e.g. using lists instead of arrays) 
-            if (windPointsUpdated.Length != windArrows.Length)
+            //this should only happen when showWindArrows has been disabled then re-enabled, or if the wind producer changes its number of wind points during gameplay. 
+            //If the latter happens often, maybe write a more efficient way of doing this (e.g. using lists instead of arrays) 
+            if (resetWindArrows || windPointsUpdated.Length != windArrows.Length)
             {
                 foreach (GameObject arrow in windArrows) Destroy(arrow);
                 windArrows = new GameObject[windPointsUpdated.Length];
@@ -47,6 +52,8 @@ public abstract class WF_WindProducer_Debug : MonoBehaviour
                 {
                     windArrows[i] = Instantiate(windArrowModel, windPointsUpdated[i].position, Quaternion.LookRotation(windPointsUpdated[i].wind));
                 }
+
+                resetWindArrows = false;
             }
             
             for (int i = 0; i < windPointsUpdated.Length; i++)
@@ -60,6 +67,7 @@ public abstract class WF_WindProducer_Debug : MonoBehaviour
         }
 
         foreach (GameObject arrow in windArrows) Destroy(arrow);
+        resetWindArrows = true;
         yield return new WaitForSecondsRealtime(updateInterval);
     }
 

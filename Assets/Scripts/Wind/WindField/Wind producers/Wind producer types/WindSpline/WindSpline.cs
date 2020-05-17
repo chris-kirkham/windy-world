@@ -9,13 +9,20 @@ public class WindSpline : WF_WindProducer
 
     public float windStrength = 1;
 
-    [Range(1, 10)] public int samplesPerCurve = 1;
+    [Range(1, 100)] public int samplesPerCurve = 1;
     private float tInterval;
     void Awake()
     {
         spline = GetComponent<BezierSpline>();
         tInterval = 1f / (float)samplesPerCurve;
     }
+
+    /*
+    private void Update()
+    {
+        if(mode == WindProducerMode.Dynamic) tInterval = 1f / (float)samplesPerCurve;
+    }
+    */
 
     /*
     protected override WF_WindPoint[] CalcWindFieldPoints()
@@ -32,16 +39,32 @@ public class WindSpline : WF_WindProducer
     }
     */
 
-    //fast but very simple way of getting wind points, with no guarantee that the number of points will match up with the wind field cells
+    //Fast but very simple way of getting wind points, with no guarantee that the number of points will match up with the wind field cells
+    //(i.e. that there will be no missed cells or multiple points per cell)
     protected override WF_WindPoint[] CalcWindFieldPoints()
     {
         List<WF_WindPoint> points = new List<WF_WindPoint>();
         for(int i = 0; i < spline.curves.Count; i++)
         {
-            for (float t = 0; t < 1; t += tInterval) points.Add(new WF_WindPoint(spline.GetWorldPoint(i, t), spline.GetDir(i, t) * windStrength, depth, mode));
+            for (float t = 0; t < 1; t += tInterval) points.Add(new WF_WindPoint(spline.GetWorldPoint(i, t), Vector3.Normalize(spline.GetWorldDir(i, t)) * windStrength, depth, mode));
         }
 
         return points.ToArray();
     }
 
+
+    
+    private void OnDrawGizmosSelected()
+    {
+        WF_WindPoint[] wps = GetWindFieldPoints();
+        Gizmos.color = Color.cyan;
+        if (wps.Length > 0)
+        {
+            foreach(WF_WindPoint wp in wps)
+            {
+                Gizmos.DrawRay(wp.position, wp.wind);
+            }
+        }
+    }
+    
 }

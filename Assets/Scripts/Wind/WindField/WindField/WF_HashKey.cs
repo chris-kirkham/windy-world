@@ -16,22 +16,22 @@ public struct WF_HashKey
         //Vector3[] DEBUG_cellPositions = new Vector3[depth + 1];
 
         //root cells are not relative to any parent
-        key[0] = GetHashCell(pos, rootCellSize);
+        key[0] = GetCellCoord(pos, rootCellSize);
 
         //DEBUG_cellPositions[0] = (Vector3)key[0] * rootCellSize;
 
         Vector3 parentPos = (Vector3)key[0] * rootCellSize;
-        float thisCellSize = rootCellSize / 2;
+        float cellSize = rootCellSize / 2;
         
         for(int i = 1; i <= depth; i++)
         {
             Vector3 relPos = pos - parentPos; //all child cell keys should be relative to their parent (so they will be in the range (0,0,0)..(1,1,1))
-            key[i] = GetHashCell(relPos, thisCellSize);
-            parentPos += (Vector3)key[i] * thisCellSize;
+            key[i] = GetCellCoord(relPos, cellSize);
+            parentPos += (Vector3)key[i] * cellSize;
 
             //DEBUG_cellPositions[i] = DEBUG_cellPositions[i - 1] + (Vector3)key[i] * thisCellSize;
 
-            thisCellSize /= 2;
+            cellSize /= 2;
         }
 
         //Debug.Log("Cell positions = [" + string.Join(", ", DEBUG_cellPositions) + "]");
@@ -47,13 +47,14 @@ public struct WF_HashKey
         //root cells are not relative to any parent
         key[0] = flooredPos / rootCellSize;
         Vector3 parentPos = (Vector3)key[0] * rootCellSize;
+        float cellSize = rootCellSize / 2;
 
         for (int i = 1; i <= depth; i++)
         {
-            float thisCellSize = rootCellSize / (2 * i);
             Vector3 relPos = pos - parentPos; //all child cell keys should be relative to their parent (so they will be in the range (0,0,0)..(1,1,1))
-            key[i] = GetHashCell(relPos, thisCellSize);
+            key[i] = GetCellCoord(relPos, thisCellSize);
             parentPos += (Vector3)key[i] * thisCellSize;
+            cellSize /= 2;
         }
     }
     */
@@ -118,7 +119,7 @@ public struct WF_HashKey
     }
 
     //Get the cell index for a given position and cell size
-    private Vector3Int GetHashCell(Vector3 pos, float cellSize)
+    private Vector3Int GetCellCoord(Vector3 pos, float cellSize)
     {
         return new Vector3Int(FastFloor(pos.x / cellSize), FastFloor(pos.y / cellSize), FastFloor(pos.z / cellSize));
     }
@@ -128,4 +129,5 @@ public struct WF_HashKey
     {
         return (int)(f + 32768f) - 32768;
     }
+
 }

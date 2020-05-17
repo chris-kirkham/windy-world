@@ -47,7 +47,7 @@ public class WindField : MonoBehaviour
                     (
                         //new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize) + new Vector3(Random.Range(0, rootCellSize), Random.Range(0, rootCellSize), Random.Range(0, rootCellSize)),
                         new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize),
-                        Vector3.forward,
+                        Vector3.zero,
                         0,
                         0,
                         WindProducerMode.Static
@@ -114,42 +114,59 @@ public class WindField : MonoBehaviour
             //if obj is at root, no need to check for parents
             if(obj.depth == 0)
             {
-                cells.Add(key, new WF_Cell());
+                cells.Add(key, new WF_Cell(rootCellSize));
                 cells[key].Add(obj);
             }
             else
             {
+                float cellSize = rootCellSize; //track cell size with depth (halves with each depth increment)
+
                 //find depth of deepest parent-to-be of cell obj will be added to
                 uint depth = 0;
                 while (cells.ContainsKey(KeyAtDepth(obj.position, depth))) depth++;
                
-                //if no parent, create one at root depth
-                if(depth == 0)
-                {
-                    WF_HashKey k0 = KeyAtDepth(obj.position, 0);
-                    cells.Add(k0, new WF_Cell());
-                    cells[k0].hasChild = true;
-                    depth++;
-                }
-
                 //add parent cells down to obj.depth < 1
-                while(depth < obj.depth)
+                while (depth < obj.depth)
                 {
                     WF_HashKey kDepth = KeyAtDepth(obj.position, depth);
-                    //cells.Add(kDepth, new WindField_Cell(cells[KeyAtDepth(obj.position, depth - 1)])); //initialise child cell with parent's wind info
-                    cells.Add(kDepth, new WF_Cell());
+                    cells.Add(kDepth, new WF_Cell(cellSize));
                     cells[kDepth].hasChild = true;
+                    
                     depth++;
+                    cellSize /= 2;
                 }
 
                 //add cell at obj.depth
-                //cells.Add(key, new WindField_Cell(cells[KeyAtDepth(obj.position, depth - 1)]));
-                cells.Add(key, new WF_Cell());
+                cells.Add(key, new WF_Cell(cellSize));
                 cells[key].Add(obj); //add object to newly-created cell
             }
 
         }
     }
+
+    /*
+    private void AddToCell(WF_WindPoint wp)
+    {
+        WF_HashKey key = new WF_HashKey(wp);
+
+        //Root cells are hashed into the cells dictionary; any child cells are accessed by reference from their parent cell.
+        //First, try to get the root cell, and create one if not found
+        if (!cells.ContainsKey(key.root) cells.Add(key.root, new Cell());
+
+        //Check child cells <= wp.depth, adding new child cells if none exist 
+        WF_Cell currCell = cells[key.root];
+        int childID;
+        for (int childDepth = 0; (childDepth + 1) <= wp.depth; childDepth++) //Add one to child depth as it doesn't count root depth, but WF_WindPoint.depth does
+        {
+            childID = key.childIDs[childDepth];
+            if (!currCell.HasChild(childID)) currCell.AddChild(new Cell(currCell, childID)) //add new cell as child of current cell 
+
+        currCell = currCell.GetChild(childID);
+        }
+
+        currCell.Add(wp);
+    }
+    */
 
     //Adds given WindFieldPoints to their corresponding cells (creates new cell(s) if none exist at generated hash position(s))
     public void AddToCell(WF_WindPoint[] objs)
@@ -239,8 +256,7 @@ public class WindField : MonoBehaviour
         }
 
         //add half of deepest cell size in each dimension to get centre of deepest cell
-        float halfFinalCellSize = k.Length == 1 ? rootCellSize / 2 : cellSize / 2;
-        return worldPos + new Vector3(halfFinalCellSize, halfFinalCellSize, halfFinalCellSize);
+        return worldPos + new Vector3(cellSize, cellSize, cellSize);
     }
 
 

@@ -13,6 +13,7 @@ public abstract class WF_WindProducer : MonoBehaviour
     //[Range(0, 1)] float precision;
     public int priority = 0;
     public bool active = true;
+    public float dynamicUpdateInterval = 0f; 
 
     private WF_WindPoint[] windPoints;
     private float cellSize; //Actual size of the wind field cell at cellDepth
@@ -23,11 +24,7 @@ public abstract class WF_WindProducer : MonoBehaviour
         cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
         windPoints = CalcWindFieldPoints();
         AddToWindField();
-    }
-
-    private void Update()
-    {
-        UpdateWindFieldPoints();
+        StartCoroutine(UpdateWindFieldPoints());
     }
 
     //Returns an approximation of the wind producer in the form of individual WindFieldPoint(s) to be added to wind field cells.
@@ -39,9 +36,13 @@ public abstract class WF_WindProducer : MonoBehaviour
     //The points returned by this function should be an approximation of the wind producer's shape and wind vector(s). 
     protected abstract WF_WindPoint[] CalcWindFieldPoints();
     
-    protected void UpdateWindFieldPoints()
+    protected IEnumerator UpdateWindFieldPoints()
     {
-        windPoints = CalcWindFieldPoints();
+        while(mode == WindProducerMode.Dynamic)
+        {
+            windPoints = CalcWindFieldPoints();
+            yield return new WaitForSecondsRealtime(dynamicUpdateInterval);
+        }
     }
 
     public WF_WindPoint[] GetWindFieldPoints()
@@ -62,6 +63,6 @@ public abstract class WF_WindProducer : MonoBehaviour
 
     public override string ToString()
     {
-        return GetType() + " at " + transform.position + ", points: " + string.Join(", ", (object[])windPoints) + " at depth " + depth;  
+        return GetType() + " at " + transform.position;
     }
 }

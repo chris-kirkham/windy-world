@@ -56,15 +56,15 @@ public static class BezierCurves
     }
 
     /* Derivatives */
-    public static Vector3 GetFirstDerivLinear(Vector3 p0, Vector3 p1, float t)
+    public static Vector3 GetFirstDerivLinear(Vector3 p0, Vector3 p1)
     {
-        return Vector3.zero; //TODO
+        return p1 - p0;
     }
 
     public static Vector3 GetFirstDerivQuadratic(Vector3 p0, Vector3 p1, Vector3 p2, float t)
     {
         t = Mathf.Clamp01(t);
-        return (2f * (1f - 1) * (p1 - p0)) + (2f * t * (p2 - p1));
+        return (2f * (1f - t) * (p1 - p0)) + (2f * t * (p2 - p1));
     }
 
     /*
@@ -97,7 +97,7 @@ public static class BezierCurves
         switch (points.Length)
         {
             case 2:
-                return GetFirstDerivLinear(points[0], points[1], t);
+                return GetFirstDerivLinear(points[0], points[1]);
             case 3:
                 return GetFirstDerivQuadratic(points[0], points[1], points[2], t);
             case 4:

@@ -4,28 +4,26 @@ using UnityEngine;
 
 public class WF_Cell
 {
-    //public float size;
-
-    //Have different vectors for different wind modes (as opposed to one vector for the sum of all modes) 
-    //so we don't have to update all of them when updating one mode
+    //Have different vectors for different wind modes so we don't have to update all of them when updating one mode
     private Vector3 windDynamic;
     private Vector3 windStatic;
 
     private List<WF_WindPoint> windObjsDynamic { get; }
 
     public bool hasChild;
+    public readonly float cellSize;
 
-    public WF_Cell()
+    public WF_Cell(float cellSize)
     {
         windObjsDynamic = new List<WF_WindPoint>();
         
         windDynamic = Vector3.zero;
         windStatic = Vector3.zero;
-        
         hasChild = false;
+        this.cellSize = cellSize;
     }
 
-    public WF_Cell(List<WF_WindPoint> windObjsDynamic, List<WF_WindPoint> windObjsPositionStatic, List<WF_WindPoint> windObjsStatic)
+    public WF_Cell(List<WF_WindPoint> windObjsDynamic, List<WF_WindPoint> windObjsStatic, float cellSize)
     {
         this.windObjsDynamic = windObjsDynamic;
         UpdateWindDynamic();
@@ -34,6 +32,8 @@ public class WF_Cell
         foreach(WF_WindPoint w in windObjsStatic) windStatic += w.wind;
 
         hasChild = false;
+        this.cellSize = cellSize;
+
     }
 
     public WF_Cell(WF_Cell parent)
@@ -44,6 +44,7 @@ public class WF_Cell
         windStatic = parent.GetStaticWind();
 
         hasChild = false;
+        this.cellSize = parent.cellSize / 2;
     }
 
     //Adds given WindFieldPoint to the correct container by its static/dynamic type

@@ -21,7 +21,7 @@ public class WindFieldDebug : MonoBehaviour
     [Range(0, 1)] public float opacity = 1f;
     private List<Vector3[]> cellVertices; //list of vertices for each cell in the wind field 
 
-    private float updateInterval = 0f;
+    private float updateInterval = 0.1f;
 
 
     void Start()
@@ -46,20 +46,21 @@ public class WindFieldDebug : MonoBehaviour
             foreach (KeyValuePair<WF_HashKey, WF_Cell> kv in windField.GetCellDict())
             {
                 WF_HashKey key = kv.Key;
-                if (!arrowField.ContainsKey(key))
+                Vector3 wind = kv.Value.GetWind();
+                if(wind != Vector3.zero)
                 {
-                    arrowField[key] = Instantiate(windArrow);
-                    arrowField[key].transform.localScale *= (0.25f * windField.rootCellSize);
+                    if (!arrowField.ContainsKey(key))
+                    {
+                        arrowField[key] = Instantiate(windArrow);
+                        arrowField[key].transform.localScale *= windField.rootCellSize / Mathf.Pow(2, key.GetKey().Length);
+                    }
+                    arrowField[key].transform.position = windField.GetCellWorldPositionCentre(key);
+
+                    Debug.Log("wind = " + wind);
+                    //Vector3 wind = windField.GetWind(windField.GetCellWorldPosition(key));
+                    arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
+                    arrowField[key].transform.SetParent(arrowFieldContainer.transform);
                 }
-
-                arrowField[key].transform.position = windField.GetCellWorldPosition(key);
-
-                //Vector3 wind = kv.Value.GetWind();
-                Vector3 wind = windField.GetWind(windField.GetCellWorldPosition(key));
-                if (wind != Vector3.zero) arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
-
-                arrowField[key].transform.SetParent(arrowFieldContainer.transform);
-
             }
 
             yield return new WaitForSecondsRealtime(updateInterval);

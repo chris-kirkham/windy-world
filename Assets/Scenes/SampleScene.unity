@@ -674,7 +674,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 909549793}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 28815aed59c5cf9429b4b025e6b3ca51, type: 3}
   m_Name: 
@@ -836,6 +836,7 @@ GameObject:
   - component: {fileID: 1045369937}
   - component: {fileID: 1045369936}
   - component: {fileID: 1045369935}
+  - component: {fileID: 1045369938}
   m_Layer: 0
   m_Name: WindSpline
   m_TagString: Untagged
@@ -857,10 +858,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   windField: {fileID: 274793401}
   mode: 1
-  depth: 5
+  depth: 4
   priority: 0
   active: 1
-  windStrength: 10
+  dynamicUpdateInterval: 0
+  windStrength: 1
   samplesPerCurve: 10
 --- !u!114 &1045369936
 MonoBehaviour:
@@ -878,10 +880,10 @@ MonoBehaviour:
   - points:
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 1}
-    - {x: -0.19761872, y: 1.2349434, z: 2.413739}
+    - {x: -0.19761872, y: 2.3302207, z: 0.4017775}
   - points:
-    - {x: -0.19761872, y: 1.2349434, z: 2.413739}
-    - {x: -0.673681, y: 3.0160446, z: 4.068364}
+    - {x: -0.19761872, y: 2.3302207, z: 0.4017775}
+    - {x: -0.673681, y: 6.551169, z: -0.5937476}
     - {x: -2.5990868, y: 4.3236446, z: 9.0137005}
   - points:
     - {x: -2.5990868, y: 4.3236446, z: 9.0137005}
@@ -901,6 +903,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1045369938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045369934}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a710f68d510326844b07d1ff547edbb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showWindArrows: 1
+  updateInterval: 0
 --- !u!1 &1699983097
 GameObject:
   m_ObjectHideFlags: 0
