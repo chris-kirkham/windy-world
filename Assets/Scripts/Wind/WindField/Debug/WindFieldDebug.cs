@@ -16,7 +16,7 @@ public class WindFieldDebug : MonoBehaviour
     private Dictionary<WF_HashKey, GameObject> arrowField;
     private GameObject arrowFieldContainer; //empty parent object to hold arrows (just to keep editor tidy)
     public bool showWindArrows = false;
-    
+
     public bool showCellBorders = true;
     [Range(0, 1)] public float opacity = 1f;
     private List<Vector3[]> cellVertices; //list of vertices for each cell in the wind field 
@@ -38,7 +38,7 @@ public class WindFieldDebug : MonoBehaviour
 
     private IEnumerator UpdateWindArrows()
     {
-        while(showWindArrows)
+        while (showWindArrows)
         {
             //Update wind arrow visualisation with current wind directions. Definitely a faster way to do this
             //(e.g. have something in WindField that stores only updated wind directions (inc. new cells) in a List<key, windDir>
@@ -47,7 +47,7 @@ public class WindFieldDebug : MonoBehaviour
             {
                 WF_HashKey key = kv.Key;
                 Vector3 wind = kv.Value.GetWind();
-                if(wind != Vector3.zero)
+                if (wind != Vector3.zero)
                 {
                     if (!arrowField.ContainsKey(key))
                     {
@@ -68,13 +68,13 @@ public class WindFieldDebug : MonoBehaviour
 
         foreach (GameObject arrow in arrowField.Values) Destroy(arrow);
         arrowField.Clear();
-        
+
         yield return new WaitForSecondsRealtime(updateInterval);
     }
 
     private IEnumerator UpdateCellVertices()
     {
-        while(showCellBorders)
+        while (showCellBorders)
         {
             List<Vector3[]> verts = new List<Vector3[]>();
             List<KeyValuePair<WF_HashKey, WF_Cell>> kv = windField.GetCellDict().ToList();
@@ -97,7 +97,7 @@ public class WindFieldDebug : MonoBehaviour
 
     private void Update()
     {
-        if(showCellBorders && opacity > 0)
+        if (showCellBorders && opacity > 0)
         {
             foreach (Vector3[] verts in cellVertices)
             {

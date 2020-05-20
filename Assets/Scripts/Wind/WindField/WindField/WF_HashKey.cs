@@ -22,8 +22,8 @@ public struct WF_HashKey
 
         Vector3 parentPos = (Vector3)key[0] * rootCellSize;
         float cellSize = rootCellSize / 2;
-        
-        for(int i = 1; i <= depth; i++)
+
+        for (int i = 1; i <= depth; i++)
         {
             Vector3 relPos = pos - parentPos; //all child cell keys should be relative to their parent (so they will be in the range (0,0,0)..(1,1,1))
             key[i] = GetCellCoord(relPos, cellSize);
@@ -78,7 +78,7 @@ public struct WF_HashKey
         Vector3Int[] otherKey = other.GetKey();
         if (key.Length != otherKey.Length) return false;
 
-        for(int i = 0; i < key.Length; i++)
+        for (int i = 0; i < key.Length; i++)
         {
             if (key[i] != otherKey[i]) return false;
         }
@@ -90,7 +90,7 @@ public struct WF_HashKey
     public override int GetHashCode()
     {
         int hash = 17;
-        foreach(Vector3Int elem in key)
+        foreach (Vector3Int elem in key)
         {
             hash = hash * 29 * elem.GetHashCode();
         }

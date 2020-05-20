@@ -51,20 +51,5 @@ public class WindSpline : WF_WindProducer
 
         return points.ToArray();
     }
-
-
-    
-    private void OnDrawGizmosSelected()
-    {
-        WF_WindPoint[] wps = GetWindFieldPoints();
-        Gizmos.color = Color.cyan;
-        if (wps.Length > 0)
-        {
-            foreach(WF_WindPoint wp in wps)
-            {
-                Gizmos.DrawRay(wp.position, wp.wind);
-            }
-        }
-    }
     
 }
