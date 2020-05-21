@@ -4,47 +4,47 @@ using UnityEngine;
 
 public class WF_Cell
 {
-    //Have different vectors for different wind modes so we don't have to update all of them when updating one mode
+    //This cell's dynamic and static wind vectors. 
     private Vector3 windDynamic;
     private Vector3 windStatic;
 
+    //The list of dynamic wind points in this cell. 
     private List<WF_WindPoint> windObjsDynamic { get; }
 
+    //true if this cell has at least one child
     public bool hasChild;
+    
+    //the size of this cell. 
     public readonly float cellSize;
 
-    public WF_Cell(float cellSize)
+    //the world position of the least corner of this cell.
+    public readonly Vector3 worldPos;
+
+    //the world position of the centre of this cell.
+    public readonly Vector3 worldPosCentre;
+
+    public WF_Cell(float cellSize, Vector3 worldPos)
     {
         windObjsDynamic = new List<WF_WindPoint>();
-        
         windDynamic = Vector3.zero;
         windStatic = Vector3.zero;
         hasChild = false;
         this.cellSize = cellSize;
+        this.worldPos = worldPos;
+        float halfCellSize = cellSize / 2;
+        worldPosCentre = worldPos + new Vector3(halfCellSize, halfCellSize, halfCellSize);
     }
 
-    public WF_Cell(List<WF_WindPoint> windObjsDynamic, List<WF_WindPoint> windObjsStatic, float cellSize)
-    {
-        this.windObjsDynamic = windObjsDynamic;
-        UpdateWindDynamic();
-
-        windStatic = Vector3.zero;
-        foreach(WF_WindPoint w in windObjsStatic) windStatic += w.wind;
-
-        hasChild = false;
-        this.cellSize = cellSize;
-
-    }
-
-    public WF_Cell(WF_Cell parent)
+    public WF_Cell(WF_Cell parent, Vector3 worldPos)
     {
         this.windObjsDynamic = parent.windObjsDynamic;
         UpdateWindDynamic();
-        
         windStatic = parent.GetStaticWind();
-
         hasChild = false;
         this.cellSize = parent.cellSize / 2;
+        this.worldPos = worldPos;
+        float halfCellSize = cellSize / 2;
+        worldPosCentre = worldPos + new Vector3(halfCellSize, halfCellSize, halfCellSize);
     }
 
     //Adds given WindFieldPoint to the correct container by its static/dynamic type
@@ -103,11 +103,6 @@ public class WF_Cell
     public Vector3 GetStaticWind()
     {
         return windStatic;
-    }
-
-    public bool HasChild()
-    {
-        return hasChild;
     }
 
 }

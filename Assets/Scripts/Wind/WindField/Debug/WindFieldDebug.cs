@@ -63,6 +63,7 @@ public class WindFieldDebug : MonoBehaviour
                 }
             }
 
+            Debug.Log("number of wind arrows: " + arrowField.Count);
             yield return new WaitForSecondsRealtime(updateInterval);
         }
 

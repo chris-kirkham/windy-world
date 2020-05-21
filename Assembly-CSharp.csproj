@@ -87,7 +87,10 @@
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\WindSpline.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\WindSplineArea.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WindProducerMode.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\WindField\OctreeCell.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\WindField\OctreeCells.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\WF_Cell.cs" />
+    <Compile Include="Assets\Scripts\Wind\WindField\WindField\WF_Cells.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\WF_HashKey.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\WindField.cs" />
     <Reference Include="Unity.Timeline.Editor">
