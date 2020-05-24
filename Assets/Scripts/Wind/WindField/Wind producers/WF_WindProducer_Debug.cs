@@ -22,9 +22,11 @@ public class WF_WindProducer_Debug : MonoBehaviour
     private void Start()
     {
         windProducer = GetComponent<WF_WindProducer>();
-
+        Debug.Log("windProducer = " + windProducer);
         windArrowModel = Resources.Load<GameObject>("Debug/Wind/WindArrow");
         WF_WindPoint[] windPoints = windProducer.GetWindFieldPoints();
+        windPoints = new WF_WindPoint[0] { };
+        Debug.Log("windPoints: " + windPoints.Length);
         windArrows = new GameObject[windPoints.Length];
         windArrowContainer = new GameObject(windProducer.ToString() + " debug wind arrows");
         for(int i = 0; i < windPoints.Length; i++)

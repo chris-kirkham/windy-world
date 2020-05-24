@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -21,8 +22,9 @@ public class WindFieldDebug : MonoBehaviour
     [Range(0, 1)] public float opacity = 1f;
     private List<Vector3[]> cellVertices; //list of vertices for each cell in the wind field 
 
-    private float updateInterval = 0.1f;
+    private float updateInterval = 0f;
 
+    private float maxWindSqrMagnitude = 0f;
 
     void Start()
     {
@@ -32,68 +34,7 @@ public class WindFieldDebug : MonoBehaviour
         arrowFieldContainer = new GameObject("Wind field debug arrows");
         cellVertices = new List<Vector3[]>();
 
-        StartCoroutine(UpdateCellVertices());
-        StartCoroutine(UpdateWindArrows());
-    }
-
-    private IEnumerator UpdateWindArrows()
-    {
-        while (showWindArrows)
-        {
-            //Update wind arrow visualisation with current wind directions. Definitely a faster way to do this
-            //(e.g. have something in WindField that stores only updated wind directions (inc. new cells) in a List<key, windDir>
-            //and only loop through those)
-            foreach (KeyValuePair<WF_HashKey, WF_Cell> kv in windField.GetCellDict())
-            {
-                WF_HashKey key = kv.Key;
-                Vector3 wind = kv.Value.GetWind();
-                if (wind != Vector3.zero)
-                {
-                    if (!arrowField.ContainsKey(key))
-                    {
-                        arrowField[key] = Instantiate(windArrow);
-                        arrowField[key].transform.localScale *= windField.rootCellSize / Mathf.Pow(2, key.GetKey().Length);
-                    }
-                    arrowField[key].transform.position = windField.GetCellWorldPositionCentre(key);
-
-                    Debug.Log("wind = " + wind);
-                    //Vector3 wind = windField.GetWind(windField.GetCellWorldPosition(key));
-                    arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
-                    arrowField[key].transform.SetParent(arrowFieldContainer.transform);
-                }
-            }
-
-            Debug.Log("number of wind arrows: " + arrowField.Count);
-            yield return new WaitForSecondsRealtime(updateInterval);
-        }
-
-        foreach (GameObject arrow in arrowField.Values) Destroy(arrow);
-        arrowField.Clear();
-
-        yield return new WaitForSecondsRealtime(updateInterval);
-    }
-
-    private IEnumerator UpdateCellVertices()
-    {
-        while (showCellBorders)
-        {
-            List<Vector3[]> verts = new List<Vector3[]>();
-            List<KeyValuePair<WF_HashKey, WF_Cell>> kv = windField.GetCellDict().ToList();
-            for (int i = 0; i < kv.Count; i++)
-            {
-                float depth = kv[i].Key.GetKey().Length - 1;
-                Vector3 worldPos = windField.GetCellWorldPosition(kv[i].Key);
-                float cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
-                verts.Add(GetCellVertices(worldPos, cellSize));
-            }
-
-            cellVertices = verts;
-
-            yield return new WaitForSecondsRealtime(updateInterval);
-        }
-
-        yield return new WaitForSecondsRealtime(updateInterval);
-
+        StartCoroutine(UpdateDebugVis());
     }
 
     private void Update()
@@ -110,8 +51,78 @@ public class WindFieldDebug : MonoBehaviour
         }
     }
 
+    private IEnumerator UpdateDebugVis()
+    {
+        while(true)
+        {
+            List<WF_Cell> cells = windField.GetCells();
+            UpdateWindArrows(cells);
+            UpdateCellVertices(cells);
+            yield return new WaitForSecondsRealtime(updateInterval);
+        }
+    }
+
+    private void UpdateWindArrows(List<WF_Cell> cells) 
+    {
+        if (showWindArrows)
+        {
+            //Update wind arrow visualisation with current wind directions. Definitely a faster way to do this
+            //(e.g. have something in WindField that stores only updated wind directions (inc. new cells) in a List<key, windDir>
+            //and only loop through those)
+            maxWindSqrMagnitude = 0f;
+            List<Vector3> DEBUG_wind = new List<Vector3>(cells.Count);
+            foreach (WF_Cell cell in cells)
+            {
+                Vector3 wind = windField.GetWind(cell.worldPosCentre);
+                DEBUG_wind.Add(wind);
+                float sqrMag = wind.sqrMagnitude;
+                if (sqrMag > maxWindSqrMagnitude) maxWindSqrMagnitude = sqrMag;
+                if (wind != Vector3.zero)
+                {
+                    /*
+                    WF_HashKey key = new WF_HashKey(cell.worldPos, cell.cellSize);
+                    if (!arrowField.ContainsKey(key))
+                    {
+                        arrowField[key] = Instantiate(windArrow);
+                        arrowField[key].transform.localScale *= cell.cellSize;
+                    }
+
+                    arrowField[key].transform.position = cell.worldPosCentre;
+
+                    //Vector3 wind = windField.GetWind(windField.GetCellWorldPosition(key));
+                    arrowField[key].transform.rotation = Quaternion.LookRotation(wind);
+                    arrowField[key].transform.SetParent(arrowFieldContainer.transform);
+                    */
+
+                    Debug.DrawRay(cell.worldPosCentre, wind, Color.HSVToRGB(sqrMag / maxWindSqrMagnitude, 1, 1));
+                }
+            }
+
+            //Debug.Log("Wind: " + string.Join(", ", DEBUG_wind));
+            //Debug.Log("number of wind arrows: " + arrowField.Count);
+        }
+
+        foreach (GameObject arrow in arrowField.Values) Destroy(arrow);
+        arrowField.Clear();
+    }
+
+    private void UpdateCellVertices(List<WF_Cell> cells)
+    {
+        if (showCellBorders && opacity > 0)
+        {
+            List<Vector3[]> verts = new List<Vector3[]>();
+            foreach(WF_Cell cell in cells)
+            {
+                verts.Add(GetCellVertices(cell.worldPos, cell.cellSize));
+            }
+
+            cellVertices = verts;
+        }
+    }
+
+    
     //Gets a cell's vertices, assuming its input pos is bottom-left vertex
-    Vector3[] GetCellVertices(Vector3 pos, float cellSize)
+    private Vector3[] GetCellVertices(Vector3 pos, float cellSize)
     {
         Vector3[] vertices = new Vector3[8];
 
@@ -134,7 +145,7 @@ public class WindFieldDebug : MonoBehaviour
     }
 
     //Draws cell edges using Debug.DrawLine, given the list of vertices from GetCellVertices()
-    void DrawCellDebug(Vector3[] verts, Color c)
+    private void DrawCellDebug(Vector3[] verts, Color c)
     {
         /*
         if(verts.Length != 8)

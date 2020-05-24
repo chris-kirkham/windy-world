@@ -18,7 +18,7 @@ public abstract class WF_WindProducer : MonoBehaviour
     private WF_WindPoint[] windPoints;
     private float cellSize; //Actual size of the wind field cell at cellDepth
 
-    void Start()
+    protected virtual void Start()
     {
         if (windField == null) Debug.LogError("No wind field given for WindFieldProducer " + ToString() + "!");
         cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
@@ -26,6 +26,10 @@ public abstract class WF_WindProducer : MonoBehaviour
         AddToWindField();
         StartCoroutine(UpdateWindFieldPoints());
     }
+
+    //Initialise properties for wind producer subclasses. Called in Awake()
+    //better than calling base.Awake in subclass???
+    //protected virtual void Initialise() { }
 
     //Returns an approximation of the wind producer in the form of individual WindFieldPoint(s) to be added to wind field cells.
     //

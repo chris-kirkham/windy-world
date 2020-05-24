@@ -22,11 +22,12 @@ public class WindSplineArea : WF_WindProducer
         set { width = value; halfWidth = value / 2; }
     }
 
-    void Start()
+    protected override void Start()
     {
         spline = new BezierSpline();
         startPlane = new Vector3[4];
         endPlane = new Vector3[4];
+        base.Start();
     }
 
     protected override WF_WindPoint[] CalcWindFieldPoints()

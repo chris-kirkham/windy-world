@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -28,10 +29,9 @@ public class WindField : MonoBehaviour
 
     private WF_Cells cells;
     private List<WF_WindProducer> dynamicProducers;
-    //private List<WindField_WindPoint> dynamicWindPoints; //stores dynamic-mode WindFieldPoints included in the wind field - these need to be updated every update interval
     private float updateInterval = 0.2f;
 
-    private void Awake()
+    private void Start()
     {
         //create initial cells
         cells = GetComponent<WF_Cells>();
@@ -49,7 +49,7 @@ public class WindField : MonoBehaviour
                     (
                         //new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize) + new Vector3(Random.Range(0, rootCellSize), Random.Range(0, rootCellSize), Random.Range(0, rootCellSize)),
                         new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize),
-                        Vector3.zero,
+                        Vector3.forward,
                         0,
                         0,
                         WindProducerMode.Static
@@ -114,12 +114,10 @@ public class WindField : MonoBehaviour
         return wind;
     }
 
-    /*
-    public Dictionary<WF_HashKey, WF_Cell> GetCellDict()
+    public List<WF_Cell> GetCells()
     {
-        return cells;
+        return cells.GetCells();
     }
-    */
 
     //Get the world position of the cell with the given hash key. Note that this returns the
     //leastmost corner of the cell, not its centre (so a cell with bounds from (0,0,0) to (1,1,1)
@@ -154,6 +152,19 @@ public class WindField : MonoBehaviour
 
         //add half of deepest cell size in each dimension to get centre of deepest cell
         return worldPos + new Vector3(cellSize, cellSize, cellSize);
+    }
+
+    /* DEBUG FUNCTIONS */
+    //Returns the world position and size of all cells in the wind field. I can only see this being used as a debug/visualisation helper
+    public List<Tuple<Vector3, float>> DEBUG_GetCellsWorldPosAndSize()
+    {
+        return cells.DEBUG_GetCellsWorldPosAndSize();
+    }
+
+    //Returns the world positions of the centre of each cell.
+    public List<Vector3> DEBUG_GetCellWorldPositionsCentre()
+    {
+        return cells.DEBUG_GetCellWorldPositionsCentre();
     }
 
 }

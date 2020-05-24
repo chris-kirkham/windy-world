@@ -6,15 +6,15 @@ using UnityEngine;
 public class WindSpline : WF_WindProducer
 {
     private BezierSpline spline;
-
     public float windStrength = 1;
 
     [Range(1, 100)] public int samplesPerCurve = 1;
     private float tInterval;
-    void Awake()
+    protected override void Start()
     {
         spline = GetComponent<BezierSpline>();
         tInterval = 1f / (float)samplesPerCurve;
+        base.Start();
     }
 
     /*

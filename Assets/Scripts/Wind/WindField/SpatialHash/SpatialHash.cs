@@ -42,11 +42,11 @@ public class SpatialHash<T> : MonoBehaviour where T : HashCell, new()
         int halfCellsY = initNumCellsY / 2;
         int halfCellsZ = initNumCellsZ / 2;
 
-        for (int i = -halfCellsX; i < halfCellsX; ++i)
+        for (int i = -halfCellsX; i < halfCellsX; i++)
         {
-            for (int j = 0; j < initNumCellsY; ++j)
+            for (int j = -halfCellsY; j < halfCellsY; j++)
             {
-                for (int k = -halfCellsZ; k < halfCellsZ; ++k)
+                for (int k = -halfCellsZ; k < halfCellsZ; k++)
                 {
                     Vector3Int key = Key(new Vector3(i * cellSize.x, j * cellSize.y, k * cellSize.z));
                     cells.Add(key, new T()); //initialise empty cell
