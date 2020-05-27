@@ -126,27 +126,30 @@ public class BezierSplineInspector : Editor
         {
             if (selectedCurveType == CurveType.Line)
             {
-                spline.AddCurve(new Vector3[2] { Vector3.zero, Vector3.right });
+                spline.AddCurve(new Vector3[2] { Vector3.zero, Vector3.forward });
             }
             else if(selectedCurveType == CurveType.Quadratic)
             {
-                spline.AddCurve(new Vector3[3] { Vector3.zero, Vector3.right, new Vector3(2f, 0f, 0f) });
+                spline.AddCurve(new Vector3[3] { Vector3.zero, Vector3.forward, new Vector3(0f, 0f, 2f) });
             }
             else //cubic
             {
-                spline.AddCurve(new Vector3[4] 
+                spline.AddCurve
+                (new Vector3[4] 
                     {
                         Vector3.zero,
-                        Vector3.right,
-                        new Vector3(2f, 0f, 0f),
-                        new Vector3(3f, 0f, 0f)
+                        Vector3.forward,
+                        new Vector3(0f, 0f, 2f),
+                        new Vector3(0f, 0f, 3f)
                     }
                 );
             }
         }
 
         selectedCurveType = (CurveType)EditorGUILayout.EnumPopup(selectedCurveType);
+        if (GUILayout.Button("Delete last curve")) spline.DeleteLastCurve();
         GUILayout.EndHorizontal();
+
 
         GUILayout.BeginHorizontal();
         showTangents = GUILayout.Button("Show tangents");

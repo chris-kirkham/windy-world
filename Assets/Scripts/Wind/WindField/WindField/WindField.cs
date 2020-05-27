@@ -49,7 +49,7 @@ public class WindField : MonoBehaviour
                     (
                         //new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize) + new Vector3(Random.Range(0, rootCellSize), Random.Range(0, rootCellSize), Random.Range(0, rootCellSize)),
                         new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize),
-                        Vector3.forward,
+                        Vector3.zero,
                         0,
                         0,
                         WindProducerMode.Static
@@ -122,6 +122,7 @@ public class WindField : MonoBehaviour
     //Get the world position of the cell with the given hash key. Note that this returns the
     //leastmost corner of the cell, not its centre (so a cell with bounds from (0,0,0) to (1,1,1)
     //would return (0,0,0), not (0.5,0.5,0.5))
+    /*
     public Vector3 GetCellWorldPosition(WF_HashKey key)
     {
         Vector3Int[] k = key.GetKey();
@@ -153,6 +154,7 @@ public class WindField : MonoBehaviour
         //add half of deepest cell size in each dimension to get centre of deepest cell
         return worldPos + new Vector3(cellSize, cellSize, cellSize);
     }
+    */
 
     /* DEBUG FUNCTIONS */
     //Returns the world position and size of all cells in the wind field. I can only see this being used as a debug/visualisation helper

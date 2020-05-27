@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class SpatialHashKey : WF_HashKey<Vector3Int>
 {
-    private Vector3Int key;
-
     public SpatialHashKey(Vector3 pos, float cellSize)
     {
         key = GetCellCoord(pos, cellSize);

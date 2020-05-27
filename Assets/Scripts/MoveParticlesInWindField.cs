@@ -5,14 +5,18 @@ using UnityEngine;
 [RequireComponent(typeof(ParticleSystem))]
 public class MoveParticlesInWindField : MonoBehaviour
 {
-    private ParticleSystem particles;
     public WindField windField;
     public bool active = true;
+    public float mass = 1f; 
+
+    private ParticleSystem particles;
+    //private Vector3[] particleVelocities;
 
     private void Start()
     {
         particles = GetComponent<ParticleSystem>();
         if (windField == null) Debug.LogError("No wind field given for particles " + ToString() + "!");
+        
     }
 
     private void Update()
@@ -25,7 +29,9 @@ public class MoveParticlesInWindField : MonoBehaviour
             for (int i = 0; i < particlesCopy.Length; i++)
             {
                 Vector3 pos = particlesCopy[i].position;
-                particlesCopy[i].position = Vector3.MoveTowards(pos, pos + windField.GetWind(pos), 1f);
+                //particlesCopy[i].position = Vector3.MoveTowards(pos, pos + windField.GetWind(pos), 1f);
+                //particlesCopy[i].velocity = (particlesCopy[i].velocity * decelMultiplier) + windField.GetWind(pos);
+                particlesCopy[i].velocity += windField.GetWind(pos);
             }
 
             particles.SetParticles(particlesCopy);

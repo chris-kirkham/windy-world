@@ -26,13 +26,6 @@ public abstract class WF_Cells : MonoBehaviour
 
     public abstract List<WF_Cell> GetCells();
 
-    //Returns the world position of the least corner of the cell corresponding to the given key.
-    //For example, a cell with bounds (4, 4, 4) to (8, 8, 8) would return (4, 4, 4)
-    public abstract Vector3 GetCellWorldPos(WF_HashKey key);
-
-    //Returns the world position of the centre of the cell corresponding to the given key.
-    public abstract Vector3 GetCellWorldPosCentre(WF_HashKey key);
-
     public abstract void UpdateCells(List<WF_WindProducer> dynamicProducers);
 
     //Returns the number of cells in the data structure.

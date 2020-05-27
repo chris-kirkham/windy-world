@@ -26,19 +26,32 @@ public class BezierSpline : MonoBehaviour
         }
         else
         {
-            //add new curve to spline; make first point of new curve be at same position as last point of previous curve
-            Vector3[] lastCurve = curves[curves.Count - 1].points;
-            Vector3 lastPoint = lastCurve[lastCurve.Length - 1]; //current last point of last curve of spline
-
-            Vector3[] movedPoints = new Vector3[points.Length];
-            for (int i = 0; i < points.Length; i++)
+            //add new curve to spline
+            if (curves.Count > 0)
             {
-                movedPoints[i] = points[i] + lastPoint;
-            }
-            Points newCurve = new Points(movedPoints);
+                //make first point of new curve be at same position as last point of previous curve
+                Vector3[] lastCurve = curves[curves.Count - 1].points;
+                Vector3 lastPoint = lastCurve[lastCurve.Length - 1]; //current last point of last curve of spline
 
-            curves.Add(newCurve);
+                Vector3[] movedPoints = new Vector3[points.Length];
+                for (int i = 0; i < points.Length; i++)
+                {
+                    movedPoints[i] = points[i] + lastPoint;
+                }
+                Points newCurve = new Points(movedPoints);
+
+                curves.Add(newCurve);
+            }
+            else
+            {
+                curves.Add(new Points(points));
+            }
         }
+    }
+
+    public void DeleteLastCurve()
+    {
+        if(curves.Count > 0) curves.RemoveAt(curves.Count - 1);
     }
 
     public Vector3 GetPoint(int curveIndex, float t)

@@ -64,7 +64,7 @@ public class OctreeCells : WF_Cells
             }
         }
 
-        //Debug.Log("Cell added: " + cells[key] + "; wind: " + cells[key].GetWind());
+        Debug.Log("Cell added: " + cells[key] + "; wind: " + cells[key].GetWind());
     }
 
     /*
@@ -162,7 +162,7 @@ public class OctreeCells : WF_Cells
     //Get the world position of the cell with the given hash key. Note that this returns the
     //leastmost corner of the cell, not its centre (so a cell with bounds from (0,0,0) to (1,1,1)
     //would return (0,0,0), not (0.5,0.5,0.5))
-    public Vector3 GetCellWorldPos(OctreeKey key)
+    private Vector3 GetCellWorldPos(OctreeKey key)
     {
         Vector3Int[] k = key.GetKey();
         Vector3 worldPos = (Vector3)k[0] * rootCellSize;
@@ -178,7 +178,7 @@ public class OctreeCells : WF_Cells
     }
 
     //Get the world position of the centre of the cell with the given hash key.
-    public override Vector3 GetCellWorldPosCentre(OctreeKey key)
+    private Vector3 GetCellWorldPosCentre(OctreeKey key)
     {
         Vector3Int[] k = key.GetKey();
         Vector3 worldPos = ((Vector3)k[0] * rootCellSize);
@@ -193,6 +193,7 @@ public class OctreeCells : WF_Cells
         //add half of deepest cell size in each dimension to get centre of deepest cell
         return worldPos + new Vector3(cellSize, cellSize, cellSize);
     }
+    
 
     public override void UpdateCells(List<WF_WindProducer> dynamicProducers)
     {

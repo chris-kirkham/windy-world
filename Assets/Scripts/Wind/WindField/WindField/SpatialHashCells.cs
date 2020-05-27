@@ -65,14 +65,14 @@ public class SpatialHashCells : WF_Cells
     //For example, a cell with bounds (4, 4, 4) to (8, 8, 8) would return (4, 4, 4)
     private Vector3 GetCellWorldPos(SpatialHashKey key)
     {
-        return (Vector3)key.GetKey()[0] * cellSize;
+        return (Vector3)key.GetKey() * cellSize;
     }
 
     //Returns the world position of the centre of the cell corresponding to the given key.
     private Vector3 GetCellWorldPosCentre(SpatialHashKey key)
     {
         float halfCellSize = cellSize / 2;
-        return ((Vector3)key.GetKey()[0] * cellSize) + new Vector3(halfCellSize, halfCellSize, halfCellSize);
+        return ((Vector3)key.GetKey() * cellSize) + new Vector3(halfCellSize, halfCellSize, halfCellSize);
     }
 
     public override void UpdateCells(List<WF_WindProducer> dynamicProducers)

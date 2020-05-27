@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class OctreeKey : WF_HashKey<Vector3Int[]>
 {
-    private Vector3Int[] key;
-
     //constructor generates the hash key
     public OctreeKey(Vector3 pos, float rootCellSize, uint depth) 
     {

@@ -11,10 +11,9 @@ using UnityEngine.SocialPlatforms;
 [RequireComponent(typeof(WindField))]
 public class WindFieldDebug : MonoBehaviour
 {
-    //Arrow model to visualise wind directions
     private WindField windField;
     private GameObject windArrow;
-    private Dictionary<WF_HashKey, GameObject> arrowField;
+    //private Dictionary<WF_HashKey, GameObject> arrowField;
     private GameObject arrowFieldContainer; //empty parent object to hold arrows (just to keep editor tidy)
     public bool showWindArrows = false;
 
@@ -30,7 +29,7 @@ public class WindFieldDebug : MonoBehaviour
     {
         windField = GetComponent<WindField>();
         windArrow = Resources.Load<GameObject>("Debug/Wind/WindArrow");
-        arrowField = new Dictionary<WF_HashKey, GameObject>();
+        //arrowField = new Dictionary<WF_HashKey, GameObject>();
         arrowFieldContainer = new GameObject("Wind field debug arrows");
         cellVertices = new List<Vector3[]>();
 
@@ -102,8 +101,8 @@ public class WindFieldDebug : MonoBehaviour
             //Debug.Log("number of wind arrows: " + arrowField.Count);
         }
 
-        foreach (GameObject arrow in arrowField.Values) Destroy(arrow);
-        arrowField.Clear();
+        //foreach (GameObject arrow in arrowField.Values) Destroy(arrow);
+        //arrowField.Clear();
     }
 
     private void UpdateCellVertices(List<WF_Cell> cells)

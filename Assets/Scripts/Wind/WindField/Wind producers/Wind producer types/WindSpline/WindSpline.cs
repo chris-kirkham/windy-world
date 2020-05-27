@@ -17,13 +17,11 @@ public class WindSpline : WF_WindProducer
         base.Start();
     }
 
-    /*
     private void Update()
     {
         if(mode == WindProducerMode.Dynamic) tInterval = 1f / (float)samplesPerCurve;
     }
-    */
-
+    
     /*
     protected override WF_WindPoint[] CalcWindFieldPoints()
     {
@@ -35,7 +33,6 @@ public class WindSpline : WF_WindProducer
             for(int i = 1; i < points.Length; i++) curveLength += Vector3.Distance(points[i - 1], points[i]);
 
         }
-
     }
     */
 
