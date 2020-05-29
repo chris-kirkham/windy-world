@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\ComputeTestScript.cs" />
     <Compile Include="Assets\Scripts\MoveParticlesInWindField.cs" />
     <Compile Include="Assets\Scripts\Noise\Perlin.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\SpatialHashKey.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\WindField.cs" />
     <Compile Include="Assets\TEST_SpawnTestPhysObjs.cs" />
+    <None Include="Assets\Scripts\ComputeTest.compute" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>

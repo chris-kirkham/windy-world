@@ -22,7 +22,5 @@ public class TEST_SpawnTestPhysObjs : MonoBehaviour
             obj.GetComponent<Renderer>().material.SetColor("_Color", Color.HSVToRGB(Random.value, 1, 1));
             obj.transform.SetParent(transform);
         }
-    
     }
-
 }
