@@ -13,7 +13,7 @@ using UnityEngine;
 [RequireComponent(typeof(WF_Cells))]
 public class WindField : MonoBehaviour
 {
-    public float rootCellSize = 1;
+    [Range(0.1f, 100f)] public float rootCellSize = 1;
     public Vector3Int initNumRootCells;
 
     //If true, factor in a global wind vector when getting wind from cells; this vector will also be the default wind vector for new cells,

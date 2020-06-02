@@ -24,9 +24,9 @@ public class PlayerMovement : MonoBehaviour
     public float acceleration = 1f; //force multiplier to control ground acceleration 
     public float slowForce = 1f; //used to slow/stop character when not inputting a direction. Essentially manual drag for player movement 
 
-    /* if true, while accelerating, character will remain at one speed (walk/run) for a set time before accelerating to the next-highest speed.
-     * if false, character will continuously accelerate up to the max ground speed. */
-    public bool steppedSpeed = true; 
+    //if true, while accelerating, character will remain at one speed (walk/run) for a set time before accelerating to the next-highest speed.
+    //if false, character will continuously accelerate up to the max ground speed.
+    public bool steppedSpeed = false; 
     public int speedStayTimer = 200; //time in ms to stay at one speed before moving to the next when using steppedSpeed
 
     /* air speed attributes */
@@ -58,7 +58,6 @@ public class PlayerMovement : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(lastNonZeroInput);
         //transform.rotation = Quaternion.Lerp(rb.rotation, Quaternion.LookRotation(lastNonZeroInput), 1 / rb.velocity.sqrMagnitude);
         //rb.AddForce(CalcMovement(moveInput), ForceMode.Force);
-
         //Debug.Log("Speed = " + rb.velocity.magnitude);
 
     }
@@ -76,35 +75,25 @@ public class PlayerMovement : MonoBehaviour
     
     Vector3 CalcMovement(Vector3 moveInput)
     {
-        throw new NotImplementedException();
-
-        //limit speed by not adding more force to player if already at max ground/air speed
-        if (isOnGround)
-        {
-            if(rb.velocity.sqrMagnitude <= sqrSprintSpeed) return CalcGroundMvmt(moveInput); 
-        }
-        else
-        {
-        }
-
+        return isOnGround ? CalcGroundMvmt(moveInput) : CalcAirMvmt(moveInput);
     }
     
     Vector3 CalcGroundMvmt(Vector3 moveInput)
     {
-        throw new NotImplementedException();
-
-        if (!steppedSpeed)
+        /*
+        if (steppedSpeed)
         {
-            
             
         }
         else
         {
             
         }
-        
+        */
+
+        return (moveInput * walkSpeed) + CalcSlowForce(moveInput, slowForce);
     }
-    
+
     Vector3 CalcAirMvmt(Vector3 moveInput)
     {
         throw new NotImplementedException();
@@ -123,15 +112,18 @@ public class PlayerMovement : MonoBehaviour
     //Check if player is standing on the ground
     private bool IsOnGround()
     {
-        //check colliding with surface
+        //Fire rays down from positions around player
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 2f))
-        {
-            //check surface angle
-            if (Vector3.Angle(hit.normal, Vector3.down) < maxWalkableAngle) return true;
-        }
+        float avgAngle = -1f; //Vector3.Angle always returns positive (Vector3.SignedAngle doesn't) so if this is still -1 after the raycasts, they mustn't have hit anything
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.down);
+        if (Physics.Raycast(transform.position + Vector3.forward, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.down);
+        if (Physics.Raycast(transform.position + Vector3.right, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.down);
+        if (Physics.Raycast(transform.position + Vector3.back, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.down);
+        if (Physics.Raycast(transform.position + Vector3.left, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.down);
+        avgAngle /= 5;
 
-        return false;
+        return (avgAngle >= 0) && (avgAngle < maxWalkableAngle);
+
     }
 
 }

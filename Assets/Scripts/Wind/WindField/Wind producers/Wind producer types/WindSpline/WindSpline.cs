@@ -22,20 +22,6 @@ public class WindSpline : WF_WindProducer
         if(mode == WindProducerMode.Dynamic) tInterval = 1f / (float)samplesPerCurve;
     }
     
-    /*
-    protected override WF_WindPoint[] CalcWindFieldPoints()
-    {
-        //approximate length of each curve by summing distance between control points
-        foreach(Points curve in spline.curves)
-        {
-            float curveLength = 0f;
-            Vector3[] points = curve.points;
-            for(int i = 1; i < points.Length; i++) curveLength += Vector3.Distance(points[i - 1], points[i]);
-
-        }
-    }
-    */
-
     //Fast but very simple way of getting wind points, with no guarantee that the number of points will match up with the wind field cells
     //(i.e. that there will be no missed cells or multiple points per cell)
     protected override WF_WindPoint[] CalcWindFieldPoints()
@@ -48,5 +34,24 @@ public class WindSpline : WF_WindProducer
 
         return points.ToArray();
     }
-    
+
+    private void OnDrawGizmos()
+    {
+        /*
+        for (int i = 0; i < spline.curves.Count; i++)
+        {
+            for (float t = 0; t < 1; t += tInterval)
+            {
+                Vector3 pos = spline.GetWorldPoint(i, t);
+                Gizmos.color = Color.blue;
+                Gizmos.DrawRay(pos, spline.GetWorldDir(i, t).normalized);
+                Gizmos.color = Color.red;
+                Gizmos.DrawRay(pos, -transform.right);
+                Gizmos.color = Color.green;
+                Gizmos.DrawRay(pos, Vector3.Cross(-transform.right, spline.GetWorldDir(i, t).normalized));
+            }
+        }
+        */
+    }
+
 }

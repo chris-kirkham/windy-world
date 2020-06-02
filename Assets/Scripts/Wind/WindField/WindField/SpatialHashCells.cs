@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class SpatialHashCells : WF_Cells
 {
-    public float cellSize;
+    [Range(0.1f, 100f)] public float cellSize = 1;
 
     private Dictionary<SpatialHashKey, WF_Cell> cells;
 

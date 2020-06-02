@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class OctreeCells : WF_Cells
 {
-    public float rootCellSize;
+    [Range(0.1f, 100f)] public float rootCellSize = 1;
     public Vector3Int initNumRootCells;
 
     private Dictionary<OctreeKey, OctreeCell> cells;

@@ -50,6 +50,7 @@ public class MoveParticlesInWindField : MonoBehaviour
             if (i == particlesCopy.Length) i = 0;
             particles.SetParticles(,, i - 1);
             */
+
             yield return new WaitForSecondsRealtime(updateInterval);
         }
 

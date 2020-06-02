@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,28 +17,28 @@ public abstract class WF_WindProducer : MonoBehaviour
     public float dynamicUpdateInterval = 0f; 
 
     private WF_WindPoint[] windPoints;
-    private float cellSize; //Actual size of the wind field cell at cellDepth
+    protected float cellSize; //Actual size of the wind field cell at cellDepth
 
     protected virtual void Start()
     {
-        if (windField == null) Debug.LogError("No wind field given for WindFieldProducer " + ToString() + "!");
+        if (windField == null)
+        {
+            throw new NullReferenceException("No wind field given for WindFieldProducer " + ToString() + "!");
+        }
+
         cellSize = windField.rootCellSize / Mathf.Pow(2, depth);
         windPoints = CalcWindFieldPoints();
         AddToWindField();
         StartCoroutine(UpdateWindFieldPoints());
     }
 
-    //Initialise properties for wind producer subclasses. Called in Awake()
-    //better than calling base.Awake in subclass???
-    //protected virtual void Initialise() { }
-
-    //Returns an approximation of the wind producer in the form of individual WindFieldPoint(s) to be added to wind field cells.
-    //
-    //Each wind producer must specify one or more WindFieldPoints (a point in space which holds a wind vector 
-    //and other data about how the wind field should handle that point) in this function; the wind field adds these points
-    //to its corresponding positional cells. 
-    //
-    //The points returned by this function should be an approximation of the wind producer's shape and wind vector(s). 
+    /*Returns an approximation of the wind producer in the form of individual WindFieldPoint(s) to be added to wind field cells.
+     *
+     *Each wind producer must specify one or more WindFieldPoints (a point in space which holds a wind vector 
+     *and other data about how the wind field should handle that point) in this function; the wind field adds these points
+     *to its corresponding positional cells.    
+     *
+     *The points returned by this function should be an approximation of the wind producer's shape and wind vector(s). */
     protected abstract WF_WindPoint[] CalcWindFieldPoints();
     
     protected IEnumerator UpdateWindFieldPoints()
@@ -60,10 +61,12 @@ public abstract class WF_WindProducer : MonoBehaviour
         windField.Include(this);
     }
 
+    /*
     //Removes this object from the wind field.
     public void RemoveFromWindField()
     {
     }
+    */
 
     public override string ToString()
     {
