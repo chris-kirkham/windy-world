@@ -63,15 +63,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindArea\Editor\WindAreaInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\BezierCurveInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\BezierSplineInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\LineInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\SplineUIParams.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\CurveArrowVis.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\LineArrowVis.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\SplineArrowVis.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\WindArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindArea\Editor\WindAreaInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\BezierCurveInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\BezierSplineInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\LineInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\SplineUIParams.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\CurveArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\LineArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\SplineArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\WindArrowVis.cs" />
     <None Include="Assets\Shaders\Editor\Wind\WindArrow.shader" />
     <Reference Include="UnityEditor.TestRunner">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>

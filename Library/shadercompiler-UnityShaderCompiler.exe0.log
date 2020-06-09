@@ -1,2 +1,28 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2019.3.10f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2019.3.10f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
+Cmd: preprocessCompute
+  insize=1283 outsize=1282 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at WindArea_CalcWindPoints.compute(29): implicit truncation of vector type
+  error: 1 plat 4 at WindArea_CalcWindPoints.compute(30): implicit truncation of vector type
+  api=4 insize=1282 outsize=1027 ok=1
+Cmd: preprocessCompute
+  insize=1280 outsize=1279 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at WindArea_CalcWindPoints.compute(30): implicit truncation of vector type
+  api=4 insize=1279 outsize=1027 ok=1
+Cmd: preprocessCompute
+  insize=1271 outsize=1270 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(30): invalid subscript 'windDir'
+  api=4 insize=1270 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=1268 outsize=1267 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(30): incorrect number of arguments to numeric-type constructor
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(30): undeclared identifier 'wind'
+  api=4 insize=1267 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=1257 outsize=1256 ok=1
+Cmd: compileComputeKernel
+  api=4 insize=1256 outsize=1024 ok=1
