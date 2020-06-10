@@ -65,7 +65,7 @@ public class WF_Cell
         windObjsDynamic.Add(obj);
         //windDynamic += obj.wind;
     }
-    
+
     private void AddStatic(WF_WindPoint obj)
     {
         windStatic += obj.wind;

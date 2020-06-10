@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Cameras\ThirdPersonFollow.cs" />
     <Compile Include="Assets\Scripts\ComputeTestScript.cs" />
     <Compile Include="Assets\Scripts\MoveParticlesInWindField.cs" />
     <Compile Include="Assets\Scripts\Noise\Perlin.cs" />
@@ -92,7 +93,6 @@
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\BaseCurves\Line.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\BaseCurves\Points.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Static\BezierCurves.cs" />
-    <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\WindSpline.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\WindProducerMode.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\Base\WF_Cell.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\Base\WF_Cells.cs" />
