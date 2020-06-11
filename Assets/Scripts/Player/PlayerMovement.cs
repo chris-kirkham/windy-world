@@ -66,10 +66,11 @@ public class PlayerMovement : MonoBehaviour
     {
         float inputHorizontal = Input.GetAxis("Horizontal");
         float inputVertical = Input.GetAxis("Vertical");
-        
-        Vector3 moveInput = new Vector3(inputHorizontal, 0.0f, inputVertical);
-        moveInput = playerCamera.transform.TransformDirection(moveInput); //transform movement input so its direction is relative to the camera
-        
+
+        //transform movement input so its direction is relative to the camera
+        Vector3 moveInput = playerCamera.transform.TransformDirection(new Vector3(inputHorizontal, 0f, inputVertical));
+        moveInput.y = 0f; //zero y so player doesn't try to move up towards camera if it's above them
+
         return moveInput;
     }
     
