@@ -52,7 +52,7 @@ public class WindArea : WF_WindProducer
         }
         
         stopwatch.Stop();
-        Debug.Log("WindArea update time: " + stopwatch.ElapsedMilliseconds);
+        //Debug.Log("WindArea update time: " + stopwatch.ElapsedMilliseconds);
         
         return points.ToArray();
     }

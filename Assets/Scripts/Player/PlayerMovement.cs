@@ -55,7 +55,7 @@ public class PlayerMovement : MonoBehaviour
         Vector3 moveForce = (moveInput * walkSpeed) + CalcSlowForce(moveInput, slowForce);
         rb.AddForce(moveForce, ForceMode.Force);
         if(moveInput != Vector3.zero) lastNonZeroInput = moveInput;
-        transform.rotation = Quaternion.LookRotation(lastNonZeroInput);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lastNonZeroInput), Time.deltaTime * 2);
         //transform.rotation = Quaternion.Lerp(rb.rotation, Quaternion.LookRotation(lastNonZeroInput), 1 / rb.velocity.sqrMagnitude);
         //rb.AddForce(CalcMovement(moveInput), ForceMode.Force);
         //Debug.Log("Speed = " + rb.velocity.magnitude);

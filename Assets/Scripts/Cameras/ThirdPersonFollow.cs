@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 /// <summary>
@@ -9,9 +11,17 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class ThirdPersonFollow : MonoBehaviour
 {
+
+    /* COMPONENTS */
     private Camera cam;
     private CameraShakeController camShakeController;
     public GameObject followTarget;
+
+    /* MISC/CAMERA ATTRIBUTES */
+    private Vector3 currentCamVelocity = Vector3.zero; //this just keeps track of the camera's velocity, changing it doesn't change the camera's velocity
+    private Vector3 lastCamPosition;
+    private Vector3[] nearClipPaneCornersLocal;
+
 
     /* TARGET FOLLOW - POSITION */
     [Header("Target position following")]
@@ -27,9 +37,12 @@ public class ThirdPersonFollow : MonoBehaviour
 
     [Tooltip("Desired offset lerp speed multiplier")]
     public float offsetLerpSpeed = 1f;
-    
-    [Tooltip("If using interpolation, camera will not go beyond these offset values UNLESS it is avoiding geometry/occlusion")]
-    public Vector3 maxOffsetFromTarget = Vector3.zero;
+
+    //[Tooltip("If using interpolation, camera will not go beyond these offset values UNLESS it is avoiding geometry/occlusion")]
+    //public Vector3 maxOffsetFromTarget = Vector3.zero;
+    public float minDistanceFromTarget = 1f;
+    public float maxDistanceFromTarget = 10f;
+    private float sqrMinDistanceFromTarget, sqrMaxDistanceFromTarget;
 
     /* TARGET FOLLOW - ROTATION */
     public bool lookAtTarget = true;
@@ -49,20 +62,27 @@ public class ThirdPersonFollow : MonoBehaviour
 
     /* OBSTACLE AVOIDANCE */
     [Header("Obstacle avoidance")]
-    [Tooltip("Distance at which camera begins to move away from geometry (interpolated) - if not desired, set to equal hard avoid distance")]
-    public float softAvoidDistance = 0f;
-
-    [Tooltip("Soft obstacle avoidance lerp speed multiplier")]
-    public float softAvoidLerpSpeed = 1f;
-    
-    [Tooltip("Minimum camera-geometry distance to maintain - cannot be more than soft avoid distance")]
-    public float hardAvoidDistance = 0f;
-
-    [Tooltip("Number of rays to cast around camera to detect geometry")]
-    public int avoidRays = 4;
+    [Tooltip("Minimum camera-geometry distance to maintain")]
+    public float minDistanceFromGeometry = 1f;
 
     /* OCCLUSION AVOIDANCE */
     [Header("Occlusion avoidance")]
+    [Tooltip("Enables pre-emptive camera movement for occlusion avoidance (casts \"whisker\" rays backwards in a circle from follow target to find" +
+        "any objects which may soon occlude target")]
+    public bool preemptiveOcclusionAvoidance = true;
+
+    [Tooltip("Number of rays to cast behind follow target to detect geometry")]
+    public int numWhiskers = 4;
+
+    public float whiskerLength = 1f;
+
+    [Range(0, 360)] public float whiskerSectorAngle = 180;
+    private float halfWhiskerSectorAngle;
+    private float angleInc;
+
+    [Tooltip("Pre-emptive occlusion avoidance lerp speed")]
+    public float preemptiveLerpSpeed = 1f;
+
     [Tooltip("Interpolate occlusion avoidance")]
     public bool lerpOcclusionAvoidance = true;
 
@@ -81,33 +101,61 @@ public class ThirdPersonFollow : MonoBehaviour
 
     void Start()
     {
+        /* COMPONENTS */
         cam = GetComponent<Camera>();
         camShakeController = GetComponent<CameraShakeController>();
+        
+        /* MISC/CAMERA ATTRIBUTES */
+        lastCamPosition = transform.position;
+        nearClipPaneCornersLocal = new Vector3[4];
+
+        /* TARGET FOLLOW - POSITION */
+        sqrMinDistanceFromTarget = minDistanceFromTarget * minDistanceFromTarget;
+        sqrMaxDistanceFromTarget = maxDistanceFromTarget * maxDistanceFromTarget;
+
+        /* OBSTACLE AVOIDANCE */
+
+        /* OCCLUSION AVOIDANCE */
+        halfWhiskerSectorAngle = whiskerSectorAngle / 2;
+        angleInc = (halfWhiskerSectorAngle / numWhiskers) * 2;
 
         occlusionAvoidSearchSampleDist = occlusionMaxAvoidSearchDistance / occlusionNumAvoidSearchSamples;
     }
 
     void LateUpdate()
     {
-        Vector3 newPos = cam.transform.position;
+        //update clip pane corner points
+        nearClipPaneCornersLocal = ClipPaneUtils.GetNearClipPaneCornersLocal(cam);
+
+        //update camera rotation - do this first as a different near clip pane position will affect some of the other calculations
+        cam.transform.rotation = GetLookAtTargetRotation();
 
         //each of these updates the new camera position given as a reference
+        Vector3 newPos = cam.transform.position;
         OffsetFromTarget(ref newPos);
         ShakeCamera(ref newPos);
+        //AvoidOcclusion(ref newPos);
         AvoidObstacles(ref newPos);
-        AvoidOcclusion(ref newPos);
-        cam.transform.position = newPos;
 
-        cam.transform.rotation = GetLookAtTargetRotation();
+        //update camera position, as well as its last position/velocity trackers
+        lastCamPosition = cam.transform.position;
+        cam.transform.position = newPos;
+        currentCamVelocity = cam.transform.position - lastCamPosition;
+
+        
     }
 
     private void OnValidate()
     {
-        /* TARGET FOLLOW */
+        /* TARGET FOLLOW - POSITION */
         //clamp desired target offset to max target offset
+        /*
         if (desiredOffsetFromTarget.x > maxOffsetFromTarget.x) desiredOffsetFromTarget.x = maxOffsetFromTarget.x;
         if (desiredOffsetFromTarget.y > maxOffsetFromTarget.y) desiredOffsetFromTarget.y = maxOffsetFromTarget.x;
         if (desiredOffsetFromTarget.z > maxOffsetFromTarget.z) desiredOffsetFromTarget.z = maxOffsetFromTarget.x;
+        */
+        sqrMinDistanceFromTarget = minDistanceFromTarget * minDistanceFromTarget;
+        sqrMaxDistanceFromTarget = maxDistanceFromTarget * maxDistanceFromTarget;
 
         /* CAMERA SHAKE */
         if (useCameraShake && camShakeController == null)
@@ -115,10 +163,10 @@ public class ThirdPersonFollow : MonoBehaviour
             if (!TryGetComponent(out camShakeController)) Debug.LogError("To use camera shake, you need to attach a CameraShakeController to this object!");
         }
 
-        /* OBSTACLE AVOIDANCE */
-        if (hardAvoidDistance > softAvoidDistance) hardAvoidDistance = softAvoidDistance;
-
         /* OCCLUSION AVOIDANCE */
+        halfWhiskerSectorAngle = whiskerSectorAngle / 2;
+        angleInc = (halfWhiskerSectorAngle / numWhiskers) * 2;
+
         occlusionAvoidSearchSampleDist = occlusionMaxAvoidSearchDistance / occlusionNumAvoidSearchSamples;
     }
 
@@ -132,6 +180,19 @@ public class ThirdPersonFollow : MonoBehaviour
         {
             newPos = lerpOffset ? Vector3.Lerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
         }
+
+        /*
+        float sqrNewPosDistance = (newPos - followTarget.transform.position).sqrMagnitude;
+        if (sqrNewPosDistance < sqrMinDistanceFromTarget)
+        {
+            newPos *= sqrMinDistanceFromTarget / sqrNewPosDistance;
+        }
+        else if (sqrNewPosDistance > sqrMaxDistanceFromTarget) 
+        {
+            newPos *= sqrMaxDistanceFromTarget / sqrNewPosDistance;
+        }
+        */
+
     }
 
     private void ShakeCamera(ref Vector3 newPos)
@@ -144,30 +205,86 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private void AvoidObstacles(ref Vector3 newPos)
     {
+        //newPos = Vector3.Lerp(newPos, newPos + (CamWhiskersFromTarget() * softAvoidDistance), Time.deltaTime * softAvoidLerpSpeed);
+        /*
+        LayerMask occluders = LayerMask.GetMask("LevelGeometrySolid");
+        RaycastHit hit;
+        if(Physics.Raycast(transform.position, Vector3.left, out hit, hardAvoidDistance, occluders)
+            || Physics.Raycast(transform.position, Vector3.right, out hit, hardAvoidDistance, occluders)
+            || Physics.Raycast(transform.position, Vector3.up, out hit, hardAvoidDistance, occluders)
+            || Physics.Raycast(transform.position, Vector3.down, out hit, 0, occluders)
+            || Physics.Raycast(transform.position, Vector3.forward, out hit, hardAvoidDistance, occluders)
+            || Physics.Raycast(transform.position, Vector3.back, out hit, hardAvoidDistance, occluders))
+        {
+            Debug.Log("avoiding collision!");
+            newPos = new Vector3(hit.point.x + (hit.normal.x * (hardAvoidDistance + 0.01f)), newPos.y, hit.point.z + (hit.normal.z * (hardAvoidDistance + 0.01f)));
+        }
+        */
 
+        LayerMask solid = LayerMask.GetMask("LevelGeometrySolid");
+
+        foreach (Vector3 p in nearClipPaneCornersLocal)
+        {
+            Vector3 newPosNearClipCorner = transform.TransformDirection(p) + newPos; //get newPos near clip pane position
+            Ray ray = new Ray(newPosNearClipCorner, newPosNearClipCorner - transform.TransformPoint(p)); //camera's move direction (new clip corner - current clip corner)
+            Debug.DrawRay(newPosNearClipCorner, newPosNearClipCorner - transform.TransformPoint(p), Color.cyan, 1f);
+            
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, minDistanceFromGeometry, solid))
+            {
+                //move newPos back by the distance the collision ray travels inside the obstacle
+                //(max-distance ray - ray from start to obstacle hit point)
+                newPos -= (ray.direction * minDistanceFromGeometry * 1.01f) - (hit.point - newPosNearClipCorner);
+            }
+        }
+    }
+
+    private Vector3 CamWhiskersFromTarget()
+    {
+        Vector3 avoidDir = Vector3.zero;
+
+        for (float i = -halfWhiskerSectorAngle; i <= halfWhiskerSectorAngle; i += angleInc)
+        {
+            Vector3 dir = Quaternion.AngleAxis(i, Vector3.up) * -followTarget.transform.forward;
+            Debug.DrawRay(followTarget.transform.position, dir * whiskerLength, Color.HSVToRGB(Mathf.Abs(i) / whiskerSectorAngle, 1f, 1f)); //visualise raycasts
+            if (Physics.Raycast(followTarget.transform.position, dir, whiskerLength)) avoidDir -= new Vector3(dir.x, 0f, dir.z);
+        }
+
+        Debug.DrawRay(followTarget.transform.position + Vector3.up, avoidDir, Color.red);
+        return avoidDir;
     }
 
     private void AvoidOcclusion(ref Vector3 newPos)
     {
+        float maxDist = (followTarget.transform.position - transform.position).sqrMagnitude;
         LayerMask occluders = LayerMask.GetMask("LevelGeometrySolid");
-        RaycastHit hit;
-        if(Physics.Linecast(transform.position, followTarget.transform.position, out hit, occluders)) //if camera occluded by geometry
+        RaycastHit[] hits;
+        if(ClipPaneUtils.RaycastsFromNearClipPane(cam, followTarget.transform.position, out hits, maxDist, occluders).Contains(true)) //if camera occluded by geometry
         {
-            //search left/right/up/down (local to camera) for non-occluded positions; return first non-occluded position
-            //MAYBE hold all valid positions and pick shortest one, otherwise it will just pick the first one (i.e. will favour one direction if multiple valid)
-            //List<Vector3> validAvoidPositions = new List<Vector3>(); 
+            /* This searches out in rays at 90 degree increments from the camera's current velocity (if non-zero), 
+             * the idea being that it will pick the avoid vector closest to direction the camera is already moving in and so
+             * minimally disturb the player.
+             * If it doesn't find a non-occluded position within the given parameters, it just jumps to the other side of the occluding object.
+             */
+            /*
+            //search for non-occluded positions in cardinal directions relative to camera's velocity; return first non-occluded position
+            Vector3 searchDir = currentCamVelocity == Vector3.zero ? -transform.right : currentCamVelocity.normalized;
+            Vector3 searchDir90 = Vector3.Cross(searchDir, followTarget.transform.position - transform.position); //search direction rotated 90 degrees
             Vector3 avoidPos;
-            if (OcclusionAvoidRaycasts(transform.position, -transform.right, out avoidPos, occluders)) newPos = avoidPos;
-            else if (OcclusionAvoidRaycasts(transform.position, transform.right, out avoidPos, occluders)) newPos = avoidPos;
-            else if (OcclusionAvoidRaycasts(transform.position, transform.up, out avoidPos, occluders)) newPos = avoidPos;
-            else if (OcclusionAvoidRaycasts(transform.position, -transform.up, out avoidPos, occluders)) newPos = avoidPos;
+            if (OcclusionAvoidRaycasts(transform.position, searchDir, out avoidPos, occluders)
+                || OcclusionAvoidRaycasts(transform.position, searchDir90, out avoidPos, occluders)
+                || OcclusionAvoidRaycasts(transform.position, -searchDir, out avoidPos, occluders)
+                || OcclusionAvoidRaycasts(transform.position, -searchDir90, out avoidPos, occluders))
+            {
+                newPos = lerpOcclusionAvoidance ? Vector3.Lerp(transform.position, avoidPos, Time.deltaTime * occlusionAvoidLerpSpeed) : avoidPos;
+            }
             else //no valid position found; jump to other side of occluding geometry
             {
                 //find other side of occluding geometry by trying to hit it from the other side
                 //this ray assumes the follow target is on the other side of the occluding geometry (i.e. not inside it, which it should never be)
-                Ray backwards = new Ray(followTarget.transform.position, transform.position - hit.point);
+                Ray backwards = new Ray(followTarget.transform.position, transform.position); 
                 RaycastHit farSideHit;
-                if(hit.collider.Raycast(backwards, out farSideHit, (followTarget.transform.position - transform.position).sqrMagnitude)) 
+                if(hits[0].collider.Raycast(backwards, out farSideHit, (followTarget.transform.position - transform.position).sqrMagnitude)) 
                 {
                     newPos = farSideHit.point - (backwards.direction * hardAvoidDistance); //jump to min avoid distance in front of occluding geometry
                 }
@@ -176,6 +293,7 @@ public class ThirdPersonFollow : MonoBehaviour
                     Debug.LogError("Other side of occluding geometry not found!");
                 }
             }
+            */
         }
     }
 
@@ -187,7 +305,7 @@ public class ThirdPersonFollow : MonoBehaviour
         {
             //cast a ray from current sample position to follow target; if it hits something, it's occluded, so move to next sample position
             //maybe use SphereCast here to ensure a certain amount of unoccluded space? If using, add a public radius variable
-            if(Physics.Raycast(pos, followTarget.transform.position - pos, occluders))
+            if(Physics.Linecast(pos, followTarget.transform.position, occluders))
             {
                 pos += inc;
             }
@@ -207,7 +325,7 @@ public class ThirdPersonFollow : MonoBehaviour
         if(lookAtTarget)
         {
             Vector3 offset = worldSpaceLookOffset ? lookOffset : followTarget.transform.TransformDirection(lookOffset);
-            Quaternion lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - cam.transform.position, Vector3.up);
+            Quaternion lookAt = Quaternion.LookRotation((followTarget.transform.position + (followTarget.transform.forward * lookAtLerpSpeed) + offset) - cam.transform.position, Vector3.up);
             return lookAtLerp ? Quaternion.Slerp(cam.transform.rotation, lookAt, Time.deltaTime * lookAtLerpSpeed) : lookAt;
         }
         else
@@ -218,6 +336,5 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawLine(transform.position, followTarget.transform.position);
     }
 }
