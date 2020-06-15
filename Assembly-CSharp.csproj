@@ -76,6 +76,7 @@
     <Compile Include="Assets\Scripts\Player\FollowObjectAroundPivot.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerCamera_Follow.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\Utilities\Extensions\Lerps.cs" />
     <Compile Include="Assets\Scripts\Wind\Static\WindNoise.cs" />
     <Compile Include="Assets\Scripts\Wind\Wind-affected objects\WindAffectedPhysObj.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Debug\OctreeCellsDebug.cs" />

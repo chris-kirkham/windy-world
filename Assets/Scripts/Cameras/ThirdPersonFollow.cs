@@ -60,7 +60,6 @@ public class ThirdPersonFollow : MonoBehaviour
     }
     public LookAtMode lookAtMode = LookAtMode.LookAtTarget;
 
-    [Tooltip("The offs")]
     public Vector3 lookOffset = Vector3.zero;
 
     public bool worldSpaceLookOffset = false;
@@ -95,6 +94,13 @@ public class ThirdPersonFollow : MonoBehaviour
 
     [Tooltip("Pre-emptive occlusion avoidance lerp speed")]
     public float preemptiveLerpSpeed = 1f;
+
+    public enum OcclusionAvoidMode
+    {
+        MoveTowardsTarget,
+        FindAvoidVector
+    }
+    public OcclusionAvoidMode occlusionAvoidMode = OcclusionAvoidMode.MoveTowardsTarget;
 
     [Tooltip("Interpolate occlusion avoidance")]
     public bool lerpOcclusionAvoidance = true;
@@ -178,8 +184,8 @@ public class ThirdPersonFollow : MonoBehaviour
         Vector3 newPos = cam.transform.position;
         OffsetFromTarget(ref newPos);
         ShakeCamera(ref newPos);
-        newPos = Vector3.Lerp(newPos, newPos + CamWhiskersFromTarget(), Time.deltaTime * preemptiveLerpSpeed);
-        //AvoidOcclusion(ref newPos);
+        newPos = Lerps.Smootherstep(newPos, newPos + CamWhiskersFromTarget(), Time.deltaTime * preemptiveLerpSpeed);
+        AvoidOcclusion(ref newPos);
         AvoidCollision(ref newPos);
 
         //update camera position, as well as its last position/velocity trackers
@@ -194,7 +200,6 @@ public class ThirdPersonFollow : MonoBehaviour
         if(Vector3.Dot(transform.forward, followTarget.transform.forward) > -0.75f)
         {
             state = State.FollowingTarget;
-            Debug.Log("state = following target");
         }
         else
         {
@@ -261,7 +266,7 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private void AvoidCollision(ref Vector3 newPos)
     {
-        //newPos = Vector3.Lerp(newPos, newPos + (CamWhiskersFromTarget() * softAvoidDistance), Time.deltaTime * softAvoidLerpSpeed);
+        //newPos = Lerps.Smootherstep(newPos, newPos + (CamWhiskersFromTarget() * softAvoidDistance), Time.deltaTime * softAvoidLerpSpeed);
         /*
         LayerMask occluders = LayerMask.GetMask("LevelGeometrySolid");
         RaycastHit hit;
@@ -318,39 +323,60 @@ public class ThirdPersonFollow : MonoBehaviour
         float maxDist = (followTarget.transform.position - transform.position).sqrMagnitude;
         LayerMask occluders = LayerMask.GetMask("LevelGeometrySolid");
         RaycastHit[] hits;
-        if(ClipPaneUtils.RaycastsFromNearClipPane(cam, followTarget.transform.position, out hits, maxDist, occluders).Contains(true)) //if camera occluded by geometry
+        if(cam.RaycastsFromNearClipPane(followTarget.transform.position, out hits, maxDist, occluders)) //if camera occluded by geometry
         {
-            /* This searches out in rays at 90 degree increments from the camera's current velocity (if non-zero), 
-             * the idea being that it will pick the avoid vector closest to direction the camera is already moving in and so
-             * minimally disturb the player.
-             * If it doesn't find a non-occluded position within the given parameters, it just jumps to the other side of the occluding object.
-             */
-
-            //search for non-occluded positions in cardinal directions relative to camera's velocity; return first non-occluded position
-            Vector3 searchDir = currentCamVelocity == Vector3.zero ? -transform.right : currentCamVelocity.normalized;
-            Vector3 searchDir90 = Vector3.Cross(searchDir, followTarget.transform.position - transform.position); //search direction rotated 90 degrees
-            Vector3 avoidPos;
-            if (OcclusionAvoidRaycasts(transform.position, searchDir, out avoidPos, occluders)
-                || OcclusionAvoidRaycasts(transform.position, searchDir90, out avoidPos, occluders)
-                || OcclusionAvoidRaycasts(transform.position, -searchDir, out avoidPos, occluders)
-                || OcclusionAvoidRaycasts(transform.position, -searchDir90, out avoidPos, occluders))
-            { 
-                newPos = lerpOcclusionAvoidance ? Vector3.Lerp(transform.position, avoidPos, Time.deltaTime * occlusionAvoidLerpSpeed) : avoidPos;
-            }
-            else //no valid position found; jump to other side of occluding geometry
+            switch(occlusionAvoidMode)
             {
-                //find other side of occluding geometry by trying to hit it from the other side
-                //this ray assumes the follow target is on the other side of the occluding geometry (i.e. not inside it, which it should never be)
-                Ray backwards = new Ray(followTarget.transform.position, transform.position); 
-                RaycastHit farSideHit;
-                if(hits[0].collider.Raycast(backwards, out farSideHit, (followTarget.transform.position - transform.position).sqrMagnitude)) 
-                {
-                    newPos = farSideHit.point - (backwards.direction * minDistanceFromGeometry); //jump to min avoid distance in front of occluding geometry
-                }
-                else
-                {
-                    Debug.LogError("Other side of occluding geometry not found!");
-                }
+                case OcclusionAvoidMode.FindAvoidVector:
+                    AvoidOcclusion_UnoccludedVectorSearch(ref newPos, occluders);
+                    break;
+                case OcclusionAvoidMode.MoveTowardsTarget:
+                default:
+                    AvoidOcclusion_MoveTowardsTarget(ref newPos, followTarget.transform.position);
+                    break; 
+            }
+        }
+    }
+
+    private void AvoidOcclusion_MoveTowardsTarget(ref Vector3 newPos, Vector3 targetPos)
+    {
+        newPos = Lerps.Smootherstep(newPos, targetPos, Time.deltaTime * occlusionAvoidLerpSpeed);
+    }
+
+    private void AvoidOcclusion_UnoccludedVectorSearch(ref Vector3 newPos, LayerMask occluders)
+    {
+        /* This searches out in rays at 90 degree increments from the camera's current velocity (if non-zero), 
+         * the idea being that it will pick the avoid vector closest to direction the camera is already moving in and so
+         * minimally disturb the player.
+         * If it doesn't find a non-occluded position within the given parameters, it just jumps to the other side of the occluding object.
+         */
+
+        //search for non-occluded positions in cardinal directions relative to camera's velocity; return first non-occluded position
+        Vector3 searchDir = currentCamVelocity == Vector3.zero ? -transform.right : currentCamVelocity.normalized;
+        Vector3 searchDir90 = Vector3.Cross(searchDir, followTarget.transform.position - transform.position); //search direction rotated 90 degrees
+        Vector3 avoidPos;
+        if (OcclusionAvoidRaycasts(transform.position, searchDir, out avoidPos, occluders)
+            || OcclusionAvoidRaycasts(transform.position, searchDir90, out avoidPos, occluders)
+            || OcclusionAvoidRaycasts(transform.position, -searchDir, out avoidPos, occluders)
+            || OcclusionAvoidRaycasts(transform.position, -searchDir90, out avoidPos, occluders))
+        {
+            newPos = lerpOcclusionAvoidance ? Lerps.Smootherstep(transform.position, avoidPos, Time.deltaTime * occlusionAvoidLerpSpeed) : avoidPos;
+        }
+        else //no valid position found; jump to other side of occluding geometry
+        {
+            //find other side of occluding geometry by trying to hit it from the other side
+            //this ray assumes the follow target is on the other side of the occluding geometry (i.e. not inside it, which it should never be)
+            //N.B. could use hits.collider.Raycast() here but since there could be different colliders hit by each of the clip pane rays,
+            //it's possibly more efficient (and certainly simpler) just to use a regular raycast with the occluders LayerMask
+            Ray backwards = new Ray(followTarget.transform.position, transform.position);
+            RaycastHit farSideHit;
+            if (Physics.Raycast(backwards, out farSideHit, (followTarget.transform.position - transform.position).sqrMagnitude, occluders))
+            {
+                newPos = farSideHit.point - (backwards.direction * minDistanceFromGeometry); //jump to min avoid distance in front of occluding geometry
+            }
+            else
+            {
+                Debug.LogError("Other side of occluding geometry not found!");
             }
         }
     }

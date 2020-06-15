@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Extension methods for doing stuff relating to the camera clip pane (raycasts etc.)
+/// </summary>
 public static class ClipPaneUtils
 {
     //Fires rays in a direction from the corners of the camera's near clip pane, returning a bool array 
     //representing raycast hits (clockwise from top left)
-    public static bool[] RaycastsFromNearClipPane(Camera cam, Vector3 dir, out RaycastHit[] hits, float maxDist, LayerMask layerMask)
+    /*
+    public static bool[] RaycastsFromNearClipPane(this Camera cam, Vector3 dir, out RaycastHit[] hits, float maxDist, LayerMask layerMask)
     {
         Vector3[] points = GetNearClipPaneCornersWorld(cam);
 
@@ -19,11 +23,28 @@ public static class ClipPaneUtils
 
         return hitBools;
     }
+    */
 
+    //Fires rays in a direction from the corners of the camera's near clip pane;   
+    //returns true if any hit and false if none hit. The out hits variable only returns successful hits, so it will be empty if none hit.
+    public static bool RaycastsFromNearClipPane(this Camera cam, Vector3 dir, out RaycastHit[] hits, float maxDist, LayerMask layerMask)
+    {
+        Vector3[] points = GetNearClipPaneCornersWorld(cam);
+
+        List<RaycastHit> hitsList = new List<RaycastHit>();
+        RaycastHit hit;
+        if (Physics.Raycast(points[0], dir, out hit, maxDist, layerMask)) hitsList.Add(hit);
+        if (Physics.Raycast(points[1], dir, out hit, maxDist, layerMask)) hitsList.Add(hit);
+        if (Physics.Raycast(points[2], dir, out hit, maxDist, layerMask)) hitsList.Add(hit);
+        if (Physics.Raycast(points[3], dir, out hit, maxDist, layerMask)) hitsList.Add(hit);
+
+        hits = hitsList.ToArray();
+        return hitsList.Count > 0;
+    }
 
     //Gets near clip pane corner points in world space from a given camera.
     //Returns points in clockwise order from top left
-    public static Vector3[] GetNearClipPaneCornersWorld(Camera cam)
+    public static Vector3[] GetNearClipPaneCornersWorld(this Camera cam)
     {
         Vector3[] points = new Vector3[4];
 
@@ -41,7 +62,7 @@ public static class ClipPaneUtils
 
     //Gets near clip pane corner points in local space from a given camera.
     //Returns points in clockwise order from top left
-    public static Vector3[] GetNearClipPaneCornersLocal(Camera cam)
+    public static Vector3[] GetNearClipPaneCornersLocal(this Camera cam)
     {
         Vector3[] points = new Vector3[4];
 
