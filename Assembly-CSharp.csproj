@@ -8,8 +8,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <ProjectGuid>{DF7FA483-AB83-2674-1BB6-B08EA9BFB5B0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -67,6 +66,7 @@
     <Compile Include="Assets\Scripts\Cameras\CameraShakeController.cs" />
     <Compile Include="Assets\Scripts\Cameras\ThirdPersonFollow.cs" />
     <Compile Include="Assets\Scripts\Cameras\Utilities\ClipPaneUtils.cs" />
+    <Compile Include="Assets\Scripts\Cameras\Utilities\CompositionHelper.cs" />
     <Compile Include="Assets\Scripts\ComputeTestScript.cs" />
     <Compile Include="Assets\Scripts\MoveParticlesInWindField.cs" />
     <Compile Include="Assets\Scripts\Noise\Perlin.cs" />

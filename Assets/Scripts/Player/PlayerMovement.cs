@@ -45,6 +45,11 @@ public class PlayerMovement : MonoBehaviour
         isOnGround = IsOnGround();
     }
 
+    private void OnValidate()
+    {
+        sqrSprintSpeed = sprintSpeed * sprintSpeed;
+    }
+
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -53,9 +58,17 @@ public class PlayerMovement : MonoBehaviour
         //calculate player movement
         Vector3 moveInput = GetMovementInput();
         Vector3 moveForce = (moveInput * walkSpeed) + CalcSlowForce(moveInput, slowForce);
+
+        //slow player if moving over max speed
+        float speed = rb.velocity.magnitude;
+        if (speed > sprintSpeed) moveForce -= moveForce.normalized * (speed - sprintSpeed);
+
         rb.AddForce(moveForce, ForceMode.Force);
         if(moveInput != Vector3.zero) lastNonZeroInput = moveInput;
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lastNonZeroInput), Time.deltaTime * 2);
+        transform.rotation = Quaternion.LookRotation(lastNonZeroInput, Vector3.up);
+        //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lastNonZeroInput), Time.deltaTime * 10);
+        
+        
         //transform.rotation = Quaternion.Lerp(rb.rotation, Quaternion.LookRotation(lastNonZeroInput), 1 / rb.velocity.sqrMagnitude);
         //rb.AddForce(CalcMovement(moveInput), ForceMode.Force);
         //Debug.Log("Speed = " + rb.velocity.magnitude);

@@ -18,6 +18,13 @@ public class ThirdPersonFollow : MonoBehaviour
     public GameObject followTarget;
 
     /* MISC/CAMERA ATTRIBUTES */
+    private enum State
+    {
+        FollowingTarget,
+        TargetMovingTowardsCamera
+    }
+    private State state;
+    
     private Vector3 currentCamVelocity = Vector3.zero; //this just keeps track of the camera's velocity, changing it doesn't change the camera's velocity
     private Vector3 lastCamPosition;
     private Vector3[] nearClipPaneCornersLocal;
@@ -45,7 +52,13 @@ public class ThirdPersonFollow : MonoBehaviour
     private float sqrMinDistanceFromTarget, sqrMaxDistanceFromTarget;
 
     /* TARGET FOLLOW - ROTATION */
-    public bool lookAtTarget = true;
+    public enum LookAtMode
+    {
+        FaceCameraHeading,
+        LookAtTarget,
+        FaceTargetHeading
+    }
+    public LookAtMode lookAtMode = LookAtMode.LookAtTarget;
 
     [Tooltip("The offs")]
     public Vector3 lookOffset = Vector3.zero;
@@ -104,8 +117,9 @@ public class ThirdPersonFollow : MonoBehaviour
         /* COMPONENTS */
         cam = GetComponent<Camera>();
         camShakeController = GetComponent<CameraShakeController>();
-        
+
         /* MISC/CAMERA ATTRIBUTES */
+        state = State.FollowingTarget;
         lastCamPosition = transform.position;
         nearClipPaneCornersLocal = new Vector3[4];
 
@@ -122,29 +136,6 @@ public class ThirdPersonFollow : MonoBehaviour
         occlusionAvoidSearchSampleDist = occlusionMaxAvoidSearchDistance / occlusionNumAvoidSearchSamples;
     }
 
-    void LateUpdate()
-    {
-        //update clip pane corner points
-        nearClipPaneCornersLocal = ClipPaneUtils.GetNearClipPaneCornersLocal(cam);
-
-        //update camera rotation - do this first as a different near clip pane position will affect some of the other calculations
-        cam.transform.rotation = GetLookAtTargetRotation();
-
-        //each of these updates the new camera position given as a reference
-        Vector3 newPos = cam.transform.position;
-        OffsetFromTarget(ref newPos);
-        ShakeCamera(ref newPos);
-        //AvoidOcclusion(ref newPos);
-        AvoidObstacles(ref newPos);
-
-        //update camera position, as well as its last position/velocity trackers
-        lastCamPosition = cam.transform.position;
-        cam.transform.position = newPos;
-        currentCamVelocity = cam.transform.position - lastCamPosition;
-
-        
-    }
-
     private void OnValidate()
     {
         /* TARGET FOLLOW - POSITION */
@@ -154,6 +145,9 @@ public class ThirdPersonFollow : MonoBehaviour
         if (desiredOffsetFromTarget.y > maxOffsetFromTarget.y) desiredOffsetFromTarget.y = maxOffsetFromTarget.x;
         if (desiredOffsetFromTarget.z > maxOffsetFromTarget.z) desiredOffsetFromTarget.z = maxOffsetFromTarget.x;
         */
+        if (maxDistanceFromTarget < minDistanceFromTarget) minDistanceFromTarget = maxDistanceFromTarget;
+        if (minDistanceFromTarget > maxDistanceFromTarget) maxDistanceFromTarget = minDistanceFromTarget;
+
         sqrMinDistanceFromTarget = minDistanceFromTarget * minDistanceFromTarget;
         sqrMaxDistanceFromTarget = maxDistanceFromTarget * maxDistanceFromTarget;
 
@@ -170,15 +164,77 @@ public class ThirdPersonFollow : MonoBehaviour
         occlusionAvoidSearchSampleDist = occlusionMaxAvoidSearchDistance / occlusionNumAvoidSearchSamples;
     }
 
+    void LateUpdate()
+    {
+        UpdateState();
+        
+        //update clip pane corner points
+        nearClipPaneCornersLocal = ClipPaneUtils.GetNearClipPaneCornersLocal(cam);
+
+        //update camera rotation - do this first as a different near clip pane position will affect some of the other calculations
+        cam.transform.rotation = GetLookAtTargetRotation();
+
+        //each of these updates the new camera position given as a reference
+        Vector3 newPos = cam.transform.position;
+        OffsetFromTarget(ref newPos);
+        ShakeCamera(ref newPos);
+        newPos = Vector3.Lerp(newPos, newPos + CamWhiskersFromTarget(), Time.deltaTime * preemptiveLerpSpeed);
+        //AvoidOcclusion(ref newPos);
+        AvoidCollision(ref newPos);
+
+        //update camera position, as well as its last position/velocity trackers
+        lastCamPosition = cam.transform.position;
+        cam.transform.position = newPos;
+        currentCamVelocity = cam.transform.position - lastCamPosition;
+    }
+
+    //updates the camera's state enum based on certain camera/follow target conditions
+    private void UpdateState()
+    {
+        if(Vector3.Dot(transform.forward, followTarget.transform.forward) > -0.75f)
+        {
+            state = State.FollowingTarget;
+            Debug.Log("state = following target");
+        }
+        else
+        {
+            state = State.TargetMovingTowardsCamera;
+        }
+    }
+
     private void OffsetFromTarget(ref Vector3 newPos)
     {
         Vector3 camPos = transform.position;
-        Vector3 desiredPos = worldSpaceOffset ? followTarget.transform.position + desiredOffsetFromTarget 
-            : followTarget.transform.position + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
+        Vector3 targetPos = followTarget.transform.position;
+        Vector3 desiredPos;
+
+        if(state == State.TargetMovingTowardsCamera)
+        {
+            Vector3 frontOffset = new Vector3(desiredOffsetFromTarget.x, desiredOffsetFromTarget.y, Mathf.Abs(desiredOffsetFromTarget.z));
+            desiredPos = targetPos + (worldSpaceOffset ? frontOffset : followTarget.transform.TransformDirection(frontOffset));
+        }
+        else
+        {
+            desiredPos = worldSpaceOffset ? targetPos + desiredOffsetFromTarget
+            : targetPos + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
+        }
     
         if(camPos != desiredPos)
         {
-            newPos = lerpOffset ? Vector3.Lerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
+            newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
+
+            //Clamp newPos to min and max distances.
+            //This causes camera to orbit around target at min distance, which is cool
+            float newPosTargetSqrDist = (targetPos - newPos).sqrMagnitude;
+            Vector3 targetToNewPosUnit = (newPos - targetPos).normalized;
+            if (newPosTargetSqrDist < sqrMinDistanceFromTarget)
+            {
+                newPos = targetPos + (targetToNewPosUnit * minDistanceFromTarget);
+            }
+            else if (newPosTargetSqrDist > sqrMaxDistanceFromTarget)
+            {
+                newPos = targetPos + (targetToNewPosUnit * maxDistanceFromTarget);
+            }
         }
 
         /*
@@ -203,7 +259,7 @@ public class ThirdPersonFollow : MonoBehaviour
         }
     }
 
-    private void AvoidObstacles(ref Vector3 newPos)
+    private void AvoidCollision(ref Vector3 newPos)
     {
         //newPos = Vector3.Lerp(newPos, newPos + (CamWhiskersFromTarget() * softAvoidDistance), Time.deltaTime * softAvoidLerpSpeed);
         /*
@@ -234,7 +290,10 @@ public class ThirdPersonFollow : MonoBehaviour
             {
                 //move newPos back by the distance the collision ray travels inside the obstacle
                 //(max-distance ray - ray from start to obstacle hit point)
-                newPos -= (ray.direction * minDistanceFromGeometry * 1.01f) - (hit.point - newPosNearClipCorner);
+                float overlapDist = ((ray.direction * minDistanceFromGeometry * 1.01f) - (hit.point - newPosNearClipCorner)).magnitude / 4; 
+                Debug.DrawRay(transform.position, hit.normal * overlapDist * 10, Color.red);
+                //EditorApplication.isPaused = true;
+                newPos += hit.normal * overlapDist;
             }
         }
     }
@@ -266,7 +325,7 @@ public class ThirdPersonFollow : MonoBehaviour
              * minimally disturb the player.
              * If it doesn't find a non-occluded position within the given parameters, it just jumps to the other side of the occluding object.
              */
-            /*
+
             //search for non-occluded positions in cardinal directions relative to camera's velocity; return first non-occluded position
             Vector3 searchDir = currentCamVelocity == Vector3.zero ? -transform.right : currentCamVelocity.normalized;
             Vector3 searchDir90 = Vector3.Cross(searchDir, followTarget.transform.position - transform.position); //search direction rotated 90 degrees
@@ -275,7 +334,7 @@ public class ThirdPersonFollow : MonoBehaviour
                 || OcclusionAvoidRaycasts(transform.position, searchDir90, out avoidPos, occluders)
                 || OcclusionAvoidRaycasts(transform.position, -searchDir, out avoidPos, occluders)
                 || OcclusionAvoidRaycasts(transform.position, -searchDir90, out avoidPos, occluders))
-            {
+            { 
                 newPos = lerpOcclusionAvoidance ? Vector3.Lerp(transform.position, avoidPos, Time.deltaTime * occlusionAvoidLerpSpeed) : avoidPos;
             }
             else //no valid position found; jump to other side of occluding geometry
@@ -286,14 +345,13 @@ public class ThirdPersonFollow : MonoBehaviour
                 RaycastHit farSideHit;
                 if(hits[0].collider.Raycast(backwards, out farSideHit, (followTarget.transform.position - transform.position).sqrMagnitude)) 
                 {
-                    newPos = farSideHit.point - (backwards.direction * hardAvoidDistance); //jump to min avoid distance in front of occluding geometry
+                    newPos = farSideHit.point - (backwards.direction * minDistanceFromGeometry); //jump to min avoid distance in front of occluding geometry
                 }
                 else
                 {
                     Debug.LogError("Other side of occluding geometry not found!");
                 }
             }
-            */
         }
     }
 
@@ -322,16 +380,34 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private Quaternion GetLookAtTargetRotation()
     {
-        if(lookAtTarget)
+        Vector3 offset = worldSpaceLookOffset ? lookOffset : followTarget.transform.TransformDirection(lookOffset);
+        Quaternion lookAt;
+        
+        switch(state)
         {
-            Vector3 offset = worldSpaceLookOffset ? lookOffset : followTarget.transform.TransformDirection(lookOffset);
-            Quaternion lookAt = Quaternion.LookRotation((followTarget.transform.position + (followTarget.transform.forward * lookAtLerpSpeed) + offset) - cam.transform.position, Vector3.up);
-            return lookAtLerp ? Quaternion.Slerp(cam.transform.rotation, lookAt, Time.deltaTime * lookAtLerpSpeed) : lookAt;
+            case State.TargetMovingTowardsCamera:
+                lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - cam.transform.position, Vector3.up);
+                break;
+            case State.FollowingTarget:
+            default:
+                switch (lookAtMode)
+                {
+                    case LookAtMode.LookAtTarget:
+                        lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - cam.transform.position, Vector3.up);
+                        break;
+                    case LookAtMode.FaceTargetHeading:
+                        lookAt = followTarget.transform.rotation;
+                        break;
+                    case LookAtMode.FaceCameraHeading:
+                    default:
+                        lookAt = Quaternion.LookRotation(currentCamVelocity, Vector3.up);
+                        break;
+                }
+                
+                break;
         }
-        else
-        {
-            return cam.transform.rotation;
-        }
+        
+        return lookAtLerp ? Quaternion.Slerp(cam.transform.rotation, lookAt, Time.deltaTime * lookAtLerpSpeed) : lookAt;
     }
 
     private void OnDrawGizmos()
