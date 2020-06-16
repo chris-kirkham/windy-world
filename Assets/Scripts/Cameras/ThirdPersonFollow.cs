@@ -210,35 +210,36 @@ public class ThirdPersonFollow : MonoBehaviour
     private void OffsetFromTarget(ref Vector3 newPos)
     {
         Vector3 camPos = transform.position;
-        Vector3 targetPos = followTarget.transform.position;
+        Vector3 followTargetPos = followTarget.transform.position;
         Vector3 desiredPos;
 
         if(state == State.TargetMovingTowardsCamera)
         {
             Vector3 frontOffset = new Vector3(desiredOffsetFromTarget.x, desiredOffsetFromTarget.y, Mathf.Abs(desiredOffsetFromTarget.z));
-            desiredPos = targetPos + (worldSpaceOffset ? frontOffset : followTarget.transform.TransformDirection(frontOffset));
+            desiredPos = followTargetPos + (worldSpaceOffset ? frontOffset : followTarget.transform.TransformDirection(frontOffset));
         }
         else
         {
-            desiredPos = worldSpaceOffset ? targetPos + desiredOffsetFromTarget
-            : targetPos + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
+            desiredPos = worldSpaceOffset ? followTargetPos + desiredOffsetFromTarget
+            : followTargetPos + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
         }
     
         if(camPos != desiredPos)
         {
             newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
+            //if (Vector3.Dot(newPos - camPos, currentCamVelocity) < 0) newPos += currentCamVelocity;
 
             //Clamp newPos to min and max distances.
             //This causes camera to orbit around target at min distance, which is cool
-            float newPosTargetSqrDist = (targetPos - newPos).sqrMagnitude;
-            Vector3 targetToNewPosUnit = (newPos - targetPos).normalized;
+            float newPosTargetSqrDist = (followTargetPos - newPos).sqrMagnitude;
+            Vector3 targetToNewPosUnit = (newPos - followTargetPos).normalized;
             if (newPosTargetSqrDist < sqrMinDistanceFromTarget)
             {
-                newPos = targetPos + (targetToNewPosUnit * minDistanceFromTarget);
+                newPos = followTargetPos + (targetToNewPosUnit * minDistanceFromTarget);
             }
             else if (newPosTargetSqrDist > sqrMaxDistanceFromTarget)
             {
-                newPos = targetPos + (targetToNewPosUnit * maxDistanceFromTarget);
+                newPos = followTargetPos + (targetToNewPosUnit * maxDistanceFromTarget);
             }
         }
 
@@ -422,7 +423,7 @@ public class ThirdPersonFollow : MonoBehaviour
                         lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - cam.transform.position, Vector3.up);
                         break;
                     case LookAtMode.FaceTargetHeading:
-                        lookAt = followTarget.transform.rotation;
+                        lookAt = Quaternion.LookRotation(followTarget.transform.forward + offset);
                         break;
                     case LookAtMode.FaceCameraHeading:
                     default:
