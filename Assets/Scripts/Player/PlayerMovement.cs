@@ -60,14 +60,14 @@ public class PlayerMovement : MonoBehaviour
         Vector3 moveForce = (moveInput * walkSpeed) + CalcSlowForce(moveInput, slowForce);
 
         //slow player if moving over max speed
-        float speed = rb.velocity.magnitude;
-        if (speed > sprintSpeed) moveForce -= moveForce.normalized * (speed - sprintSpeed);
+        float speed = rb.velocity.sqrMagnitude;
+        //if (speed < sprintSpeed) moveForce *= acceleration;
+        if (speed > sqrSprintSpeed) moveForce -= moveForce.normalized * (speed - sqrSprintSpeed);
 
-        rb.AddForce(moveForce, ForceMode.Force);
+        rb.AddForce(moveForce, ForceMode.Acceleration);
         if(moveInput != Vector3.zero) lastNonZeroInput = moveInput;
         transform.rotation = Quaternion.LookRotation(lastNonZeroInput, Vector3.up);
         //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lastNonZeroInput), Time.deltaTime * 10);
-        
         
         //transform.rotation = Quaternion.Lerp(rb.rotation, Quaternion.LookRotation(lastNonZeroInput), 1 / rb.velocity.sqrMagnitude);
         //rb.AddForce(CalcMovement(moveInput), ForceMode.Force);

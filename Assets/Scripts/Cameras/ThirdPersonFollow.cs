@@ -26,6 +26,7 @@ public class ThirdPersonFollow : MonoBehaviour
     private State state;
     
     private Vector3 currentCamVelocity = Vector3.zero; //this just keeps track of the camera's velocity, changing it doesn't change the camera's velocity
+    private Vector3 smoothdampVelocity = Vector3.zero;
     private Vector3 lastCamPosition;
     private Vector3[] nearClipPaneCornersLocal;
 
@@ -180,6 +181,9 @@ public class ThirdPersonFollow : MonoBehaviour
         //update camera rotation - do this first as a different near clip pane position will affect some of the other calculations
         cam.transform.rotation = GetLookAtTargetRotation();
 
+        //set camera roll to 0
+        Vector3 eulerAngles = cam.transform.rotation.eulerAngles;
+
         //each of these updates the new camera position given as a reference
         Vector3 newPos = cam.transform.position;
         OffsetFromTarget(ref newPos);
@@ -226,7 +230,8 @@ public class ThirdPersonFollow : MonoBehaviour
     
         if(camPos != desiredPos)
         {
-            newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
+            //newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
+            newPos = lerpOffset ? Vector3.SmoothDamp(camPos, desiredPos, ref smoothdampVelocity, 1f / offsetLerpSpeed) : desiredPos;
             //if (Vector3.Dot(newPos - camPos, currentCamVelocity) < 0) newPos += currentCamVelocity;
 
             //Clamp newPos to min and max distances.
