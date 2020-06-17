@@ -171,7 +171,7 @@ public class ThirdPersonFollow : MonoBehaviour
         occlusionAvoidSearchSampleDist = occlusionMaxAvoidSearchDistance / occlusionNumAvoidSearchSamples;
     }
 
-    void LateUpdate()
+    void FixedUpdate()
     {
         UpdateState();
         
@@ -181,16 +181,14 @@ public class ThirdPersonFollow : MonoBehaviour
         //update camera rotation - do this first as a different near clip pane position will affect some of the other calculations
         cam.transform.rotation = GetLookAtTargetRotation();
 
-        //set camera roll to 0
-        Vector3 eulerAngles = cam.transform.rotation.eulerAngles;
-
         //each of these updates the new camera position given as a reference
         Vector3 newPos = cam.transform.position;
         OffsetFromTarget(ref newPos);
         ShakeCamera(ref newPos);
-        newPos = Lerps.Smootherstep(newPos, newPos + CamWhiskersFromTarget(), Time.deltaTime * preemptiveLerpSpeed);
-        AvoidOcclusion(ref newPos);
-        AvoidCollision(ref newPos);
+        
+        //newPos = Lerps.Smootherstep(newPos, newPos + CamWhiskersFromTarget(), Time.deltaTime * preemptiveLerpSpeed);
+        //AvoidOcclusion(ref newPos);
+        //AvoidCollision(ref newPos);
 
         //update camera position, as well as its last position/velocity trackers
         lastCamPosition = cam.transform.position;
@@ -230,8 +228,8 @@ public class ThirdPersonFollow : MonoBehaviour
     
         if(camPos != desiredPos)
         {
-            //newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
-            newPos = lerpOffset ? Vector3.SmoothDamp(camPos, desiredPos, ref smoothdampVelocity, 1f / offsetLerpSpeed) : desiredPos;
+            newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
+            //newPos = lerpOffset ? Vector3.SmoothDamp(camPos, desiredPos, ref smoothdampVelocity, 1f / offsetLerpSpeed) : desiredPos;
             //if (Vector3.Dot(newPos - camPos, currentCamVelocity) < 0) newPos += currentCamVelocity;
 
             //Clamp newPos to min and max distances.
@@ -302,8 +300,6 @@ public class ThirdPersonFollow : MonoBehaviour
                 //move newPos back by the distance the collision ray travels inside the obstacle
                 //(max-distance ray - ray from start to obstacle hit point)
                 float overlapDist = ((ray.direction * minDistanceFromGeometry * 1.01f) - (hit.point - newPosNearClipCorner)).magnitude / 4; 
-                Debug.DrawRay(transform.position, hit.normal * overlapDist * 10, Color.red);
-                //EditorApplication.isPaused = true;
                 newPos += hit.normal * overlapDist;
             }
         }
@@ -346,7 +342,7 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private void AvoidOcclusion_MoveTowardsTarget(ref Vector3 newPos, Vector3 targetPos)
     {
-        newPos = Lerps.Smootherstep(newPos, targetPos, Time.deltaTime * occlusionAvoidLerpSpeed);
+        newPos = Vector3.SmoothDamp(newPos, targetPos, ref smoothdampVelocity, 1 / occlusionAvoidLerpSpeed);
     }
 
     private void AvoidOcclusion_UnoccludedVectorSearch(ref Vector3 newPos, LayerMask occluders)
@@ -366,7 +362,7 @@ public class ThirdPersonFollow : MonoBehaviour
             || OcclusionAvoidRaycasts(transform.position, -searchDir, out avoidPos, occluders)
             || OcclusionAvoidRaycasts(transform.position, -searchDir90, out avoidPos, occluders))
         {
-            newPos = lerpOcclusionAvoidance ? Lerps.Smootherstep(transform.position, avoidPos, Time.deltaTime * occlusionAvoidLerpSpeed) : avoidPos;
+            newPos = lerpOcclusionAvoidance ? Vector3.SmoothDamp(transform.position, avoidPos, ref smoothdampVelocity, 1 / occlusionAvoidLerpSpeed) : avoidPos;
         }
         else //no valid position found; jump to other side of occluding geometry
         {
