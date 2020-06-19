@@ -13,6 +13,9 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rb;
     private PlayerInput input;
 
+    //used for raycasts to check if player is on ground
+    private GameObject leftFoot;
+    private GameObject rightFoot;
 
     /* misc variables (probably move these somewhere better) */
     private float maxWalkableAngle = 45f; //maximum angle (in degrees) for ground that the player can walk on
@@ -46,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
     /* air speed attributes */
     public float maxAirSpeed = 100f;
     
-    public float extraFallGravity = 0f;
+    public float fallSpeed = 1f;
 
     /* rotation tracker(s) */
     private Vector3 lastNonZeroInput = Vector3.forward; //used to keep player facing their last movement direction when stopped
@@ -54,12 +57,16 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //assign components
+        /* assign components */
         rb = GetComponent<Rigidbody>();
         input = GetComponent<PlayerInput>();
         animator = GetComponent<Animator>();
 
-        //initialise parameters
+        //this is obviously not robust
+        leftFoot = GameObject.Find("B-foot_L");
+        rightFoot = GameObject.Find("B-foot_R");
+
+        /* initialise parameters */
         sqrSpeed = speed * speed;
         isOnGround = IsOnGround();
     }
@@ -93,14 +100,22 @@ public class PlayerMovement : MonoBehaviour
         //if (xzSpeed < sqrSpeed) moveForce *= acceleration;
         //if (xzSpeed > sqrSpeed) moveForce -= moveForce.normalized * (xzSpeed - sqrSpeed);
 
-        /* Jump */
-        float jump = CalcJump() ? jumpForce : 0f; 
+        /* Jump/fall velocity */
+        float yVelocity = 0f;
+        if(CalcJump())
+        {
+            yVelocity += jumpForce;
+        }
+        else if(!isOnGround)
+        {
+            yVelocity -= fallSpeed;
+        }
 
         //rb.AddForce(moveForce, ForceMode.Force);
-        rb.velocity = new Vector3(moveForce.x, jump, moveForce.z);
+        rb.velocity = new Vector3(moveForce.x, yVelocity, moveForce.z);
 
         /* Falling gravity modifier */
-        //if (!isOnGround) rb.AddForce(Physics.gravity * extraFallGravity);
+        if (!isOnGround) rb.AddForce(Physics.gravity * fallSpeed);
 
         /* Rotation */
         if(moveInput != Vector3.zero) lastNonZeroInput = moveInput;
@@ -177,14 +192,19 @@ public class PlayerMovement : MonoBehaviour
         RaycastHit hit;
         bool hasHit = false;
         float avgAngle = 0f; 
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 2f, LayerMask.GetMask("LevelGeometrySolid"))) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
-        /*
-        if (Physics.Raycast(transform.position + Vector3.forward, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
-        if (Physics.Raycast(transform.position + Vector3.right, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
-        if (Physics.Raycast(transform.position + Vector3.back, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
-        if (Physics.Raycast(transform.position + Vector3.left, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
-        avgAngle /= 5;
-        */
+        
+        if(Physics.Raycast(leftFoot.transform.position, Vector3.down, out hit, 0.2f, LayerMask.GetMask("LevelGeometrySolid")))
+        {
+            hasHit = true;
+            avgAngle = Vector3.Angle(hit.normal, Vector3.up);
+        }
+
+        if (Physics.Raycast(rightFoot.transform.position, Vector3.down, out hit, 0.2f, LayerMask.GetMask("LevelGeometrySolid")))
+        {
+            hasHit = true;
+            avgAngle = Vector3.Angle(hit.normal, Vector3.up);
+        }
+
         Debug.Log("hasHit = " + hasHit);
         return hasHit && (avgAngle < maxWalkableAngle);
     }
