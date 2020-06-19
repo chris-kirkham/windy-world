@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerMovement : MonoBehaviour
 {
     /* components */
-    private Rigidbody rb;
     public Camera playerCamera;
+    private Animator animator;
+    private Rigidbody rb;
+    private PlayerInput input;
+
 
     /* misc variables (probably move these somewhere better) */
     private float maxWalkableAngle = 45f; //maximum angle (in degrees) for ground that the player can walk on
@@ -52,7 +56,10 @@ public class PlayerMovement : MonoBehaviour
     {
         //assign components
         rb = GetComponent<Rigidbody>();
+        input = GetComponent<PlayerInput>();
+        animator = GetComponent<Animator>();
 
+        //initialise parameters
         sqrSpeed = speed * speed;
         isOnGround = IsOnGround();
     }
@@ -62,12 +69,19 @@ public class PlayerMovement : MonoBehaviour
         sqrSpeed = speed * speed;
     }
 
+    private void Update()
+    {
+        animator.SetFloat("ForwardSpeed", new Vector3(rb.velocity.x, 0f, rb.velocity.z).magnitude);
+        animator.SetBool("Grounded", isOnGround);
+        animator.SetFloat("VerticalSpeed", rb.velocity.y);
+        if (!isOnGround) animator.SetFloat("AirborneVerticalSpeed", rb.velocity.y);
+    }
+
     // Update is called once per frame
     void FixedUpdate()
     {
         /* Update flags/trackers */
         isOnGround = IsOnGround();
-        Debug.Log(isOnGround);
 
         /* Horizontal movement */
         //calculate player movement
@@ -75,18 +89,18 @@ public class PlayerMovement : MonoBehaviour
         Vector3 moveForce = CalcGroundMvmt(moveInput);
 
         //slow player if moving over max speed
-        float speed = rb.velocity.sqrMagnitude;
-        if (speed < sqrSpeed) moveForce *= acceleration;
-        if (speed > sqrSpeed) moveForce -= moveForce.normalized * (speed - sqrSpeed);
-        
-        rb.AddForce(moveForce, ForceMode.Force);
+        //float xzSpeed = new Vector3(rb.velocity.x, 0f, rb.velocity.z).sqrMagnitude;
+        //if (xzSpeed < sqrSpeed) moveForce *= acceleration;
+        //if (xzSpeed > sqrSpeed) moveForce -= moveForce.normalized * (xzSpeed - sqrSpeed);
 
         /* Jump */
+        float jump = CalcJump() ? jumpForce : 0f; 
 
+        //rb.AddForce(moveForce, ForceMode.Force);
+        rb.velocity = new Vector3(moveForce.x, jump, moveForce.z);
 
         /* Falling gravity modifier */
-
-
+        //if (!isOnGround) rb.AddForce(Physics.gravity * extraFallGravity);
 
         /* Rotation */
         if(moveInput != Vector3.zero) lastNonZeroInput = moveInput;
@@ -98,14 +112,16 @@ public class PlayerMovement : MonoBehaviour
 
     Vector3 GetMovementInput()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        Vector2 hv = input.GetHVAxis();
 
-        //transform movement input so its direction is relative to the camera
-        Vector3 moveInput = playerCamera.transform.TransformDirection(new Vector3(horizontal, 0f, vertical));
-        moveInput.y = 0f; //zero y so player doesn't try to move up towards camera if it's above them
-
-        return moveInput.normalized;
+        //get camera facing vectors, ignoring up/down look
+        Vector3 camFlatRight = new Vector3(playerCamera.transform.right.x, 0f, playerCamera.transform.right.z).normalized;
+        Vector3 camFlatFwd = new Vector3(playerCamera.transform.forward.x, 0f, playerCamera.transform.forward.z).normalized;
+        
+        Vector3 moveInput = (hv.x * camFlatRight) + (hv.y * camFlatFwd);
+        
+        //clamp magnitude if > 1 so diagonal movement isn't faster than movement on one axis
+        return moveInput.sqrMagnitude > 1 ? moveInput.normalized : moveInput;
     }
 
     private Vector3 CalcMovement(Vector3 moveInput)
@@ -123,24 +139,24 @@ public class PlayerMovement : MonoBehaviour
         return (moveInput * speed * 0.2f);
     }
 
-    private float CalcJump()
+    private bool CalcJump()
     {
-        if(Input.GetKey(KeyCode.Space))
+        if(input.GetJump())
         {
             if(currJumpHoldTime < maxJumpHoldTime)
             {
                 currJumpHoldTime += Time.deltaTime;
-                return 1;
+                return true;
             }
             else
             {
-                return 0;
+                return false;
             }
         }
         else
         {
             currJumpHoldTime = 0;
-            return 0;
+            return false;
         }
     }
     
@@ -161,7 +177,7 @@ public class PlayerMovement : MonoBehaviour
         RaycastHit hit;
         bool hasHit = false;
         float avgAngle = 0f; 
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1f, LayerMask.GetMask("LevelGeometrySolid"))) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 2f, LayerMask.GetMask("LevelGeometrySolid"))) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
         /*
         if (Physics.Raycast(transform.position + Vector3.forward, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
         if (Physics.Raycast(transform.position + Vector3.right, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
@@ -169,6 +185,7 @@ public class PlayerMovement : MonoBehaviour
         if (Physics.Raycast(transform.position + Vector3.left, Vector3.down, out hit, 2f)) avgAngle += Vector3.Angle(hit.normal, Vector3.up); hasHit = true;
         avgAngle /= 5;
         */
+        Debug.Log("hasHit = " + hasHit);
         return hasHit && (avgAngle < maxWalkableAngle);
     }
 

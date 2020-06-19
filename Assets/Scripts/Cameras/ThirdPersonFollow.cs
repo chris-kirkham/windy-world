@@ -11,11 +11,16 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class ThirdPersonFollow : MonoBehaviour
 {
-
-    /* COMPONENTS */
+    /* MAIN COMPONENTS */
     private Camera cam;
     private CameraShakeController camShakeController;
     public GameObject followTarget;
+
+    /* CAMERA "MODULES" */
+    private CameraFollow follow;
+    private CameraShake shake;
+    private CameraOcclusion occlusion;
+    private CameraCollision collision;
 
     /* MISC/CAMERA ATTRIBUTES */
     private enum State
@@ -51,6 +56,19 @@ public class ThirdPersonFollow : MonoBehaviour
     public float minDistanceFromTarget = 1f;
     public float maxDistanceFromTarget = 10f;
     private float sqrMinDistanceFromTarget, sqrMaxDistanceFromTarget;
+
+    /* TARGET FOLLOW - MOUSE ORBIT */
+    [Header("Target orbit")]
+    public float orbitSpeed = 10f;
+
+    [Tooltip("When the mouse is not moving (i.e. the player is not actively controlling the camera orbit)," +
+        " the camera will linger on the current orbit angle for orbitIdleStayTime seconds before returning to the default offset.")]
+    public float orbitIdleStayTime = 1f;
+    private float orbitStayCounter = 0f;
+
+    //tracks current mouse x and y angles
+    private float mouseX = 0f;
+    private float mouseY = 0f;
 
     /* TARGET FOLLOW - ROTATION */
     public enum LookAtMode
@@ -121,9 +139,15 @@ public class ThirdPersonFollow : MonoBehaviour
 
     void Start()
     {
-        /* COMPONENTS */
+        /* MAIN COMPONENTS */
         cam = GetComponent<Camera>();
         camShakeController = GetComponent<CameraShakeController>();
+
+        /* CAMERA "MODULES */
+        follow = GetComponent<CameraFollow>();
+        shake = GetComponent<CameraShake>();
+        occlusion = GetComponent<CameraOcclusion>();
+        collision = GetComponent<CameraCollision>();
 
         /* MISC/CAMERA ATTRIBUTES */
         state = State.FollowingTarget;
@@ -184,8 +208,11 @@ public class ThirdPersonFollow : MonoBehaviour
         //each of these updates the new camera position given as a reference
         Vector3 newPos = cam.transform.position;
         OffsetFromTarget(ref newPos);
+        Orbit(ref newPos);
         ShakeCamera(ref newPos);
         
+        //if(follow != null) follow.FollowTarget(GameObject followTarget, )
+
         //newPos = Lerps.Smootherstep(newPos, newPos + CamWhiskersFromTarget(), Time.deltaTime * preemptiveLerpSpeed);
         //AvoidOcclusion(ref newPos);
         //AvoidCollision(ref newPos);
@@ -215,22 +242,25 @@ public class ThirdPersonFollow : MonoBehaviour
         Vector3 followTargetPos = followTarget.transform.position;
         Vector3 desiredPos;
 
-        if(state == State.TargetMovingTowardsCamera)
+        switch(state)
         {
-            Vector3 frontOffset = new Vector3(desiredOffsetFromTarget.x, desiredOffsetFromTarget.y, Mathf.Abs(desiredOffsetFromTarget.z));
-            desiredPos = followTargetPos + (worldSpaceOffset ? frontOffset : followTarget.transform.TransformDirection(frontOffset));
-        }
-        else
-        {
-            desiredPos = worldSpaceOffset ? followTargetPos + desiredOffsetFromTarget
-            : followTargetPos + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
+            case State.TargetMovingTowardsCamera:
+                Vector3 frontOffset = new Vector3(desiredOffsetFromTarget.x, desiredOffsetFromTarget.y, Mathf.Abs(desiredOffsetFromTarget.z));
+                desiredPos = followTargetPos + (worldSpaceOffset ? frontOffset : followTarget.transform.TransformDirection(frontOffset));
+                
+                break;
+            case State.FollowingTarget:
+            default:
+                desiredPos = worldSpaceOffset ? followTargetPos + desiredOffsetFromTarget
+                : followTargetPos + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
+                
+                break;
         }
     
         if(camPos != desiredPos)
         {
             newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
             //newPos = lerpOffset ? Vector3.SmoothDamp(camPos, desiredPos, ref smoothdampVelocity, 1f / offsetLerpSpeed) : desiredPos;
-            //if (Vector3.Dot(newPos - camPos, currentCamVelocity) < 0) newPos += currentCamVelocity;
 
             //Clamp newPos to min and max distances.
             //This causes camera to orbit around target at min distance, which is cool
@@ -258,6 +288,37 @@ public class ThirdPersonFollow : MonoBehaviour
         }
         */
 
+    }
+
+    private void Orbit(ref Vector3 newPos)
+    {
+        Vector3 followTargetPos = followTarget.transform.position;
+        mouseX += Input.GetAxis("Mouse X") * orbitSpeed;
+        mouseY -= Input.GetAxis("Mouse Y") * orbitSpeed;
+        mouseX = ClampMouseAngle(mouseX);
+        mouseY = ClampMouseAngle(mouseY);
+
+        Quaternion rotation = Quaternion.Euler(mouseY, mouseX, 0f);
+
+        newPos = Vector3.SmoothDamp(cam.transform.position, followTargetPos + (rotation * desiredOffsetFromTarget), ref smoothdampVelocity, 1 / orbitSpeed);
+
+        float newPosTargetSqrDist = (followTargetPos - newPos).sqrMagnitude;
+        Vector3 targetToNewPosUnit = (newPos - followTargetPos).normalized;
+        if (newPosTargetSqrDist < sqrMinDistanceFromTarget)
+        {
+            newPos = followTargetPos + (targetToNewPosUnit * minDistanceFromTarget);
+        }
+        else if (newPosTargetSqrDist > sqrMaxDistanceFromTarget)
+        {
+            newPos = followTargetPos + (targetToNewPosUnit * maxDistanceFromTarget);
+        }
+    }
+
+    private float ClampMouseAngle(float mouseAngle)
+    {
+        if (mouseAngle < 0) return mouseAngle + 360;
+        if (mouseAngle >= 360) return mouseAngle - 360;
+        return mouseAngle;
     }
 
     private void ShakeCamera(ref Vector3 newPos)
@@ -438,7 +499,4 @@ public class ThirdPersonFollow : MonoBehaviour
         return lookAtLerp ? Quaternion.Slerp(cam.transform.rotation, lookAt, Time.deltaTime * lookAtLerpSpeed) : lookAt;
     }
 
-    private void OnDrawGizmos()
-    {
-    }
 }
