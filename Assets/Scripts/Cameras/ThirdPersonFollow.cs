@@ -35,7 +35,6 @@ public class ThirdPersonFollow : MonoBehaviour
     private Vector3 lastCamPosition;
     private Vector3[] nearClipPaneCornersLocal;
 
-
     /* TARGET FOLLOW - POSITION */
     [Header("Target position following")]
     [Tooltip("The desired camera offset from the follow target, in local space by default." +
@@ -60,6 +59,8 @@ public class ThirdPersonFollow : MonoBehaviour
     /* TARGET FOLLOW - MOUSE ORBIT */
     [Header("Target orbit")]
     public float orbitSpeed = 10f;
+
+    public float minOrbitY, maxOrbitY;
 
     [Tooltip("When the mouse is not moving (i.e. the player is not actively controlling the camera orbit)," +
         " the camera will linger on the current orbit angle for orbitIdleStayTime seconds before returning to the default offset.")]
@@ -296,7 +297,7 @@ public class ThirdPersonFollow : MonoBehaviour
         mouseX += Input.GetAxis("Mouse X") * orbitSpeed;
         mouseY -= Input.GetAxis("Mouse Y") * orbitSpeed;
         mouseX = ClampMouseAngle(mouseX);
-        mouseY = ClampMouseAngle(mouseY);
+        mouseY = Mathf.Clamp(ClampMouseAngle(mouseY), minOrbitY, maxOrbitY);
 
         Quaternion rotation = Quaternion.Euler(mouseY, mouseX, 0f);
 
@@ -316,7 +317,7 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private float ClampMouseAngle(float mouseAngle)
     {
-        if (mouseAngle < 0) return mouseAngle + 360;
+        if (mouseAngle < -360) return mouseAngle + 360;
         if (mouseAngle >= 360) return mouseAngle - 360;
         return mouseAngle;
     }

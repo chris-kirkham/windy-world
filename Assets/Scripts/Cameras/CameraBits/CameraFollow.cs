@@ -20,6 +20,8 @@ public class CameraFollow : MonoBehaviour
     public bool interpolate = true;
     public float followSpeed = 5f;
     public float orbitSpeed = 10f;
+    [Range(0, 360)] public float minOrbitYAngle = 0f;
+    [Range(0, 360)] public float maxOrbitYAngle = 90f;
 
     private Vector3 smoothDampVelocity = Vector3.zero;
 
@@ -102,7 +104,7 @@ public class CameraFollow : MonoBehaviour
     {
         Vector2 mouse = input.GetMouseAxis();
         float x = ClampMouseAngle(mouse.x * orbitSpeed);
-        float y = ClampMouseAngle(mouse.y * orbitSpeed);
+        float y = ClampMouseAngle(mouse.y * orbitSpeed, minOrbitYAngle, maxOrbitYAngle);
 
         Quaternion rotation = Quaternion.Euler(y, x, 0f);
 
@@ -125,10 +127,11 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    private float ClampMouseAngle(float mouseAngle)
+    //Clamps mouse angle between 0 and 360, or between min and max where -360 <= min <= max <= 360
+    private float ClampMouseAngle(float mouseAngle, float min = -360f, float max = 360f)
     {
-        if (mouseAngle < 0) return mouseAngle + 360;
-        if (mouseAngle >= 360) return mouseAngle - 360;
+        if (mouseAngle < -360f) return mouseAngle + 360f;
+        if (mouseAngle >= 360f) return mouseAngle - 360f;
         return mouseAngle;
     }
 }

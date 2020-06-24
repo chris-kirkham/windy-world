@@ -76,6 +76,7 @@
     <Compile Include="Assets\Scripts\Noise\Perlin.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerInput.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerMovement_Force.cs" />
     <Compile Include="Assets\Scripts\Utilities\Extensions\Lerps.cs" />
     <Compile Include="Assets\Scripts\Wind\Static\WindNoise.cs" />
     <Compile Include="Assets\Scripts\Wind\Wind-affected objects\WindAffectedPhysObj.cs" />
