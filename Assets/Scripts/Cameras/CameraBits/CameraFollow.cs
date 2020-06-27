@@ -6,22 +6,23 @@ using UnityEngine;
 public class CameraFollow : MonoBehaviour
 {
     private ThirdPersonFollow camMain;
-    private GameObject followTarget;
-    private PlayerInput input;
+    [SerializeField] private GameObject followTarget;
+    [SerializeField] private PlayerInput input;
+    [SerializeField] private bool useFollowTargetPlayerInput;
 
     public Vector3 desiredOffsetFromTarget = Vector3.zero;
-    public bool worldSpaceOffset = false;
+    [SerializeField] private bool worldSpaceOffset = false;
 
-    public float minDistFromTarget = 1f;
-    public float maxDistFromTarget = 2f;
+    [SerializeField] private float minDistFromTarget = 1f;
+    [SerializeField] private float maxDistFromTarget = 2f;
     private float sqrMinDistFromTarget;
     private float sqrMaxDistFromTarget;
 
-    public bool interpolate = true;
-    public float followSpeed = 5f;
-    public float orbitSpeed = 10f;
-    [Range(0, 360)] public float minOrbitYAngle = 0f;
-    [Range(0, 360)] public float maxOrbitYAngle = 90f;
+    [SerializeField] private bool interpolate = true;
+    [SerializeField] private float followSpeed = 5f;
+    [SerializeField] private float orbitSpeed = 10f;
+    [Range(-360, 360)] [SerializeField] private float minOrbitYAngle = 0f;
+    [Range(-360, 360)] [SerializeField] private float maxOrbitYAngle = 90f;
 
     private Vector3 smoothDampVelocity = Vector3.zero;
 
@@ -29,9 +30,12 @@ public class CameraFollow : MonoBehaviour
 
     private void Start()
     {
-        followTarget = camMain.followTarget;
-        input = GetComponent<PlayerInput>();
-
+        //followTarget = camMain.followTarget;
+        if(useFollowTargetPlayerInput && !followTarget.TryGetComponent(out input))
+        {
+            Debug.LogError("No PlayerInput component on followTarget!");
+        }
+        
         sqrMinDistFromTarget = minDistFromTarget * minDistFromTarget;
         sqrMaxDistFromTarget = maxDistFromTarget * maxDistFromTarget;
     }
@@ -42,11 +46,13 @@ public class CameraFollow : MonoBehaviour
         sqrMaxDistFromTarget = maxDistFromTarget * maxDistFromTarget;
     }
 
-    private Vector3 UpdatePosition(Vector3 camPos, Vector3 followTargetPos)
+    public Vector3 UpdatePosition(Vector3 camPos, Vector3 followTargetPos)
     {
         Vector3 desiredPos;
         float lerpSpeed; //different camera states (e.g. orbit vs follow) may have different lerp speeds
+        Debug.Log("State: " + GetFollowState());
 
+        //get desired camera position and lerp speed based on follow state
         switch (GetFollowState())
         {
             case State.OrbitingTarget:
@@ -74,6 +80,7 @@ public class CameraFollow : MonoBehaviour
             Vector3 newPos = interpolate ? Vector3.SmoothDamp(camPos, desiredPos, ref smoothDampVelocity, 1f / lerpSpeed) : desiredPos;
 
             //Clamp newPos to min and max distances
+            /*
             float newPosTargetSqrDist = (followTargetPos - newPos).sqrMagnitude;
             Vector3 targetToNewPosUnit = (newPos - followTargetPos).normalized;
             if (newPosTargetSqrDist < sqrMinDistFromTarget)
@@ -84,7 +91,7 @@ public class CameraFollow : MonoBehaviour
             {
                 newPos = followTargetPos + (targetToNewPosUnit * maxDistFromTarget);
             }
-
+            */
             return newPos;
         }
     }
@@ -113,7 +120,7 @@ public class CameraFollow : MonoBehaviour
 
     private State GetFollowState()
     {
-        if(input.GetMouseAxis() != Vector2.zero)
+        if(input.GetMouseAxisChange() != Vector2.zero)
         {
             return State.OrbitingTarget;
         }
@@ -130,8 +137,8 @@ public class CameraFollow : MonoBehaviour
     //Clamps mouse angle between 0 and 360, or between min and max where -360 <= min <= max <= 360
     private float ClampMouseAngle(float mouseAngle, float min = -360f, float max = 360f)
     {
-        if (mouseAngle < -360f) return mouseAngle + 360f;
-        if (mouseAngle >= 360f) return mouseAngle - 360f;
-        return mouseAngle;
+        if (mouseAngle < -360f) mouseAngle += 360f;
+        else if (mouseAngle >= 360f) mouseAngle -= 360f;
+        return Mathf.Clamp(mouseAngle, min, max);
     }
 }

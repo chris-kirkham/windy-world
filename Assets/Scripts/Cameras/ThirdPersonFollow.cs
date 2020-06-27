@@ -138,13 +138,13 @@ public class ThirdPersonFollow : MonoBehaviour
     private float occlusionAvoidSearchSampleDist; 
 
 
-    void Start()
+    void Awake()
     {
         /* MAIN COMPONENTS */
         cam = GetComponent<Camera>();
         camShakeController = GetComponent<CameraShakeController>();
 
-        /* CAMERA "MODULES */
+        /* CAMERA "MODULES" */
         follow = GetComponent<CameraFollow>();
         shake = GetComponent<CameraShake>();
         occlusion = GetComponent<CameraOcclusion>();
@@ -209,7 +209,7 @@ public class ThirdPersonFollow : MonoBehaviour
         //each of these updates the new camera position given as a reference
         Vector3 newPos = cam.transform.position;
         OffsetFromTarget(ref newPos);
-        Orbit(ref newPos);
+        //newPos = follow.UpdatePosition(newPos, follow.transform.position);
         ShakeCamera(ref newPos);
         
         //if(follow != null) follow.FollowTarget(GameObject followTarget, )
@@ -248,13 +248,11 @@ public class ThirdPersonFollow : MonoBehaviour
             case State.TargetMovingTowardsCamera:
                 Vector3 frontOffset = new Vector3(desiredOffsetFromTarget.x, desiredOffsetFromTarget.y, Mathf.Abs(desiredOffsetFromTarget.z));
                 desiredPos = followTargetPos + (worldSpaceOffset ? frontOffset : followTarget.transform.TransformDirection(frontOffset));
-                
                 break;
             case State.FollowingTarget:
             default:
                 desiredPos = worldSpaceOffset ? followTargetPos + desiredOffsetFromTarget
                 : followTargetPos + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
-                
                 break;
         }
     

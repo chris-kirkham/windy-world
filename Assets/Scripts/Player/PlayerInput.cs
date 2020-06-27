@@ -25,6 +25,11 @@ public class PlayerInput : MonoBehaviour
         return new Vector2(mouseX, mouseY);
     }
 
+    public Vector2 GetMouseAxisChange()
+    {
+        return new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+    }
+
     public bool GetJump()
     {
         return Input.GetKey(KeyCode.Space);
