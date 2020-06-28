@@ -22,7 +22,7 @@ float3 fwd, up, right; //forward, up, and right vectors of the wind area
 int3 numPoints; //(x, y, z) number of wind points
 float3 wind; //wind direction of the wind area (same for all points)
 
-[numthreads(8, 8, 8)]
+[numthreads(4, 4, 4)]
 void CalcWindPoints (uint3 id : SV_DispatchThreadID)
 {
     OutPoint outPoint;

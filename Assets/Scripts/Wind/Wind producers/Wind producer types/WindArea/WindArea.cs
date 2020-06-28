@@ -94,18 +94,17 @@ public class WindArea : WF_WindProducer
         float[] start = new float[3] { ((float)numCells.x / 2) * cellSize, ((float)numCells.y / 2) * cellSize, ((float)numCells.z / 2) * cellSize };
         Debug.Log(string.Join(", ", start));
         calcWindPointsShader.SetFloats("startPos", start);
-        calcWindPointsShader.SetFloats("right", new float[3] { transform.right.x, transform.right.y, transform.right.z } );
-        calcWindPointsShader.SetFloats("up", new float[3] { transform.up.x, transform.up.y, transform.up.z } );
-        calcWindPointsShader.SetFloats("fwd", new float[3] { transform.forward.x, transform.forward.y, transform.forward.z } );
+        calcWindPointsShader.SetFloats("right", new float[3] { transform.right.x * cellSize, transform.right.y * cellSize, transform.right.z * cellSize } );
+        calcWindPointsShader.SetFloats("up", new float[3] { transform.up.x * cellSize, transform.up.y * cellSize, transform.up.z * cellSize } );
+        calcWindPointsShader.SetFloats("fwd", new float[3] { transform.forward.x * cellSize, transform.forward.y * cellSize, transform.forward.z * cellSize } );
         calcWindPointsShader.SetInts("numPoints", new int[3] { numCells.x, numCells.y, numCells.z } );
-        calcWindPointsShader.SetFloats("windDir", new float[3] { wind.x, wind.y, wind.z } );
+        calcWindPointsShader.SetFloats("wind", new float[3] { wind.x, wind.y, wind.z } );
 
         int kernelHandle = calcWindPointsShader.FindKernel("CalcWindPoints");
         calcWindPointsShader.SetBuffer(kernelHandle, "Result", windPoints);
         calcWindPointsShader.Dispatch(kernelHandle, numCells.x, numCells.y, numCells.z);
         windPoints.GetData(points);
-        
-        
+
         stopwatch.Stop();
         Debug.Log("WindArea update time for " + numCells.x * numCells.y * numCells.z + " cells : " + stopwatch.ElapsedMilliseconds + " milliseconds");
 
