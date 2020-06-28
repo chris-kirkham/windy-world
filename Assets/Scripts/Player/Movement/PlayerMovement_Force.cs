@@ -37,14 +37,13 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         /* Horizontal movement */
         Vector3 moveInput = GetMovementInput();
         Vector3 moveForce = CalcMovement(moveInput);
-        float slopeMult = CalcSlopeSpeedAdjustment(2f, moveInput, 30, 45, 70);
-        
-        Vector3 totalMoveForce = Vector3.ClampMagnitude(moveForce, MAX_ADDFORCE_MAGNITUDE);
+        float slopeMult = CalcSlopeSpeedAdjustment(2f, moveInput, -15, 15, 45);
+        Vector3 totalMoveForce = Vector3.ClampMagnitude(moveForce * slopeMult, MAX_ADDFORCE_MAGNITUDE);
         rb.AddForce(totalMoveForce, forceMode);
 
         /* Jump forces */
         rb.AddForce(Vector3.up * CalcJump(), forceMode);
-        if (isFalling) rb.AddForce(Physics.gravity * extraFallSpeed * fallTime, ForceMode.Impulse);
+        if (isFalling) rb.AddForce(Physics.gravity * extraFallSpeed * Mathf.Pow(fallTime, 2), ForceMode.Impulse);
 
         /* Stair step traversal */
         float stepUpHeight;
@@ -56,6 +55,8 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         /* Rotation */
         if (moveInput != Vector3.zero) lastNonZeroInput = moveInput;
         transform.rotation = Quaternion.LookRotation(lastNonZeroInput, Vector3.up);
+
+        Debug.Log("speed = " + rb.velocity.magnitude); 
     }
 
     //Returns the appropriate drag vector for the player's current state

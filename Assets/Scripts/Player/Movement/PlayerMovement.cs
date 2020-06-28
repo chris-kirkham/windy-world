@@ -213,19 +213,15 @@ public abstract class PlayerMovement : MonoBehaviour
 
     protected float CalcSlopeSpeedAdjustment(float slopeSpeedMult, Vector3 playerInput, float speedUpEndAngle, float slowStartAngle, float maxWalkableAngle)
     {
-        //if not on ground, no speed adjustment
-        if (!isOnGround) return 1;
-
-        //get average slope normal from foot positions
-        Vector3 avgSlopeNormal = Vector3.zero;
-        RaycastHit hit;
-        if (Physics.Raycast(leftFoot.transform.position, Vector3.down, out hit, GROUND_RAYCAST_MAX_DISTANCE, levelGeometrySolid)) avgSlopeNormal += hit.point;
-        if (Physics.Raycast(rightFoot.transform.position, Vector3.down, out hit, GROUND_RAYCAST_MAX_DISTANCE, levelGeometrySolid)) avgSlopeNormal += hit.point;
-        avgSlopeNormal /= 2;
+        //get average slope normal from ground raycasts
+        //if no successful raycasts, we're not on the ground and shouldn't adjust speed;
+        //if no player input, also don't adjust speed (necessary?)
+        if (!GroundRaycasts(out Vector3 avgSlopeNormal) || playerInput.sqrMagnitude == 0f) return 1;
 
         //get angle between player input and slope normal; return speed multiplier based on this
-        float angle = Vector3.Angle(playerInput, avgSlopeNormal);
-        if (angle < speedUpEndAngle) return 1 + ((1 - Mathf.InverseLerp(0, speedUpEndAngle, angle)) * slopeSpeedMult);
+        float angle = Vector3.Angle(playerInput, avgSlopeNormal) - 90f; //-90 so angle is between -90 and 90, with 0 being flat ground
+        
+        if (angle < speedUpEndAngle) return 1 + ((1 - Mathf.InverseLerp(-90, speedUpEndAngle, angle)) * slopeSpeedMult);
         if (angle > speedUpEndAngle && angle < slowStartAngle) return 1;
         if (angle < maxWalkableAngle) return 1 - Mathf.InverseLerp(slowStartAngle, maxWalkableAngle, angle);
         else return 0f; //angle > max walkable angle 

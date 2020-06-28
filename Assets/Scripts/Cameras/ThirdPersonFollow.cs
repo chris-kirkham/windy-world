@@ -258,8 +258,9 @@ public class ThirdPersonFollow : MonoBehaviour
     
         if(camPos != desiredPos)
         {
-            newPos = lerpOffset ? Vector3.Slerp(camPos, desiredPos, Time.deltaTime * offsetLerpSpeed) : desiredPos;
             //newPos = lerpOffset ? Vector3.SmoothDamp(camPos, desiredPos, ref smoothdampVelocity, 1f / offsetLerpSpeed) : desiredPos;
+            float smoothTime = 1 / offsetLerpSpeed;
+            newPos = lerpOffset ? Lerps.SmoothDampSeparateAxisSeparateY(camPos, desiredPos, ref smoothdampVelocity, smoothTime, smoothTime * 5, smoothTime, smoothTime, Time.deltaTime) : desiredPos;
 
             //Clamp newPos to min and max distances.
             //This causes camera to orbit around target at min distance, which is cool
