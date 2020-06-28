@@ -50,8 +50,6 @@ public class WindField : MonoBehaviour
                         //new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize) + new Vector3(Random.Range(0, rootCellSize), Random.Range(0, rootCellSize), Random.Range(0, rootCellSize)),
                         new Vector3(i * rootCellSize, j * rootCellSize, k * rootCellSize),
                         Vector3.zero,
-                        0,
-                        0,
                         WindProducerMode.Static
                     );
 

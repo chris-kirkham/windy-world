@@ -55,7 +55,7 @@ public class WF_Cell
                 AddStatic(obj);
                 break;
             default:
-                Debug.LogError("Unhandled WindObjectType! If you added a new one, update this function.");
+                Debug.LogError("Unhandled ProducerMode! If you added a new one, update this function.");
                 break;
         }
     }
