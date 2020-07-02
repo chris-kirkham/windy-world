@@ -2,21 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpatialHashKey : WF_HashKey<Vector3Int>
+namespace Wind
 {
-    public SpatialHashKey(Vector3 pos, float cellSize)
+    public class SpatialHashKey : HashKey<Vector3Int>
     {
-        key = GetCellCoord(pos, cellSize);
-    }
+        public SpatialHashKey(Vector3 pos, float cellSize)
+        {
+            key = GetCellCoord(pos, cellSize);
+        }
 
-    public override int GetHashCode()
-    {
-        return key.GetHashCode();
-    }
+        public override int GetHashCode()
+        {
+            return key.GetHashCode();
+        }
 
-    public override bool Equals(WF_HashKey<Vector3Int> other)
-    {
-        return key == other.GetKey();
-    }
+        public override bool Equals(HashKey<Vector3Int> other)
+        {
+            return key == other.GetKey();
+        }
 
+    }
 }

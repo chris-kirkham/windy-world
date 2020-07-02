@@ -32,7 +32,7 @@ public class WindPointVis : MonoBehaviour
     {
         windArrow.transform.position = windPoint.transform.position;
         if(windPoint.wind != Vector3.zero) windArrow.transform.rotation = Quaternion.LookRotation(windPoint.wind, Vector3.up);
-        float cellSize = windPoint.windField.rootCellSize / Mathf.Pow(2, windPoint.depth);
+        float cellSize = windPoint.windField.GetCellSize() / Mathf.Pow(2, windPoint.depth);
         //windArrow.transform.localScale = Vector3.Min(initArrowScale * cellSize, initArrowScale * windPoint.wind.magnitude);
     }
 

@@ -5,7 +5,7 @@
  * the wind field will update its position, necessitating re-hashing etc.
  * Use this if the object can move during gameplay. (MOST EXPENSIVE) 
  *
- * [CURRENTLY UNUSED]
+ * [UNUSED]
  * Position Static:
  * the wind field will not try to update its position, but will update its wind information.
  * Use this if the object will not move during gameplay, but its wind information may change.
