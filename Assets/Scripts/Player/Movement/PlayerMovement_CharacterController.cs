@@ -17,7 +17,7 @@ public class PlayerMovement_CharacterController : PlayerMovement
 
     private void FixedUpdate()
     {
-        cc.Move(CalcMovement(GetMovementInput()) * Time.deltaTime);
+        cc.Move(CalcMovement(GetMovementInput(), maxGroundSpeed) * Time.deltaTime);
     }
 
     //GETTERS

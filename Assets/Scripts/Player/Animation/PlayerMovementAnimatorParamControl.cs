@@ -2,27 +2,30 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerMovement_Rigidbody))]
+[RequireComponent(typeof(PlayerMovement))]
+[RequireComponent(typeof(PlayerState))]
 [RequireComponent(typeof(Animator))]
 public class PlayerMovementAnimatorParamControl : MonoBehaviour
 {
     private Animator animator;
-    private PlayerMovement mvmt;
+    private PlayerMovement movement;
+    private PlayerState state;
     void Start()
     {
         animator = GetComponent<Animator>();
-        mvmt = GetComponent<PlayerMovement>();
+        movement = GetComponent<PlayerMovement>();
+        state = GetComponent<PlayerState>();
     }
 
     // Update animator params
     void Update()
     {
-        Vector3 vel = mvmt.GetVelocity();
-        bool isOnGround = mvmt.IsOnGround();
-        animator.SetFloat("ForwardSpeed", new Vector3(vel.x, 0f, vel.z).magnitude);
+        bool isOnGround = state.IsOnGround;
+        animator.SetFloat("ForwardSpeed", state.HorizontalSpeed);
         animator.SetBool("Grounded", isOnGround);
-        if (!isOnGround) animator.SetFloat("AirborneVerticalSpeed", vel.y);
-        animator.SetFloat("VerticalSpeed", vel.y);
-        animator.SetBool("Jumping", mvmt.IsJumping());
+        float yVel = movement.GetVelocity().y;
+        if (!isOnGround) animator.SetFloat("AirborneVerticalSpeed", yVel);
+        animator.SetFloat("VerticalSpeed", yVel);
+        animator.SetBool("Jumping", state.IsJumping);
     }
 }

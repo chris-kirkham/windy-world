@@ -6,12 +6,10 @@ using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(PlayerState))]
 public abstract class PlayerMovement : MonoBehaviour
 {
     /* constants */
-    protected const float GROUND_RAYCAST_MAX_DISTANCE = 0.3f;
-    protected const float MAX_WALKABLE_ANGLE = 45f; //maximum angle (in degrees) for ground that the player can walk on
-
     protected const float STEP_UP_MAX_STEP_HEIGHT = 0.4f; //maximum step height at which player will walk up a stair step
     protected const float STEP_UP_MAX_FORWARD_RAYCAST_DIST = 0.2f;
     protected const float STEP_UP_SPHERECAST_HEIGHT = 1.5f; //height to cast sphere upwards when checking if step up is obstructed
@@ -19,6 +17,7 @@ public abstract class PlayerMovement : MonoBehaviour
 
     /* components */
     [SerializeField] protected Camera playerCamera;
+    protected PlayerState state;
     protected Animator animator;
     protected PlayerInput input;
 
@@ -30,15 +29,11 @@ public abstract class PlayerMovement : MonoBehaviour
     /* Layer masks */
     protected LayerMask levelGeometrySolid;
 
-    /* status flags */
-    protected bool isOnGround = false;
-    protected bool isJumping = false;
-
     /* trackers */
     protected Vector3 lastNonZeroInput = Vector3.forward; //used to keep player facing their last movement direction when stopped
 
     /* land speed attributes */
-    [SerializeField] protected float maxSpeed = 10f;
+    [SerializeField] protected float maxGroundSpeed = 10f;
     protected float sqrSpeed;
 
     //public float runSpeed = 150f;
@@ -70,6 +65,7 @@ public abstract class PlayerMovement : MonoBehaviour
     protected virtual void Start()
     {
         /* assign components */
+        state = GetComponent<PlayerState>();
         input = GetComponent<PlayerInput>();
         animator = GetComponent<Animator>();
 
@@ -77,15 +73,14 @@ public abstract class PlayerMovement : MonoBehaviour
         levelGeometrySolid = LayerMask.GetMask("LevelGeometrySolid");
 
         /* initialise parameters */
-        sqrSpeed = maxSpeed * maxSpeed;
+        sqrSpeed = maxGroundSpeed * maxGroundSpeed;
         sqrMaxAirSpeed = maxAirSpeed * maxAirSpeed;
         sqrMaxFallSpeed = maxFallSpeed * maxFallSpeed;
-        isOnGround = CalcIsOnGround();
     }
 
     protected virtual void OnValidate()
     {
-        sqrSpeed = maxSpeed * maxSpeed;
+        sqrSpeed = maxGroundSpeed * maxGroundSpeed;
     }
 
     protected Vector3 GetMovementInput()
@@ -102,12 +97,12 @@ public abstract class PlayerMovement : MonoBehaviour
         return moveInput.sqrMagnitude > 1 ? moveInput.normalized : moveInput;
     }
 
-    protected virtual Vector3 CalcMovement(Vector3 moveInput)
+    protected virtual Vector3 CalcMovement(Vector3 moveInput, float speed)
     {
-        return isOnGround ? CalcGroundMvmt(moveInput) : CalcAirMvmt(moveInput);
+        return state.IsOnGround ? CalcGroundMvmt(moveInput, speed) : CalcAirMvmt(moveInput, speed);
     }
 
-    protected virtual Vector3 CalcGroundMvmt(Vector3 moveInput)
+    protected virtual Vector3 CalcGroundMvmt(Vector3 moveInput, float speed)
     {
         /*
         //make move vector follow ground angle
@@ -117,98 +112,12 @@ public abstract class PlayerMovement : MonoBehaviour
         }
         */
 
-        return moveInput * maxSpeed;
+        return moveInput * speed;
     }
 
-    protected virtual Vector3 CalcAirMvmt(Vector3 moveInput)
+    protected virtual Vector3 CalcAirMvmt(Vector3 moveInput, float speed)
     {
-        return moveInput * maxSpeed * airControlAmount;
-    }
-
-    protected float CalcJump()
-    {
-        if(input.GetJump())
-        {
-            if((isOnGround || isJumping) && currJumpHoldTime < maxJumpHoldTime)
-            {
-                isJumping = true;
-                currJumpHoldTime += Time.deltaTime;
-                return jumpForce;
-            }
-            else
-            {
-                return 0f;
-            }
-        }
-        else
-        {
-            isJumping = false;
-            currJumpHoldTime = 0f;
-            return 0f;
-        }
-    }
-
-    //Check if player is standing on the ground
-    protected bool CalcIsOnGround()
-    {
-        if(GroundRaycasts(out Vector3 avgNormal))
-        {
-            float avgGroundAngle = Vector3.Angle(avgNormal, Vector3.up);
-            return avgGroundAngle < MAX_WALKABLE_ANGLE;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    //Performs raycasts towards the ground; returns true if any raycasts hit, and logs the average of the hit normal(s) in avgNormal (Vector3.zero if no hit)
-    protected bool GroundRaycasts(out Vector3 avgNormal)
-    {
-        avgNormal = Vector3.zero;
-        int successfulRaycasts = 0;
-
-        float raycastOffset = 0.2f;
-        Vector3 playerFloorPos = playerFloor.transform.position + (Vector3.up * 0.2f);
-        RaycastHit hit;
-        //centre
-        if (Physics.Raycast(playerFloorPos, Vector3.down, out hit, GROUND_RAYCAST_MAX_DISTANCE, levelGeometrySolid))
-        {
-            successfulRaycasts++;
-            avgNormal += hit.normal;
-        }
-
-        //forward
-        if (Physics.Raycast(playerFloorPos + (Vector3.forward * raycastOffset), Vector3.down, out hit, GROUND_RAYCAST_MAX_DISTANCE, levelGeometrySolid))
-        {
-            successfulRaycasts++;
-            avgNormal += hit.normal;
-        }
-
-        //back
-        if (Physics.Raycast(playerFloorPos + (Vector3.back * raycastOffset), Vector3.down, out hit, GROUND_RAYCAST_MAX_DISTANCE, levelGeometrySolid))
-        {
-            successfulRaycasts++;
-            avgNormal += hit.normal;
-        }
-
-        //left
-        if (Physics.Raycast(playerFloorPos + (Vector3.left * raycastOffset), Vector3.down, out hit, GROUND_RAYCAST_MAX_DISTANCE, levelGeometrySolid))
-        {
-            successfulRaycasts++;
-            avgNormal += hit.normal;
-        }
-
-        //right
-        if (Physics.Raycast(playerFloorPos + (Vector3.right * raycastOffset), Vector3.down, out hit, GROUND_RAYCAST_MAX_DISTANCE, levelGeometrySolid))
-        {
-            successfulRaycasts++;
-            avgNormal += hit.normal;
-        }
-
-        if (successfulRaycasts > 1) avgNormal /= successfulRaycasts;
-
-        return successfulRaycasts > 0;
+        return moveInput * speed * airControlAmount;
     }
 
     protected float CalcSlopeSpeedAdjustment(float slopeSpeedMult, Vector3 playerInput, float speedUpEndAngle, float slowStartAngle, float maxWalkableAngle)
@@ -216,7 +125,7 @@ public abstract class PlayerMovement : MonoBehaviour
         //get average slope normal from ground raycasts
         //if no successful raycasts, we're not on the ground and shouldn't adjust speed;
         //if no player input, also don't adjust speed (necessary?)
-        if (!GroundRaycasts(out Vector3 avgSlopeNormal) || playerInput.sqrMagnitude == 0f) return 1;
+        if (!PlayerUtils.GroundRaycasts(playerFloor.transform.position, out Vector3 avgSlopeNormal, levelGeometrySolid) || playerInput.sqrMagnitude == 0f) return 1;
 
         //get angle between player input and slope normal; return speed multiplier based on this
         float angle = Vector3.Angle(playerInput, avgSlopeNormal) - 90f; //-90 so angle is between -90 and 90, with 0 being flat ground
@@ -257,18 +166,6 @@ public abstract class PlayerMovement : MonoBehaviour
 
         stepUpHeight = 0f;
         return false;
-    }
-
-    //GETTERS
-
-    public bool IsOnGround()
-    {
-        return isOnGround;
-    }
-
-    public bool IsJumping()
-    {
-        return isJumping;
     }
     
     public abstract Vector3 GetVelocity();

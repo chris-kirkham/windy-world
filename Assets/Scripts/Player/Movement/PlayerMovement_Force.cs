@@ -11,12 +11,7 @@ using UnityEngine;
 public class PlayerMovement_Force : PlayerMovement_Rigidbody
 {
     public ForceMode forceMode = ForceMode.Force;
-
-    /* Drag parameters */
-    [Range(0, 1)] public float groundDrag = 1f;
-    [Range(0, 1)] public float airDragXZ = 1f;
-    [Range(0, 1)] public float airDragPlusY = 0f;
-    [Range(0, 1)] public float airDragMinusY = 0f;
+    public float slowAmount = 1f; //used to slow/stop character when not inputting a direction. Essentially manual drag for player movement 
 
     /* Status flags */
     protected bool isFalling = false;
@@ -30,27 +25,21 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
     protected void FixedUpdate()
     {
         /* Update flags/trackers */
-        isOnGround = CalcIsOnGround();
-        isFalling = CalcIsFalling();
+        state.UpdatePlayerState();
         fallTime = isFalling ? fallTime + Time.deltaTime : 0f;
 
-        /* Horizontal movement */
+        /* Input */
         Vector3 moveInput = GetMovementInput();
-        Vector3 moveForce = CalcMovement(moveInput);
+
+        /* Horizontal movement */
+        Vector3 moveForce = CalcMovement(moveInput, acceleration) + CalcGroundStopForce(moveInput);
         float slopeMult = CalcSlopeSpeedAdjustment(2f, moveInput, -15, 15, 45);
         Vector3 totalMoveForce = Vector3.ClampMagnitude(moveForce * slopeMult, MAX_ADDFORCE_MAGNITUDE);
         rb.AddForce(totalMoveForce, forceMode);
 
         /* Jump forces */
-        rb.AddForce(Vector3.up * CalcJump(), forceMode);
-        if (isFalling) rb.AddForce(Physics.gravity * extraFallSpeed * Mathf.Pow(fallTime, 2), ForceMode.Impulse);
-
-        /* Stair step traversal */
-        float stepUpHeight;
-        if(TryGetStepUpHeight(out stepUpHeight))
-        {
-            rb.transform.position = Vector3.Lerp(rb.transform.position, new Vector3(rb.transform.position.x, rb.transform.position.y + stepUpHeight, rb.transform.position.z), 1f);
-        }
+        if(state.IsJumping) rb.AddForce(Vector3.up * jumpForce, forceMode);
+        if (state.IsFalling) rb.AddForce(Physics.gravity * extraFallSpeed * Mathf.Pow(fallTime, 2), ForceMode.Impulse);
 
         /* Rotation */
         if (moveInput != Vector3.zero) lastNonZeroInput = moveInput;
@@ -59,23 +48,35 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         Debug.Log("speed = " + rb.velocity.magnitude); 
     }
 
-    //Returns the appropriate drag vector for the player's current state
-    private Vector3 CalcDrag()
+    protected void Update()
     {
-        if (isOnGround)
+        /* Clamp speed */
+        float maxSpeed = GetStateMaxSpeed();
+        if (rb.velocity.magnitude > maxSpeed) rb.velocity = rb.velocity.normalized * maxSpeed;
+
+        /* Stair step traversal */
+        float stepUpHeight;
+        if (TryGetStepUpHeight(out stepUpHeight))
         {
-            return GetDrag(groundDrag);
-        }
-        else
-        {
-            return rb.velocity.y > 0 ? GetDrag(airDragPlusY) : GetDrag(airDragMinusY);
+            rb.transform.position = Vector3.Lerp(rb.transform.position, new Vector3(rb.transform.position.x, rb.transform.position.y + stepUpHeight, rb.transform.position.z), 1f);
         }
     }
 
-    //Calculates a drag vector based on the rigidbody's velocity and a given drag factor (not physically accurate but works for gameplay)
-    private Vector3 GetDrag(float dragAmt)
+    //Calculates an opposing force to directions player is moving in but not inputting - 
+    //intended to act as increased drag to stop player sooner (and be more controllable than Unity's rigidbody drag setting)
+    protected Vector3 CalcGroundStopForce(Vector3 moveInput)
     {
-        return -(rb.velocity * rb.velocity.magnitude * dragAmt);
+        if (!state.IsOnGround) return Vector3.zero;
+
+        Vector3 slowForce = Vector3.zero;
+        if (moveInput.x == 0) slowForce.x = -(rb.velocity.x * slowAmount);
+        if (moveInput.z == 0) slowForce.z = -(rb.velocity.z * slowAmount);
+        return slowForce;
+    }
+
+    protected float GetStateMaxSpeed()
+    {
+        return state.IsOnGround ? maxGroundSpeed : maxAirSpeed;
     }
 
 }
