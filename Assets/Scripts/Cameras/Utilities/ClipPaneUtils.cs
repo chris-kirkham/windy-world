@@ -83,7 +83,7 @@ public static class ClipPaneUtils
     public static Vector2 GetOffsetFromCentreOfScreen(this Camera cam, Vector3 objWorldPos)
     {
         Vector3 screenPos = cam.WorldToScreenPoint(objWorldPos);
-        Debug.Log(objWorldPos + " screen offset = " + new Vector2((screenPos.x / cam.pixelWidth) - 0.5f, (screenPos.y / cam.pixelHeight) - 0.5f));
+        //Debug.Log(objWorldPos + " screen offset = " + new Vector2((screenPos.x / cam.pixelWidth) - 0.5f, (screenPos.y / cam.pixelHeight) - 0.5f));
         //normalise x and y screen points to [0, 1] by dividing width and height; subtract 0.5 from each so (0, 0) becomes the centre
         return new Vector2((screenPos.x / cam.pixelWidth) - 0.5f, (screenPos.y / cam.pixelHeight) - 0.5f); 
     }

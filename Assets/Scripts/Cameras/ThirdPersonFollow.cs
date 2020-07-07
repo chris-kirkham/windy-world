@@ -35,11 +35,14 @@ public class ThirdPersonFollow : MonoBehaviour
     private Vector3 lastCamPosition;
     private Vector3[] nearClipPaneCornersLocal;
 
+    /* CONVENIENCE VARIABLES */
+    Vector3 camPos;
+
     /* TARGET FOLLOW - POSITION */
     [Header("Target position following")]
     [Tooltip("The desired camera offset from the follow target, in local space by default." +
         "If using interpolation, the camera may deviate from this offset depending on target speed and lerp speed")]
-    public Vector3 desiredOffsetFromTarget = Vector3.zero;
+    public Vector3 desiredOffset = Vector3.zero;
 
     [Tooltip("Use offset as world space")]
     public bool worldSpaceOffset = false;
@@ -164,6 +167,9 @@ public class ThirdPersonFollow : MonoBehaviour
         lastCamPosition = transform.position;
         nearClipPaneCornersLocal = new Vector3[4];
 
+        /* CONVENIENCE VARIABLES */
+        camPos = cam.transform.position;
+
         /* TARGET FOLLOW - POSITION */
         sqrMinDistanceFromTarget = minDistanceFromTarget * minDistanceFromTarget;
         sqrMaxDistanceFromTarget = maxDistanceFromTarget * maxDistanceFromTarget;
@@ -180,12 +186,6 @@ public class ThirdPersonFollow : MonoBehaviour
     private void OnValidate()
     {
         /* TARGET FOLLOW - POSITION */
-        //clamp desired target offset to max target offset
-        /*
-        if (desiredOffsetFromTarget.x > maxOffsetFromTarget.x) desiredOffsetFromTarget.x = maxOffsetFromTarget.x;
-        if (desiredOffsetFromTarget.y > maxOffsetFromTarget.y) desiredOffsetFromTarget.y = maxOffsetFromTarget.x;
-        if (desiredOffsetFromTarget.z > maxOffsetFromTarget.z) desiredOffsetFromTarget.z = maxOffsetFromTarget.x;
-        */
         if (maxDistanceFromTarget < minDistanceFromTarget) minDistanceFromTarget = maxDistanceFromTarget;
         if (minDistanceFromTarget > maxDistanceFromTarget) maxDistanceFromTarget = minDistanceFromTarget;
 
@@ -208,7 +208,10 @@ public class ThirdPersonFollow : MonoBehaviour
     void FixedUpdate()
     {
         UpdateState();
-        
+
+        //update convenience variables
+        camPos = cam.transform.position;
+
         //update clip pane corner points
         nearClipPaneCornersLocal = ClipPaneUtils.GetNearClipPaneCornersLocal(cam);
 
@@ -223,11 +226,11 @@ public class ThirdPersonFollow : MonoBehaviour
         ShakeCamera(ref newPos);
 
         if (preemptiveOcclusionAvoidance) newPos += CamWhiskersFromTarget();
-        AvoidOcclusion(ref newPos);
+        //AvoidOcclusion(ref newPos);
         //AvoidCollision(ref newPos);
 
         //update camera position, as well as its last position/velocity trackers
-        lastCamPosition = cam.transform.position;
+        lastCamPosition = camPos;
         cam.transform.position = newPos;
         currentCamVelocity = (cam.transform.position - lastCamPosition) * Time.deltaTime;
     }
@@ -247,7 +250,6 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private void OffsetFromTarget(ref Vector3 newPos)
     {
-        Vector3 camPos = transform.position;
         Vector3 followTargetPos = followTarget.transform.position;
         Vector3 desiredPos;
 
@@ -255,13 +257,20 @@ public class ThirdPersonFollow : MonoBehaviour
         switch(state)
         {
             case State.TargetMovingTowardsCamera:
-                Vector3 frontOffset = new Vector3(desiredOffsetFromTarget.x, desiredOffsetFromTarget.y, Mathf.Abs(desiredOffsetFromTarget.z));
+                Vector3 frontOffset = new Vector3(desiredOffset.x, desiredOffset.y, Mathf.Abs(desiredOffset.z));
                 desiredPos = followTargetPos + (worldSpaceOffset ? frontOffset : followTarget.transform.TransformDirection(frontOffset));
                 break;
             case State.FollowingTarget:
             default:
-                desiredPos = worldSpaceOffset ? followTargetPos + desiredOffsetFromTarget
-                : followTargetPos + followTarget.transform.TransformDirection(desiredOffsetFromTarget);
+                if(worldSpaceOffset)
+                {
+                    desiredPos = followTargetPos + desiredOffset;
+                }
+                else
+                {
+                    desiredPos = followTargetPos + followTarget.transform.TransformDirection(desiredOffset);
+                }
+
                 break;
         }
 
@@ -275,7 +284,7 @@ public class ThirdPersonFollow : MonoBehaviour
 
         //Check deadzones and ignore position change in axes that are within deadzone
         Vector2 targetScreenCentreOffset = cam.GetOffsetFromCentreOfScreen(followTargetPos);
-        //if (Mathf.Abs(targetScreenCentreOffset.x) < followDeadzoneX) desiredPos.x = camPos.x; //use abs value of x offset since x deadzone is the same in both directions
+        if (Mathf.Abs(targetScreenCentreOffset.x) < followDeadzoneX) desiredPos = new Vector3(camPos.x, desiredPos.y, camPos.z); 
         //if (targetScreenCentreOffset.y > -followDeadzonePlusY || targetScreenCentreOffset.y < followDeadzoneNegativeY) desiredPos.y = camPos.y; //top half of screen is [-0.5, 0]; bottom is [0, 0.5]
 
         if (camPos != desiredPos)
@@ -309,7 +318,7 @@ public class ThirdPersonFollow : MonoBehaviour
 
         Quaternion rotation = Quaternion.Euler(mouseY, mouseX, 0f);
 
-        newPos = Vector3.SmoothDamp(cam.transform.position, followTargetPos + (rotation * desiredOffsetFromTarget), ref smoothdampVelocity, 1 / orbitSpeed);
+        newPos = Vector3.SmoothDamp(camPos, followTargetPos + (rotation * desiredOffset), ref smoothdampVelocity, 1 / orbitSpeed);
 
         float newPosTargetSqrDist = (followTargetPos - newPos).sqrMagnitude;
         Vector3 targetToNewPosUnit = (newPos - followTargetPos).normalized;
@@ -349,7 +358,7 @@ public class ThirdPersonFollow : MonoBehaviour
             Debug.DrawLine(clipPaneCornerWorld, newPosOffsetByClipCorner, Color.red);
             if (Physics.Linecast(clipPaneCornerWorld, newPosOffsetByClipCorner, out hit, solid))
             {
-                newPos = cam.transform.position;
+                newPos = camPos;
                 //EditorApplication.isPaused = true;
                 break;
             }
@@ -393,7 +402,7 @@ public class ThirdPersonFollow : MonoBehaviour
     {
         //FORWARD OCCLUSION AVOIDANCE - cast rays from follow target to (padded) near clip pane corners; move camera towards player if any hit
         LayerMask solid = LayerMask.GetMask("LevelGeometrySolid");
-        Vector3 targetPos = followTarget.transform.position + (Vector3.up * desiredOffsetFromTarget.y);
+        Vector3 targetPos = followTarget.transform.position + (Vector3.up * desiredOffset.y);
         float cornerPadding = 1.5f; //amount to extend the near clip pane corners by
         RaycastHit hit;
         foreach (Vector3 clipPaneCorner in nearClipPaneCornersLocal)
@@ -401,7 +410,8 @@ public class ThirdPersonFollow : MonoBehaviour
             if (Physics.Linecast(targetPos, transform.TransformPoint(clipPaneCorner * cornerPadding), out hit, solid))
             {
                 Debug.DrawLine(targetPos, transform.TransformPoint(clipPaneCorner * cornerPadding), Color.cyan, 0.1f);
-                newPos = Vector3.SmoothDamp(cam.transform.position, targetPos, ref smoothdampVelocity, 1 / (occlusionAvoidLerpSpeed / Vector3.Distance(hit.point, cam.transform.position)));
+                float smoothDampTime = Mathf.Min(1 / occlusionAvoidLerpSpeed, Vector3.Distance(hit.point, camPos));
+                newPos = Vector3.SmoothDamp(camPos, targetPos, ref smoothdampVelocity, smoothDampTime);
             }
         }
 
@@ -497,14 +507,14 @@ public class ThirdPersonFollow : MonoBehaviour
         switch(state)
         {
             case State.TargetMovingTowardsCamera:
-                lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - cam.transform.position, Vector3.up);
+                lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - camPos, Vector3.up);
                 break;
             case State.FollowingTarget:
             default:
                 switch (lookAtMode)
                 {
                     case LookAtMode.LookAtTarget:
-                        lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - cam.transform.position, Vector3.up);
+                        lookAt = Quaternion.LookRotation((followTarget.transform.position + offset) - camPos, Vector3.up);
                         break;
                     case LookAtMode.FaceTargetHeading:
                         lookAt = Quaternion.LookRotation(followTarget.transform.forward + offset);

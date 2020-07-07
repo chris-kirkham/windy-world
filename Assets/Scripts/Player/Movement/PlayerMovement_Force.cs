@@ -14,7 +14,6 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
     public float slowAmount = 1f; //used to slow/stop character when not inputting a direction. Essentially manual drag for player movement 
 
     /* Status flags */
-    protected bool isFalling = false;
 
     /* Trackers */
     protected float fallTime = 0f; //time the player has been falling for
@@ -26,7 +25,7 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
     {
         /* Update flags/trackers */
         state.UpdatePlayerState();
-        fallTime = isFalling ? fallTime + Time.deltaTime : 0f;
+        fallTime = state.IsFalling ? fallTime + Time.deltaTime : 0f;
 
         /* Input */
         Vector3 moveInput = GetMovementInput();
@@ -43,9 +42,8 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
 
         /* Rotation */
         if (moveInput != Vector3.zero) lastNonZeroInput = moveInput;
-        transform.rotation = Quaternion.LookRotation(lastNonZeroInput, Vector3.up);
-
-        Debug.Log("speed = " + rb.velocity.magnitude); 
+        //transform.rotation = Quaternion.LookRotation(lastNonZeroInput, Vector3.up);
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lastNonZeroInput, Vector3.up), 5f * Time.deltaTime);
     }
 
     protected void Update()

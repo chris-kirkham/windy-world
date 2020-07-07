@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
-    private Vector2 hvAxis;
-    private float jump;
-
     private float mouseX = 0f;
     private float mouseY = 0f;
 

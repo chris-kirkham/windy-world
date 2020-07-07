@@ -11,6 +11,7 @@ public class PlayerState : MonoBehaviour
 {
     /* constants */
     private const float MAX_WALKABLE_ANGLE = 45f; //maximum angle (in degrees) for ground that the player can walk on
+    private const float QUICK_TURN_DOT_THRESHOLD = -0.5f; //maximum dot product of normalised input and velocity vectors to be considered a "quick turn"
 
     /* components */
     [SerializeField] private GameObject playerFloor;
@@ -21,6 +22,8 @@ public class PlayerState : MonoBehaviour
     public bool IsOnGround { get; private set; } = false;
     public bool IsJumping { get; private set; } = false;
     public bool IsFalling { get; private set; } = false;
+    public bool IsQuickTurning { get; private set; } = false;
+    public bool IsQuickTurningFromIdle { get; private set; } = false;
 
     /* other info */
     public float Speed { get; private set; } = 0f;
@@ -40,11 +43,12 @@ public class PlayerState : MonoBehaviour
         SetIsOnGround();
         SetIsJumping();
         SetIsFalling();
+        SetIsQuickTurning();
+        SetIsQuickTurningFromIdle();
         SetSpeed();
         SetHorizontalSpeed();
     }
 
-    //Check if player is standing on the ground
     private void SetIsOnGround()
     {
         if (PlayerUtils.GroundRaycasts(playerFloor.transform.position, out Vector3 avgNormal, LayerMask.GetMask("LevelGeometrySolid")))
@@ -81,7 +85,19 @@ public class PlayerState : MonoBehaviour
 
     private void SetIsFalling()
     {
-        IsFalling = movement.GetVelocity().y < 0;
+        IsFalling = !IsOnGround && movement.GetVelocity().y < 0;
+    }
+
+    private void SetIsQuickTurning()
+    {
+        Debug.Log("Quickturn dot = " + Vector3.Dot(movement.GetMovementInput().normalized, movement.GetVelocity().normalized));
+        IsQuickTurning = Vector3.Dot(movement.GetMovementInput().normalized, movement.GetVelocity().normalized) < QUICK_TURN_DOT_THRESHOLD;
+    }
+
+    private void SetIsQuickTurningFromIdle()
+    {
+        IsQuickTurningFromIdle = movement.GetVelocity().sqrMagnitude < 0.01f
+                                 && Vector3.Dot(movement.GetMovementInput().normalized, movement.transform.forward) < QUICK_TURN_DOT_THRESHOLD;
     }
 
     private void SetSpeed()

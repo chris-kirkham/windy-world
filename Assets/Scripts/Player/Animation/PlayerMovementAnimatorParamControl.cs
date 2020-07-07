@@ -10,6 +10,7 @@ public class PlayerMovementAnimatorParamControl : MonoBehaviour
     private Animator animator;
     private PlayerMovement movement;
     private PlayerState state;
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -17,15 +18,22 @@ public class PlayerMovementAnimatorParamControl : MonoBehaviour
         state = GetComponent<PlayerState>();
     }
 
-    // Update animator params
+    //Update animator params
     void Update()
     {
-        bool isOnGround = state.IsOnGround;
+        //floats
         animator.SetFloat("ForwardSpeed", state.HorizontalSpeed);
-        animator.SetBool("Grounded", isOnGround);
         float yVel = movement.GetVelocity().y;
-        if (!isOnGround) animator.SetFloat("AirborneVerticalSpeed", yVel);
         animator.SetFloat("VerticalSpeed", yVel);
+        if (!state.IsOnGround) animator.SetFloat("AirborneVerticalSpeed", yVel);
+
+        //bools
+        animator.SetBool("Grounded", state.IsOnGround);
         animator.SetBool("Jumping", state.IsJumping);
+        animator.SetBool("Falling", state.IsFalling);
+        animator.SetBool("QuickTurning", state.IsQuickTurning);
+        
+        //triggers
+        if(state.IsQuickTurningFromIdle) animator.SetTrigger("QuickTurningFromIdle"); 
     }
 }

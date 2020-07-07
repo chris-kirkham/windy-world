@@ -83,7 +83,7 @@ public abstract class PlayerMovement : MonoBehaviour
         sqrSpeed = maxGroundSpeed * maxGroundSpeed;
     }
 
-    protected Vector3 GetMovementInput()
+    public Vector3 GetMovementInput()
     {
         Vector2 hv = input.GetHVAxis();
 
@@ -168,8 +168,12 @@ public abstract class PlayerMovement : MonoBehaviour
         return false;
     }
     
+    //GETTERS
     public abstract Vector3 GetVelocity();
-    
+
+
+
+
     private void OnDrawGizmos()
     {
         if(EditorApplication.isPlaying)
