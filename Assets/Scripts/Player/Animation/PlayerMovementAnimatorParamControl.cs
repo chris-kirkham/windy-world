@@ -32,8 +32,9 @@ public class PlayerMovementAnimatorParamControl : MonoBehaviour
         animator.SetBool("Jumping", state.IsJumping);
         animator.SetBool("Falling", state.IsFalling);
         animator.SetBool("QuickTurning", state.IsQuickTurning);
-        
+        animator.SetBool("StoppingFromWalkRun", state.IsStopping);
+
         //triggers
-        if(state.IsQuickTurningFromIdle) animator.SetTrigger("QuickTurningFromIdle"); 
+        if (state.IsQuickTurningFromIdle) animator.SetTrigger("QuickTurningFromIdle");
     }
 }

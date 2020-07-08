@@ -10,8 +10,10 @@ using UnityEngine;
 /// </summary>
 public class PlayerMovement_Force : PlayerMovement_Rigidbody
 {
-    public ForceMode forceMode = ForceMode.Force;
-    public float slowAmount = 1f; //used to slow/stop character when not inputting a direction. Essentially manual drag for player movement 
+    [SerializeField] private bool useForceCurve = true;
+    [SerializeField] private AnimationCurve forceCurve = new AnimationCurve();
+    [SerializeField] private ForceMode forceMode = ForceMode.Force;
+    [SerializeField] private float slowAmount = 1f; //used to slow/stop character when not inputting a direction. Essentially manual drag for player movement 
 
     /* Status flags */
 
@@ -49,8 +51,8 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
     protected void Update()
     {
         /* Clamp speed */
-        float maxSpeed = GetStateMaxSpeed();
-        if (rb.velocity.magnitude > maxSpeed) rb.velocity = rb.velocity.normalized * maxSpeed;
+        float maxSpeed = GetMaxSpeedForCurrentState();
+        //if (rb.velocity.magnitude > maxSpeed) rb.velocity = rb.velocity.normalized * maxSpeed;
 
         /* Stair step traversal */
         float stepUpHeight;
@@ -58,6 +60,13 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         {
             rb.transform.position = Vector3.Lerp(rb.transform.position, new Vector3(rb.transform.position.x, rb.transform.position.y + stepUpHeight, rb.transform.position.z), 1f);
         }
+    }
+
+    protected override Vector3 CalcGroundMvmt(Vector3 moveInput, float speed)
+    {
+        float t = rb.velocity.magnitude / maxGroundSpeed;
+        Debug.Log("t = " + t);
+        return moveInput * speed * forceCurve.Evaluate(t);
     }
 
     //Calculates an opposing force to directions player is moving in but not inputting - 
@@ -72,7 +81,7 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         return slowForce;
     }
 
-    protected float GetStateMaxSpeed()
+    protected float GetMaxSpeedForCurrentState()
     {
         return state.IsOnGround ? maxGroundSpeed : maxAirSpeed;
     }

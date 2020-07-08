@@ -22,6 +22,7 @@ public class PlayerState : MonoBehaviour
     public bool IsOnGround { get; private set; } = false;
     public bool IsJumping { get; private set; } = false;
     public bool IsFalling { get; private set; } = false;
+    public bool IsStopping { get; private set; } = false;
     public bool IsQuickTurning { get; private set; } = false;
     public bool IsQuickTurningFromIdle { get; private set; } = false;
 
@@ -43,6 +44,7 @@ public class PlayerState : MonoBehaviour
         SetIsOnGround();
         SetIsJumping();
         SetIsFalling();
+        SetIsStopping();
         SetIsQuickTurning();
         SetIsQuickTurningFromIdle();
         SetSpeed();
@@ -88,9 +90,13 @@ public class PlayerState : MonoBehaviour
         IsFalling = !IsOnGround && movement.GetVelocity().y < 0;
     }
 
+    private void SetIsStopping()
+    {
+        IsStopping = movement.GetVelocity().sqrMagnitude > 0 && input.GetHVAxis().magnitude == 0;
+    }
+
     private void SetIsQuickTurning()
     {
-        Debug.Log("Quickturn dot = " + Vector3.Dot(movement.GetMovementInput().normalized, movement.GetVelocity().normalized));
         IsQuickTurning = Vector3.Dot(movement.GetMovementInput().normalized, movement.GetVelocity().normalized) < QUICK_TURN_DOT_THRESHOLD;
     }
 
