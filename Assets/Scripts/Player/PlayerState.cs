@@ -11,6 +11,7 @@ public class PlayerState : MonoBehaviour
 {
     /* constants */
     private const float MAX_WALKABLE_ANGLE = 45f; //maximum angle (in degrees) for ground that the player can walk on
+    private const float TURN_DOT_THRESHOLD = 0.98f; //maximum dot product of normalised input and velocity vectors to be considered a "quick turn"
     private const float QUICK_TURN_DOT_THRESHOLD = -0.5f; //maximum dot product of normalised input and velocity vectors to be considered a "quick turn"
 
     /* components */
@@ -23,12 +24,15 @@ public class PlayerState : MonoBehaviour
     public bool IsJumping { get; private set; } = false;
     public bool IsFalling { get; private set; } = false;
     public bool IsStopping { get; private set; } = false;
+    public bool IsTurning { get; private set; } = false;
     public bool IsQuickTurning { get; private set; } = false;
     public bool IsQuickTurningFromIdle { get; private set; } = false;
 
     /* other info */
+    public Vector3 Position { get; private set; } = Vector3.zero;
     public float Speed { get; private set; } = 0f;
     public float HorizontalSpeed { get; private set; } = 0f; //speed of player discounting y axis velocity
+
 
     /* internal trackers */
     float currJumpHoldTime = 0f;
@@ -41,12 +45,17 @@ public class PlayerState : MonoBehaviour
 
     public void UpdatePlayerState()
     {
+        //states
         SetIsOnGround();
         SetIsJumping();
         SetIsFalling();
         SetIsStopping();
+        SetIsTurning();
         SetIsQuickTurning();
         SetIsQuickTurningFromIdle();
+
+        //info
+        SetPosition();
         SetSpeed();
         SetHorizontalSpeed();
     }
@@ -66,9 +75,9 @@ public class PlayerState : MonoBehaviour
 
     private void SetIsJumping()
     {
-        if (input.GetJump())
+        if (input.GetJump() || IsJumping && currJumpHoldTime < movement.GetMinJumpHoldTime())
         {
-            if ((IsOnGround || IsJumping) && currJumpHoldTime < 0.1f)
+            if ((IsOnGround || IsJumping) && currJumpHoldTime < movement.GetMaxJumpHoldTime())
             {
                 currJumpHoldTime += Time.deltaTime;
                 IsJumping = true;
@@ -95,6 +104,11 @@ public class PlayerState : MonoBehaviour
         IsStopping = movement.GetVelocity().sqrMagnitude > 0 && input.GetHVAxis().magnitude == 0;
     }
 
+    private void SetIsTurning()
+    {
+        IsTurning = movement.GetVelocity().sqrMagnitude > Mathf.Epsilon && Vector3.Dot(movement.GetMovementInput().normalized, movement.GetVelocity().normalized) < TURN_DOT_THRESHOLD;
+    }
+
     private void SetIsQuickTurning()
     {
         IsQuickTurning = Vector3.Dot(movement.GetMovementInput().normalized, movement.GetVelocity().normalized) < QUICK_TURN_DOT_THRESHOLD;
@@ -104,6 +118,11 @@ public class PlayerState : MonoBehaviour
     {
         IsQuickTurningFromIdle = movement.GetVelocity().sqrMagnitude < 0.01f
                                  && Vector3.Dot(movement.GetMovementInput().normalized, movement.transform.forward) < QUICK_TURN_DOT_THRESHOLD;
+    }
+
+    private void SetPosition()
+    {
+        Position = movement.transform.position;
     }
 
     private void SetSpeed()

@@ -88,14 +88,13 @@ public static class ClipPaneUtils
 
     //Returns the x and y offset of an object from the centre of the camera view.
     //Ranges from (-0.5, -0.5) for top left to (0.5, 0.5) for bottom right (centre is (0, 0)).
-    public static Vector2 GetOffsetFromCentreOfScreen(this Camera cam, Vector3 worldPos)
+    public static Vector2 GetOffsetFromCentreOfView(this Camera cam, Vector3 worldPos)
     {
         Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
         //Debug.Log(objWorldPos + " screen offset = " + new Vector2((screenPos.x / cam.pixelWidth) - 0.5f, (screenPos.y / cam.pixelHeight) - 0.5f));
         //normalise x and y screen points to [0, 1] by dividing width and height; subtract 0.5 from each so (0, 0) becomes the centre
         return new Vector2((screenPos.x / cam.pixelWidth) - 0.5f, (screenPos.y / cam.pixelHeight) - 0.5f);
     }
-
 
     //Returns true if an object is within given x and y offsets from the centre of the camera view.
     //Deadzone values range from 0 (centre of screen i.e. no deadzone) to 0.5 (edge of screen)
@@ -104,7 +103,7 @@ public static class ClipPaneUtils
         if (xDeadzone == 0.5f && yDeadzone == 0.5f) return true;
         if (xDeadzone == 0 && yDeadzone == 0) return false;
 
-        Vector2 offset = cam.GetOffsetFromCentreOfScreen(worldPos);
+        Vector2 offset = cam.GetOffsetFromCentreOfView(worldPos);
         return Mathf.Abs(offset.x) < xDeadzone && Mathf.Abs(offset.y) < yDeadzone;
     }
 
@@ -112,7 +111,7 @@ public static class ClipPaneUtils
     //Deadzone values range from 0 (centre of screen i.e. no deadzone) to 0.5 (edge of screen in that direction)
     public static bool IsWithinDeadzone(this Camera cam, Vector3 worldPos, float xDeadzoneLeft, float xDeadzoneRight, float yDeadzoneTop, float yDeadzoneBottom)
     {
-        Vector2 offset = cam.GetOffsetFromCentreOfScreen(worldPos);
+        Vector2 offset = cam.GetOffsetFromCentreOfView(worldPos);
         return offset.x > -xDeadzoneLeft && offset.x < xDeadzoneRight && offset.y > -yDeadzoneTop && offset.y < yDeadzoneBottom;
     }
 

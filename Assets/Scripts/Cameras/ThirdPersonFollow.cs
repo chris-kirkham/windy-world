@@ -22,14 +22,17 @@ public class ThirdPersonFollow : MonoBehaviour
     private CameraOcclusion occlusion;
     private CameraCollision collision;
 
-    /* MISC/CAMERA ATTRIBUTES/CONVENIENCE VARIABLES*/
+    /* CAMERA STATE */
     private enum State
     {
         FollowingTarget,
         TargetMovingTowardsCamera
     }
     private State state;
-    
+
+    private const float STATE_MOVINGTOWARDSCAMERA_DOT_MAX = -0.75f; 
+
+    /* MISC/CAMERA ATTRIBUTES/CONVENIENCE VARIABLES*/
     private Vector3 currentCamVelocity = Vector3.zero; //this just keeps track of the camera's velocity, changing it doesn't change the camera's velocity
     private Vector3 smoothdampVelocity = Vector3.zero;
     private Vector3 lastCamPosition;
@@ -44,7 +47,6 @@ public class ThirdPersonFollow : MonoBehaviour
         "If using interpolation, the camera may deviate from this offset depending on target speed and lerp speed")]
     public Vector3 desiredOffset = Vector3.zero;
 
-    [Tooltip("Use offset as world space")]
     public bool worldSpaceOffset = false;
     
     [Tooltip("Interpolate between the camera's current offset and desired offset by deltaTime and lerp speed")]
@@ -59,11 +61,13 @@ public class ThirdPersonFollow : MonoBehaviour
     public float maxDistanceFromTarget = 10f;
     private float sqrMinDistanceFromTarget, sqrMaxDistanceFromTarget;
 
+    /*
     [Tooltip("Screen deadzone for position following. If the follow target is less than the deadzone value from the edge of the camera's view," +
         " the camera will remain stationary (0 is centre of screen, +-0.5 are the edges")]
     [Range(0, 0.5f)] public float followDeadzoneX = 0f;
     [Range(0, 0.5f)] public float followDeadzonePlusY = 0f;
     [Range(0, 0.5f)] public float followDeadzoneNegativeY = 0f;
+    */
 
     /* TARGET FOLLOW - MOUSE ORBIT */
     [Header("Target orbit")]
@@ -84,13 +88,14 @@ public class ThirdPersonFollow : MonoBehaviour
     private float mouseY = 0f;
 
     /* TARGET FOLLOW - ROTATION */
+    [Header("Camera rotation")]
+    public LookAtMode lookAtMode = LookAtMode.LookAtTarget;
     public enum LookAtMode
     {
         FaceCameraHeading,
         LookAtTarget,
         FaceTargetHeading
     }
-    public LookAtMode lookAtMode = LookAtMode.LookAtTarget;
 
     public Vector3 lookOffset = Vector3.zero;
 
@@ -223,15 +228,13 @@ public class ThirdPersonFollow : MonoBehaviour
         desiredOffsetDistance = Vector3.Distance(followTargetPos, followTargetPos + desiredOffset);
         nearClipPaneCornersLocal = cam.GetNearClipPaneCornersLocal();
 
-        //update clip pane corner points
-
-        //update camera rotation - do this first as a different near clip pane position will affect some of the other calculations
+        //update camera rotation - do this first as a different near clip pane position will affect some of the cam collision/occlusion calculations
         cam.transform.rotation = GetLookAtTargetRotation();
 
         //each of these updates the new camera position given as a reference
         Vector3 newPos = camPos;
         OffsetFromTarget(ref newPos);
-        //if(orbit) Orbit(ref newPos);
+        if(orbit) Orbit(ref newPos);
         ShakeCamera(ref newPos);
 
         AvoidOcclusion(ref newPos);
@@ -246,7 +249,7 @@ public class ThirdPersonFollow : MonoBehaviour
     //updates the camera's state enum based on certain camera/follow target conditions
     private void UpdateState()
     {
-        if(Vector3.Dot(transform.forward, followTarget.transform.forward) > -0.75f)
+        if(Vector3.Dot(transform.forward, followTarget.transform.forward) > STATE_MOVINGTOWARDSCAMERA_DOT_MAX)
         {
             state = State.FollowingTarget;
         }
@@ -284,15 +287,8 @@ public class ThirdPersonFollow : MonoBehaviour
         //Add cam whisker offset, if using
         if(useCamWhiskers) desiredPos += CamWhiskersFromTarget();
 
-        //Check collisions in between current pos and desired pos; set desired pos to between collision point and target position if hit
-        Debug.DrawLine(cam.transform.position, desiredPos, Color.green, 0.1f);
-        if (Physics.Linecast(cam.transform.position, desiredPos, out RaycastHit hit, LayerMask.GetMask("LevelGeometrySolid")))
-        {
-            desiredPos = Vector3.Lerp(hit.point, followTargetPos + (Vector3.up * desiredPos.y), 0.5f);
-            Debug.DrawLine(cam.transform.position, desiredPos, Color.red, 0.1f);
-        }
-
         //do not move camera if target is within desired distance and within screen deadzones
+        /*
         float camTargetDistance = Vector3.Distance(camPos, followTargetPos);
         if (camTargetDistance > minDistanceFromTarget && camTargetDistance < desiredOffsetDistance
             && cam.IsWithinDeadzone(followTargetPos, followDeadzoneX, followDeadzoneX, followDeadzonePlusY, followDeadzoneNegativeY))
@@ -300,6 +296,7 @@ public class ThirdPersonFollow : MonoBehaviour
             Debug.Log("target within desired distance and screen deadzones!");
             desiredPos = camPos;
         }
+        */
 
         //Interpolate between current camera position and desired position to find new position; clamp if outside min/max distances
         if (camPos != desiredPos)
@@ -331,19 +328,7 @@ public class ThirdPersonFollow : MonoBehaviour
         mouseY = Mathf.Clamp(ClampMouseAngle(mouseY), minOrbitY, maxOrbitY);
 
         Quaternion rotation = Quaternion.Euler(mouseY, mouseX, 0f);
-
         newPos = Vector3.SmoothDamp(camPos, followTargetPos + (rotation * desiredOffset), ref smoothdampVelocity, 1 / orbitSpeed);
-
-        float newPosTargetSqrDist = (followTargetPos - newPos).sqrMagnitude;
-        Vector3 targetToNewPosUnit = (newPos - followTargetPos).normalized;
-        if (newPosTargetSqrDist < sqrMinDistanceFromTarget)
-        {
-            newPos = followTargetPos + (targetToNewPosUnit * minDistanceFromTarget);
-        }
-        else if (newPosTargetSqrDist > sqrMaxDistanceFromTarget)
-        {
-            newPos = followTargetPos + (targetToNewPosUnit * maxDistanceFromTarget);
-        }
     }
 
     private float ClampMouseAngle(float mouseAngle)
@@ -355,14 +340,24 @@ public class ThirdPersonFollow : MonoBehaviour
 
     private void ShakeCamera(ref Vector3 newPos)
     {
-        if(camShakeController != null)
-        {
+    }
 
+    //Checks collisions in between current pos and desired pos; set desired pos to between collision point and target position if hit
+    private void AvoidCollision(Vector3 desiredPos)
+    {
+        Debug.DrawLine(camPos, desiredPos, Color.green, 0.1f);
+        if (Physics.Linecast(camPos, desiredPos, out RaycastHit hit, LayerMask.GetMask("LevelGeometrySolid")))
+        {
+            desiredPos = Vector3.Lerp(hit.point, followTargetPos + (Vector3.up * desiredPos.y), 0.5f);
+            Debug.DrawLine(camPos, desiredPos, Color.red, 0.1f);
         }
     }
 
+    /*
     private void AvoidCollision(ref Vector3 newPos)
     {
+        
+        
         LayerMask solid = LayerMask.GetMask("LevelGeometrySolid");
         RaycastHit hit;
         foreach(Vector3 clipPaneCorner in nearClipPaneCornersLocal)
@@ -373,7 +368,6 @@ public class ThirdPersonFollow : MonoBehaviour
             if (Physics.Linecast(clipPaneCornerWorld, newPosOffsetByClipCorner, out hit, solid))
             {
                 newPos = camPos;
-                //EditorApplication.isPaused = true;
                 break;
             }
         }
@@ -394,8 +388,8 @@ public class ThirdPersonFollow : MonoBehaviour
                 newPos += hit.normal * overlapDist;
             }
         }
-        */
     }
+    */
 
     private Vector3 CamWhiskersFromTarget()
     {
@@ -404,11 +398,17 @@ public class ThirdPersonFollow : MonoBehaviour
         for (float i = -halfWhiskerSectorAngle; i <= halfWhiskerSectorAngle; i += angleInc)
         {
             Vector3 dir = Quaternion.AngleAxis(i, Vector3.up) * -followTarget.transform.forward;
-            Debug.DrawRay(followTargetPos, dir * whiskerLength, Color.HSVToRGB(Mathf.Abs(i) / whiskerSectorAngle, 1f, 1f)); //visualise raycasts
+            //Debug.DrawRay(followTargetPos, dir * whiskerLength, Color.HSVToRGB(Mathf.Abs(i) / whiskerSectorAngle, 0.2f, 1f)); //visualise raycasts
             if (Physics.Raycast(followTargetPos, dir, whiskerLength)) avoidDir -= new Vector3(dir.x, 0f, dir.z);
         }
 
-        Debug.DrawRay(followTargetPos + Vector3.up, avoidDir, Color.red);
+        //zero local z (is there a better way to do this?)
+        avoidDir = followTarget.transform.InverseTransformDirection(avoidDir);
+        Debug.DrawRay(followTargetPos + (Vector3.up * 2), avoidDir, Color.blue);
+        avoidDir.z = 0;
+        avoidDir = followTarget.transform.TransformDirection(avoidDir);
+
+        Debug.DrawRay(followTargetPos + Vector3.up, avoidDir, Color.yellow);
         return avoidDir;
     }
 
@@ -454,7 +454,7 @@ public class ThirdPersonFollow : MonoBehaviour
         newPos = Vector3.SmoothDamp(newPos, targetPos, ref smoothdampVelocity, 1 / occlusionAvoidLerpSpeed);
     }
 
-    private void AvoidOcclusion_UnoccludedVectorSearch(ref Vector3 newPos, LayerMask occluders)
+    private void UnoccludedPositionSearch(ref Vector3 newPos, LayerMask occluders)
     {
         /* This searches out in rays at 90 degree increments from the camera's current velocity (if non-zero), 
          * the idea being that it will pick the avoid vector closest to direction the camera is already moving in and so
@@ -466,10 +466,10 @@ public class ThirdPersonFollow : MonoBehaviour
         Vector3 searchDir = currentCamVelocity == Vector3.zero ? -transform.right : currentCamVelocity.normalized;
         Vector3 searchDir90 = Vector3.Cross(searchDir, followTargetPos - transform.position); //search direction rotated 90 degrees
         Vector3 avoidPos;
-        if (OcclusionAvoidRaycasts(transform.position, searchDir, out avoidPos, occluders)
-            || OcclusionAvoidRaycasts(transform.position, searchDir90, out avoidPos, occluders)
-            || OcclusionAvoidRaycasts(transform.position, -searchDir, out avoidPos, occluders)
-            || OcclusionAvoidRaycasts(transform.position, -searchDir90, out avoidPos, occluders))
+        if (UnoccludedPositionSearchRaycasts(transform.position, searchDir, out avoidPos, occluders)
+            || UnoccludedPositionSearchRaycasts(transform.position, searchDir90, out avoidPos, occluders)
+            || UnoccludedPositionSearchRaycasts(transform.position, -searchDir, out avoidPos, occluders)
+            || UnoccludedPositionSearchRaycasts(transform.position, -searchDir90, out avoidPos, occluders))
         {
             newPos = lerpOcclusionAvoidance ? Vector3.SmoothDamp(transform.position, avoidPos, ref smoothdampVelocity, 1 / occlusionAvoidLerpSpeed) : avoidPos;
         }
@@ -490,7 +490,7 @@ public class ThirdPersonFollow : MonoBehaviour
         }
     }
 
-    private bool OcclusionAvoidRaycasts(Vector3 start, Vector3 dir, out Vector3 firstValidPos, LayerMask occluders)
+    private bool UnoccludedPositionSearchRaycasts(Vector3 start, Vector3 dir, out Vector3 firstValidPos, LayerMask occluders)
     {
         Vector3 inc = dir * occlusionAvoidSearchSampleDist;
         Vector3 pos = start + inc;
@@ -541,14 +541,35 @@ public class ThirdPersonFollow : MonoBehaviour
                 
                 break;
         }
-        
+
         //check deadzones and keep current cam rotation if within them
         if(cam.IsWithinDeadzone(followTargetPos, rotationDeadzoneX, rotationDeadzoneX, rotationDeadzonePositiveY, rotationDeadzoneNegativeY))
         {
             return cam.transform.rotation;
         }
 
+        //Vector2 followTargetScreenOffset = cam.GetOffsetFromCentreOfView(followTargetPos);
+        //float distanceFromCentre = Vector2.Distance(Vector2.zero, followTargetScreenOffset);
         return lookAtLerp ? Quaternion.Slerp(cam.transform.rotation, lookAt, Time.deltaTime * lookAtLerpSpeed) : lookAt;
+    }
+
+    //Returns the input position clamped to the min and max distances from the follow target.
+    private Vector3 GetDistanceClampedPos(Vector3 pos)
+    {
+        float newPosTargetSqrDist = (followTargetPos - pos).sqrMagnitude;
+        Vector3 targetToNewPosUnit = (pos - followTargetPos).normalized;
+        if (newPosTargetSqrDist < sqrMinDistanceFromTarget)
+        {
+            return followTargetPos + (targetToNewPosUnit * minDistanceFromTarget);
+        }
+        else if (newPosTargetSqrDist > sqrMaxDistanceFromTarget)
+        {
+            return followTargetPos + (targetToNewPosUnit * maxDistanceFromTarget);
+        }
+        else
+        {
+            return pos;
+        }
     }
 
 }

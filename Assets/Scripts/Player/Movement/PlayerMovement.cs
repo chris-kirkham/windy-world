@@ -16,6 +16,7 @@ public abstract class PlayerMovement : MonoBehaviour
     protected const float STEP_UP_SPHERECAST_RADIUS = 0.2f;
 
     /* components */
+    [Header("Components")]
     [SerializeField] protected Camera playerCamera;
     protected PlayerState state;
     protected Animator animator;
@@ -33,6 +34,7 @@ public abstract class PlayerMovement : MonoBehaviour
     protected Vector3 lastNonZeroInput = Vector3.forward; //used to keep player facing their last movement direction when stopped
 
     /* land speed attributes */
+    [Header("Ground movement attributes")]
     [SerializeField] protected float maxGroundSpeed = 10f;
     protected float sqrSpeed;
 
@@ -47,12 +49,19 @@ public abstract class PlayerMovement : MonoBehaviour
     //public int speedStayTimer = 200; //time in ms to stay at one speed before moving to the next when using steppedSpeed
 
     /* jump attributes */
+    [Header("Jump attributes")]
     [SerializeField] protected float jumpForce = 1f;
 
+    //The minimum time in seconds jump force will be applied when jumping.
+    //Jump force will continue to be applied up to this time, even if the player has released the jump input 
+    [SerializeField] protected float minJumpHoldTime = 0.0f;
+    
     [SerializeField] protected float maxJumpHoldTime = 0.1f;
+
     protected float currJumpHoldTime = 0f;
 
     /* air speed attributes */
+    [Header("Air movement attributes")]
     [SerializeField] protected float airControlAmount = 0.2f;
     [SerializeField] protected float maxAirSpeed = 100f;
     protected float sqrMaxAirSpeed;
@@ -60,7 +69,6 @@ public abstract class PlayerMovement : MonoBehaviour
     [SerializeField] protected float maxFallSpeed = 100f;
     protected float sqrMaxFallSpeed;
     [SerializeField] protected float extraFallSpeed = 1f;
-
 
     protected virtual void Start()
     {
@@ -90,7 +98,6 @@ public abstract class PlayerMovement : MonoBehaviour
         //get camera facing vectors, ignoring up/down look
         Vector3 camFlatRight = new Vector3(playerCamera.transform.right.x, 0f, playerCamera.transform.right.z).normalized;
         Vector3 camFlatFwd = new Vector3(playerCamera.transform.forward.x, 0f, playerCamera.transform.forward.z).normalized;
-        
         Vector3 moveInput = (hv.x * camFlatRight) + (hv.y * camFlatFwd);
         
         //clamp magnitude if > 1 so diagonal movement isn't faster than movement on one axis
@@ -140,6 +147,10 @@ public abstract class PlayerMovement : MonoBehaviour
     //returns true if found and sets stepUpHeight to the next step's height
     protected bool TryGetStepUpHeight(out float stepUpHeight)
     {
+        stepUpHeight = 0f;
+
+        if (!state.IsOnGround) return false; //don't let the player step up if they're not standing on anything
+        
         //cast a ray forward from player's floor + max step height; if this hits something, it's obstructed
         Vector3 rayStart = playerFloor.transform.position + new Vector3(0f, STEP_UP_MAX_STEP_HEIGHT + 0.01f, 0f); //add 0.01f to height so rayEnd downwards ray doesn't hit flat ground
         Vector3 rayEnd = rayStart + (transform.forward * STEP_UP_MAX_FORWARD_RAYCAST_DIST);
@@ -164,15 +175,21 @@ public abstract class PlayerMovement : MonoBehaviour
             }
         }
 
-        stepUpHeight = 0f;
         return false;
     }
     
     //GETTERS
     public abstract Vector3 GetVelocity();
 
+    public float GetMinJumpHoldTime()
+    {
+        return minJumpHoldTime;
+    }
 
-
+    public float GetMaxJumpHoldTime()
+    {
+        return maxJumpHoldTime;
+    }
 
     private void OnDrawGizmos()
     {
@@ -186,6 +203,4 @@ public abstract class PlayerMovement : MonoBehaviour
             }
         }
     }
-
-
 }

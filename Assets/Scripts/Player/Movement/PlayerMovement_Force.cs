@@ -10,17 +10,25 @@ using UnityEngine;
 /// </summary>
 public class PlayerMovement_Force : PlayerMovement_Rigidbody
 {
+    [Header("Force attributes")]
     [SerializeField] private bool useForceCurve = true;
     [SerializeField] private AnimationCurve forceCurve = new AnimationCurve();
     [SerializeField] private ForceMode forceMode = ForceMode.Force;
     [SerializeField] private float slowAmount = 1f; //used to slow/stop character when not inputting a direction. Essentially manual drag for player movement 
 
-    /* Status flags */
+    /* Constants */
+    protected const float MAX_ADDFORCE_MAGNITUDE = 100f;
 
     /* Trackers */
     protected float fallTime = 0f; //time the player has been falling for
+    protected float yRotationSinceLastUpdate = 0f;
+    protected Vector3 lastForward = Vector3.forward;
 
-    private const float MAX_ADDFORCE_MAGNITUDE = 100f;
+    protected override void Start()
+    {
+        base.Start();
+        lastForward = rb.transform.forward;
+    }
 
     // Update is called once per frame
     protected void FixedUpdate()
@@ -28,6 +36,11 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         /* Update flags/trackers */
         state.UpdatePlayerState();
         fallTime = state.IsFalling ? fallTime + Time.deltaTime : 0f;
+
+        //update y rotation tracker
+        yRotationSinceLastUpdate = Vector3.SignedAngle(lastForward, rb.transform.forward, Vector3.up);
+        lastForward = rb.transform.forward;
+        if(Mathf.Abs(yRotationSinceLastUpdate) > 0) Debug.Log("yRotationSpeed = " + yRotationSinceLastUpdate);
 
         /* Input */
         Vector3 moveInput = GetMovementInput();
@@ -39,21 +52,31 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         rb.AddForce(totalMoveForce, forceMode);
 
         /* Jump forces */
-        if(state.IsJumping) rb.AddForce(Vector3.up * jumpForce, forceMode);
-        if (state.IsFalling) rb.AddForce(Physics.gravity * extraFallSpeed * Mathf.Pow(fallTime, 2), ForceMode.Impulse);
+        if (state.IsJumping) rb.AddForce(Vector3.up * jumpForce, forceMode);
+        if (state.IsFalling) rb.AddForce(Physics.gravity * extraFallSpeed, ForceMode.Impulse);
 
         /* Rotation */
         if (moveInput != Vector3.zero) lastNonZeroInput = moveInput;
-        //transform.rotation = Quaternion.LookRotation(lastNonZeroInput, Vector3.up);
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(lastNonZeroInput, Vector3.up), 5f * Time.deltaTime);
+
+        //Turn lean
+        Vector3 turnLeanUp = Vector3.up + (rb.transform.right * yRotationSinceLastUpdate * 0.05f);
+        Debug.DrawRay(transform.position, turnLeanUp * 10, Color.magenta);
+
+        Quaternion look = Quaternion.LookRotation(rb.velocity.sqrMagnitude > 0 ? new Vector3(rb.velocity.x, 0f, rb.velocity.z) : lastNonZeroInput);
+        look = Quaternion.LookRotation(lastNonZeroInput);
+        //transform.rotation = look;
+        transform.rotation = Quaternion.Slerp(transform.rotation, look, Time.deltaTime * 5f);
+        //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lastNonZeroInput, turnLeanUp), 1);
     }
 
+    //Perform direct player translation/velocity changes here, after physics step is done
     protected void Update()
     {
         /* Clamp speed */
-        float maxSpeed = GetMaxSpeedForCurrentState();
-        //if (rb.velocity.magnitude > maxSpeed) rb.velocity = rb.velocity.normalized * maxSpeed;
-
+        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        float flatSpeed = flatVel.magnitude;
+        if (flatSpeed > maxGroundSpeed) rb.velocity = (flatVel.normalized * maxGroundSpeed) + (Vector3.up * rb.velocity.y);
+        
         /* Stair step traversal */
         float stepUpHeight;
         if (TryGetStepUpHeight(out stepUpHeight))
@@ -62,11 +85,33 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         }
     }
 
+    //Calculates ground movement force by multiplying (input * speed) by the point on the force curve
+    //given by dividing current speed by max speed. This should allow control over initial acceleration etc.
+    //and will probably prevent the player from going faster than max speed if the force curve tapers towards zero as speed reaches max
     protected override Vector3 CalcGroundMvmt(Vector3 moveInput, float speed)
     {
         float t = rb.velocity.magnitude / maxGroundSpeed;
-        Debug.Log("t = " + t);
-        return moveInput * speed * forceCurve.Evaluate(t);
+        if(useForceCurve)
+        {
+            return moveInput * speed * forceCurve.Evaluate(t);
+        }
+        else
+        {
+            return moveInput * speed;
+        }
+    }
+
+    protected override Vector3 CalcAirMvmt(Vector3 moveInput, float speed)
+    {
+        float t = rb.velocity.magnitude / maxAirSpeed;
+        if (useForceCurve)
+        {
+            return moveInput * speed * forceCurve.Evaluate(t) * airControlAmount;
+        }
+        else
+        {
+            return moveInput * speed * airControlAmount;
+        }
     }
 
     //Calculates an opposing force to directions player is moving in but not inputting - 

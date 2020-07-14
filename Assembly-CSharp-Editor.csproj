@@ -63,6 +63,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Cameras\Editor\ThirdPersonFollowInspector.cs" />
+    <Compile Include="Assets\Scripts\Player\Movement\Editor\PlayerMovementInspector.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindArea\Editor\WindAreaInspector.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\BezierCurveInspector.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\BezierSplineInspector.cs" />

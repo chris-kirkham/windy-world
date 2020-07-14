@@ -31,6 +31,7 @@ public class PlayerMovementAnimatorParamControl : MonoBehaviour
         animator.SetBool("Grounded", state.IsOnGround);
         animator.SetBool("Jumping", state.IsJumping);
         animator.SetBool("Falling", state.IsFalling);
+        animator.SetBool("Turning", state.IsTurning);
         animator.SetBool("QuickTurning", state.IsQuickTurning);
         animator.SetBool("StoppingFromWalkRun", state.IsStopping);
 
