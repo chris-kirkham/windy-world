@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Wind
@@ -10,10 +11,12 @@ namespace Wind
     {
         [Range(0.1f, 100f)] public float cellSize = 1;
         private Dictionary<SpatialHashKey, Cell> cells;
+        NativeHashMap<SpatialHashKeyBlittable, Vector3> cellsWindNative;
 
         private void Awake()
         {
             cells = new Dictionary<SpatialHashKey, Cell>();
+            cellsWindNative = new NativeHashMap<SpatialHashKeyBlittable, Vector3>(cells.Count, Allocator.Persistent);
         }
 
         //Adds the given wind object to the cells structure
@@ -60,6 +63,17 @@ namespace Wind
         public override List<Cell> GetCells()
         {
             return cells.Values.ToList();
+        }
+
+        public NativeHashMap<SpatialHashKeyBlittable, Vector3> GetBlittableCellsWind()
+        {
+            //https://medium.com/@5argon/unity-ecs-beware-of-structs-default-parameterless-constructor-bf9cf067fde1
+            foreach (KeyValuePair<SpatialHashKey, Cell> cell in cells)
+            {
+                cellsWindNative.TryAdd(new SpatialHashKeyBlittable(cell.Key.GetKey(), cellSize), cell.Value.GetWind());
+            }
+
+            return cellsWindNative;
         }
 
         public override float GetCellSize()

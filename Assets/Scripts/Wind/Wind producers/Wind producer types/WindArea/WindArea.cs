@@ -101,6 +101,7 @@ public class WindArea : WindProducer
                 }
             }
         }
+
         //COMPUTE SHADER METHOD
         /*
         WF_WindPoint[] points = new Wind.WF_WindPoint[windPoints.count];
@@ -125,7 +126,7 @@ public class WindArea : WindProducer
         */
 
         stopwatch.Stop();
-        Debug.Log("WindArea update time for " + numCells.x * numCells.y * numCells.z + " cells : " + stopwatch.ElapsedMilliseconds + " milliseconds");
+        //Debug.Log("WindArea update time for " + numCells.x * numCells.y * numCells.z + " cells : " + stopwatch.ElapsedMilliseconds + " milliseconds");
 
         return points.ToArray();
     }

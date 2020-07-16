@@ -137,6 +137,7 @@ MonoBehaviour:
   active: 1
   batchSize: 100
   mass: 10
+  useJobSystem: 0
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -383,8 +384,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bb12ca5ed30dfb46a819c8495666588, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useGlobalWind: 0
-  globalWind: {x: 0, y: 0, z: 0}
+  useGlobalWind: 1
+  globalWind: {x: 1, y: 0, z: 0}
   addNoise: 0
   useTimeOffset: 1
   noiseFrequency: 0.01
@@ -934,6 +935,7 @@ MonoBehaviour:
   active: 1
   batchSize: 100
   mass: 0
+  useJobSystem: 0
 --- !u!1 &914171679
 GameObject:
   m_ObjectHideFlags: 0
@@ -3121,7 +3123,7 @@ PrefabInstance:
     - target: {fileID: 4078157456869273949, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
       propertyPath: mode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4078157456869273949, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
@@ -4109,7 +4111,7 @@ PrefabInstance:
     - target: {fileID: 4078157456869273949, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
       propertyPath: mode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4078157456869273949, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
@@ -4169,7 +4171,7 @@ PrefabInstance:
     - target: {fileID: 8967199894235251332, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
       propertyPath: m_RootOrder
-      value: 8
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c34a7323182168647a61436ba2eb2f4e, type: 3}
@@ -4760,7 +4762,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
-    maxNumParticles: 1000
+    maxNumParticles: 10000
     size3D: 0
     rotation3D: 0
     gravityModifier:
@@ -5025,7 +5027,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 100
+      scalar: 1000
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -8969,7 +8971,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &4471858108545905502
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -13802,6 +13804,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: TestPhysObjs
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336204030360406359, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336204030536901887, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}

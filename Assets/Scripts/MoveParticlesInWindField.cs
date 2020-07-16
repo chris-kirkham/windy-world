@@ -6,6 +6,8 @@ using Unity.Mathematics;
 using UnityEngine;
 using Wind;
 using Unity.Collections;
+using UnityEngine.ParticleSystemJobs;
+using Unity.Burst;
 
 /// <summary>
 /// INEFFICIENT first-test method for moving particles in the wind
@@ -17,27 +19,23 @@ public class MoveParticlesInWindField : MonoBehaviour
     [SerializeField] private bool active = true;
     [SerializeField] private int batchSize = 100;
     [SerializeField] private float mass = 1f;
+    [SerializeField] private bool useJobSystem = false;
     
     private ParticleSystem particles;
-    private int maxParticles;
+    private MoveParticlesJob moveParticlesJob = new MoveParticlesJob();
+
     ParticleSystem.Particle[] particlesCopy;
-    
+    private int maxParticles;
+
     private float updateInterval = 0f;
 
-    /* Particle movement job */
-    JobHandle moveParticlesHandle;
-    NativeArray<float3> particlePositions;
-    NativeArray<float3> particleVelocities;
-    NativeArray<float3> windVelocities;
 
     private void Start()
     {
         particles = GetComponent<ParticleSystem>();
         maxParticles = particles.main.maxParticles;
         particlesCopy = new ParticleSystem.Particle[maxParticles];
-        particlePositions = new NativeArray<float3>(maxParticles, Allocator.Persistent);
-        particleVelocities = new NativeArray<float3>(maxParticles, Allocator.Persistent);
-        windVelocities = new NativeArray<float3>(maxParticles, Allocator.Persistent);
+
         if (windField == null) Debug.LogError("No wind field given for particles " + ToString() + "!");
     }
 
@@ -46,94 +44,108 @@ public class MoveParticlesInWindField : MonoBehaviour
         //int i = 0;
         if(active)
         {
-            /*
-            particlesCopy = new ParticleSystem.Particle[maxParticles];
-            particlePositions = new NativeArray<float3>(maxParticles, Allocator.TempJob);
-            particleVelocities = new NativeArray<float3>(maxParticles, Allocator.TempJob);
-            windVelocities = new NativeArray<float3>(maxParticles, Allocator.TempJob);
-
-            particles.GetParticles(particlesCopy);
-
-            for(int i = 0; i < particlesCopy.Length; i++)
+            if(useJobSystem)
             {
-                ParticleSystem.Particle p = particlesCopy[i];
-                particlePositions[i] = p.position;
-                particleVelocities[i] = p.velocity;
-                windVelocities[i] = windField.GetWind(p.position);
+                //moveParticlesJob.nativeWindFieldCells = windField.GetBlittableCellsWind();
+                moveParticlesJob.globalWind = windField.globalWind;
+                moveParticlesJob.windFieldCellSize = windField.GetCellSize();
+                moveParticlesJob.mass = mass;
+                moveParticlesJob.lerpAmount = Time.deltaTime;
             }
-
-            MoveParticles moveParticles = new MoveParticles
+            else
             {
-                mass = this.mass,
-                particlePositions = particlePositions,
-                particleVels = particleVelocities,
-                windVels = windVelocities,
-                deltaTime = Time.deltaTime
-            };
+                System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            moveParticlesHandle = moveParticles.Schedule(maxParticles, batchSize);
-            */
+                particles.GetParticles(particlesCopy);
 
-            particles.GetParticles(particlesCopy);
+                for (int i = 0; i < particlesCopy.Length; i++)
+                {
+                    Vector3 pos = particlesCopy[i].position;
+                    particlesCopy[i].velocity = Vector3.Lerp(particlesCopy[i].velocity, windField.GetWind(pos) / (mass + 0.01f), Time.deltaTime);
+                }
+                particles.SetParticles(particlesCopy);
 
-            for(int i = 0; i < particlesCopy.Length; i++)
-            {
-                Vector3 pos = particlesCopy[i].position;
-                particlesCopy[i].velocity = Vector3.Lerp(particlesCopy[i].velocity, windField.GetWind(pos) / (mass + 0.01f), Time.deltaTime);
+                stopwatch.Stop();
+                Debug.Log("Non-jobified particle update time: " + stopwatch.ElapsedMilliseconds + " ms.");
+
+
+                /*
+                //if batchSize > 0, update in batches of batchSize, else update all particles
+                int last = batchSize > 0 ? Mathf.Min(particlesCopy.Length, i + batchSize) : particlesCopy.Length;
+                for (; i < last; i++)
+                {
+                    Vector3 pos = particlesCopy[i].position;
+                    particlesCopy[i].velocity += windField.GetWind(pos) / (mass + 0.0001f);
+                }
+
+                if (i == particlesCopy.Length) i = 0;
+                particles.SetParticles(,, i - 1);
+                */
             }
-            particles.SetParticles(particlesCopy);
-
-            /*
-            //if batchSize > 0, update in batches of batchSize, else update all particles
-            int last = batchSize > 0 ? Mathf.Min(particlesCopy.Length, i + batchSize) : particlesCopy.Length;
-            for (; i < last; i++)
-            {
-                Vector3 pos = particlesCopy[i].position;
-                particlesCopy[i].velocity += windField.GetWind(pos) / (mass + 0.0001f);
-            }
-            
-            if (i == particlesCopy.Length) i = 0;
-            particles.SetParticles(,, i - 1);
-            */
-
+        }
+    }
+    
+    void OnParticleUpdateJobScheduled()
+    {
+        if (useJobSystem)
+        {
+            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            moveParticlesJob.Schedule(particles);
+            stopwatch.Stop();
+            Debug.Log("Jobified particle update time: " + stopwatch.ElapsedMilliseconds + " ms.");
         }
     }
 
-    /*
     private void LateUpdate()
     {
-        moveParticlesHandle.Complete();
-        
-        //set new particle positions
-        for(int i = 0; i < maxParticles; i++)
+        if(useJobSystem)
         {
-            particlesCopy[i].velocity = particleVelocities[i];
+           //moveParticlesHandle.Complete();
         }
-        particles.SetParticles(particlesCopy);
-
-        particlePositions.Dispose();
-        particleVelocities.Dispose();
-        windVelocities.Dispose();
     }
-    */
 
     private void OnDestroy()
     {
-        particlePositions.Dispose();
-        particleVelocities.Dispose();
+    
     }
 
-    private struct MoveParticles : IJobParallelFor
+    [BurstCompile]
+    private struct MoveParticlesJob : IJobParticleSystem
     {
+        //public NativeHashMap<SpatialHashKeyBlittable, Vector3> nativeWindFieldCells;
+        public Vector3 globalWind;
+        public float windFieldCellSize;
         public float mass;
-        public NativeArray<float3> particlePositions;
-        public NativeArray<float3> particleVels;
-        public NativeArray<float3> windVels;
-        public float deltaTime;
+        public float lerpAmount;
 
-        public void Execute(int i)
+        public void Execute(ParticleSystemJobData particles)
         {
-            particleVels[i] = Vector3.Lerp(particleVels[i], windVels[i] / (mass + 0.01f), deltaTime);
+            NativeArray<float> positionsX = particles.positions.x;
+            NativeArray<float> positionsY = particles.positions.y;
+            NativeArray<float> positionsZ = particles.positions.z;
+
+            NativeArray<float> velocitiesX = particles.velocities.x;
+            NativeArray<float> velocitiesY = particles.velocities.y;
+            NativeArray<float> velocitiesZ = particles.velocities.z;
+
+            for(int i = 0; i < particles.count; i++)
+            {
+                SpatialHashKeyBlittable key = new SpatialHashKeyBlittable(new Vector3(positionsX[i], positionsY[i], positionsZ[i]), windFieldCellSize);
+
+                Vector3 wind = globalWind;
+                //nativeWindFieldCells.TryGetValue(key, out wind);
+                wind /= (mass + 0.01f);
+
+                velocitiesX[i] = wind.x;
+                velocitiesY[i] = wind.y;
+                velocitiesZ[i] = wind.z;
+
+                /*
+                velocitiesX[i] = Mathf.Lerp(velocitiesX[i], wind.x, lerpAmount);
+                velocitiesY[i] = Mathf.Lerp(velocitiesY[i], wind.y, lerpAmount);
+                velocitiesZ[i] = Mathf.Lerp(velocitiesZ[i], wind.z, lerpAmount);
+                */
+            }
         }
     }
 }

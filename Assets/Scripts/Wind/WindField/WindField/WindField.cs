@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Wind
@@ -87,6 +88,17 @@ namespace Wind
         public List<Cell> GetCells()
         {
             return cells.GetCells();
+        }
+
+        //TEST - TODO: DELETE THIS AND MAKE A PROPER METHOD IF THIS TEST WORKS
+        public NativeHashMap<SpatialHashKeyBlittable, Vector3> GetBlittableCellsWind()
+        {
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
+            NativeHashMap<SpatialHashKeyBlittable, Vector3> blittableCells = ((SpatialHashCells)cells).GetBlittableCellsWind(); //this takes a whole 4ms!!!
+            stopwatch.Stop();
+            Debug.Log("Milliseconds to get blittable cells: " + stopwatch.ElapsedMilliseconds);
+            return blittableCells;
         }
 
         public float GetCellSize()
