@@ -11,7 +11,6 @@ namespace Wind
     /// </summary>
     public abstract class WindProducer : MonoBehaviour
     {
-        
         public WindField windField;
         public WindProducerMode mode = WindProducerMode.Dynamic;
         public uint depth = 0; //Depth at which this object should be added to the wind field octree. A cell at depth n is half the size of one at depth (n-1) 

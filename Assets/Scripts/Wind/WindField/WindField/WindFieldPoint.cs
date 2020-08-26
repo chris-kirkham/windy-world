@@ -8,7 +8,7 @@ namespace Wind
     /// An object to be added to a wind field, representing wind information at a point in world space
     /// (and some info about how the wind field should handle including/updating the point in the field).
     /// </summary>
-    public class WindFieldPoint
+    public struct WindFieldPoint
     {
         //Position in space
         public Vector3 position;

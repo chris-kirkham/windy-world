@@ -9,3 +9,13 @@ int Index(int3 xyz, int width, int height)
 {
     return Index(xyz.x, xyz.x, xyz.z, width, height);
 }
+
+//https://stackoverflow.com/questions/11316490/convert-a-1d-array-index-to-a-3d-array-index
+int3 UnIndex(int i, int width, int height)
+{
+    int x = i % width;
+    int y = (i / width) % height;
+    int z = i / (width * height);
+
+    return int3(x, y, z);
+}

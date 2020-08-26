@@ -3,15 +3,17 @@
 
 #include "Indexing.cginc"
 
+#define GROUP_SIZE_1D 64
+#define GROUP_SIZE_3D 4
+
 struct OutPoint
 {
+    //https://developer.nvidia.com/content/understanding-structured-buffer-performance
     float3 pos;
     float3 wind;
-    int depth;
+    uint depth;
     int priority;
     int mode;
-    float3 pad0; //https://developer.nvidia.com/content/understanding-structured-buffer-performance)
-    float4 pad1; 
 };
 
 // Create a RenderTexture with enableRandomWrite flag and set it
@@ -22,17 +24,32 @@ float3 fwd, up, right; //forward, up, and right vectors of the wind area
 int3 numPoints; //(x, y, z) number of wind points
 float3 wind; //wind direction of the wind area (same for all points)
 
-[numthreads(4, 4, 4)]
+/* 
+//3D version - doesn't work
+[numthreads(GROUP_SIZE_3D, GROUP_SIZE_3D, GROUP_SIZE_3D)]
 void CalcWindPoints (uint3 id : SV_DispatchThreadID)
 {
     OutPoint outPoint;
-    outPoint.pos = float3(startPos + (id.x * right) + (id.y * up) + (id.z * fwd));
+    outPoint.pos = startPos + (id.x * right) + (id.y * up) + (id.z * fwd);
     outPoint.wind = wind;
     outPoint.depth = 0;
     outPoint.priority = 0;
     outPoint.mode = 0;
-    outPoint.pad0 = float3(0, 0, 0);
-    outPoint.pad1 = float4(0, 0, 0, 0);
 
     Result[Index(id.x, id.y, id.z, numPoints.x, numPoints.y)] = outPoint;
+}
+*/
+
+[numthreads(GROUP_SIZE_1D, 1, 1)]
+void CalcWindPoints(uint3 id : SV_DispatchThreadID)
+{
+    OutPoint outPoint;
+    int3 xyz = UnIndex(id.x, numPoints.x, numPoints.y);
+    outPoint.pos = startPos + (xyz.x * right) + (xyz.y * up) + (xyz.z * fwd);
+    outPoint.wind = wind;
+    outPoint.depth = 0;
+    outPoint.priority = 0;
+    outPoint.mode = 0;
+
+    Result[id.x] = outPoint;
 }

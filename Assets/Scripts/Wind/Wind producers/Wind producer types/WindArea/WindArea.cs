@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using Wind;
 
@@ -16,8 +19,12 @@ public class WindArea : WindProducer
     private const int maxCellsZ = 64;
     private const int maxTotalCells = maxCellsX * maxCellsY * maxCellsZ;
 
+    //compute 
     public ComputeShader calcWindPointsShader;
-    //private ComputeBuffer windPoints; //stores the wind points output by the compute shader
+    private ComputeBuffer windPointsBuffer; //stores the wind points output by the compute shader
+    private const int stride = (sizeof(float) * 6) + sizeof(uint) + (sizeof(int) * 2);
+    private const int GROUP_SIZE_1D = 64; //MUST BE SAME AS IN COMPUTE SHADER
+    private const int GROUP_SIZE_3D = 4; //MUST BE SAME AS IN COMPUTE SHADER
 
     //dirty flags
     private bool windDirty = false;
@@ -28,7 +35,7 @@ public class WindArea : WindProducer
     void Awake()
     {
         windWorld = wind;
-        //windPoints = new ComputeBuffer(numCells.x * numCells.y * numCells.z, sizeof(float) * 9, ComputeBufferType.Append);
+        windPointsBuffer = new ComputeBuffer(numCells.x * numCells.y * numCells.z, stride, ComputeBufferType.Default);
 
         lastWindVec = GetWind();
         lastNumCells = numCells;
@@ -80,58 +87,61 @@ public class WindArea : WindProducer
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
 
-        //(SINGLE-THREAD) CPU METHOD
-        List<WindFieldPoint> points = new List<WindFieldPoint>();
-        
-        Vector3 halfNumCells = new Vector3((float)numCells.x / 2, (float)numCells.y / 2, (float)numCells.z / 2);
-        float halfCellSize = cellSize / 2;
-        Vector3 start = transform.TransformPoint(-(halfNumCells * cellSize) + (Vector3.one * halfCellSize)); //start = centre of least cell
-        Vector3 right = transform.right * cellSize;
-        Vector3 up = transform.up * cellSize;
-        Vector3 forward = transform.forward * cellSize;
-
-        for (int i = 0; i < numCells.x; i++)
-        {
-            for (int j = 0; j < numCells.y; j++)
-            {
-                for (int k = 0; k < numCells.z; k++)
-                {
-                    Vector3 pos = start + (right * i) + (up * j) + (forward * k);
-                    points.Add(new WindFieldPoint(pos, windWorld, mode, priority, depth));
-                }
-            }
-        }
-
         //COMPUTE SHADER METHOD
-        /*
-        WF_WindPoint[] points = new Wind.WF_WindPoint[windPoints.count];
-
+        windPointsBuffer.Release();
+        windPointsBuffer = new ComputeBuffer(numCells.x * numCells.y * numCells.z, stride, ComputeBufferType.Default);
+        WindFieldPoint[] points = new WindFieldPoint[windPointsBuffer.count];
         //https://forum.unity.com/threads/system-says-struct-is-blittable-unity-says-struct-isnt-blittable.590251/
         //https://forum.unity.com/threads/computebuffer-getdata.165501/
-        //windPoints.SetData(new WF_WindPoint[maxTotalCells]);
+        windPointsBuffer.SetData(points);
 
-        float[] start = new float[3] { ((float)numCells.x / 2) * cellSize, ((float)numCells.y / 2) * cellSize, ((float)numCells.z / 2) * cellSize };
-        Debug.Log(string.Join(", ", start));
-        calcWindPointsShader.SetFloats("startPos", start);
+        //calculate start point of wind area (centre of least cell)
+        Vector3 halfNumCells = new Vector3((float)numCells.x / 2, (float)numCells.y / 2, (float)numCells.z / 2);
+        float halfCellSize = cellSize / 2;
+        Vector3 startPos = transform.TransformPoint(-(halfNumCells * cellSize) + (Vector3.one * halfCellSize)); 
+        float[] startPosAsArray = new float[3] { startPos.x, startPos.y, startPos.z };
+        //Debug.Log(startPos);
+        
+        //set shader vars
+        calcWindPointsShader.SetFloats("startPos", startPosAsArray);
         calcWindPointsShader.SetFloats("right", new float[3] { transform.right.x * cellSize, transform.right.y * cellSize, transform.right.z * cellSize } );
         calcWindPointsShader.SetFloats("up", new float[3] { transform.up.x * cellSize, transform.up.y * cellSize, transform.up.z * cellSize } );
         calcWindPointsShader.SetFloats("fwd", new float[3] { transform.forward.x * cellSize, transform.forward.y * cellSize, transform.forward.z * cellSize } );
         calcWindPointsShader.SetInts("numPoints", new int[3] { numCells.x, numCells.y, numCells.z } );
+        Vector3 wind = GetWind();
         calcWindPointsShader.SetFloats("wind", new float[3] { wind.x, wind.y, wind.z } );
 
         int kernelHandle = calcWindPointsShader.FindKernel("CalcWindPoints");
-        calcWindPointsShader.SetBuffer(kernelHandle, "Result", windPoints);
-        calcWindPointsShader.Dispatch(kernelHandle, numCells.x, numCells.y, numCells.z);
-        windPoints.GetData(points);
+        calcWindPointsShader.SetBuffer(kernelHandle, "Result", windPointsBuffer);
+
+        //find number of thread groups 
+        //3D
+        /*
+        int[] numGroups = new int[3] { numCells.x / GROUP_SIZE_3D, numCells.y / GROUP_SIZE_3D, numCells.z / GROUP_SIZE_3D }; 
+        for (int i = 0; i < numGroups.Length; i++)
+        {
+            if (numGroups[i] <= 0) numGroups[i] = 1;
+        }
         */
+
+        //1D
+        int[] numGroups = new int[3] { (numCells.x * numCells.y * numCells.z) / GROUP_SIZE_1D, 1, 1 };
+        if (numGroups[0] <= 0) numGroups[0] = 1;
+        //Debug.Log("numCells = " + numCells + ", numGroups = " + String.Join(", ", numGroups));
+        calcWindPointsShader.Dispatch(kernelHandle, numGroups[0], numGroups[1], numGroups[2]);
 
         stopwatch.Stop();
         //Debug.Log("WindArea update time for " + numCells.x * numCells.y * numCells.z + " cells : " + stopwatch.ElapsedMilliseconds + " milliseconds");
 
-        return points.ToArray();
+        stopwatch.Restart();
+        windPointsBuffer.GetData(points);
+        stopwatch.Stop();
+        Debug.Log("WindArea GetData time: " + stopwatch.ElapsedMilliseconds + "milliseconds");
+        return points;
     }
     protected override void UpdateWindFieldPoints()
     {
+        /*
         if (mode == WindProducerMode.Dynamic)
         {
             windPoints = CalcWindFieldPoints();
@@ -149,19 +159,29 @@ public class WindArea : WindProducer
                 Debug.Log("windDirty at wind area at " + transform.position);
                 foreach (WindFieldPoint wp in windPoints) wp.wind = GetWind();
             }
-
         }
+        */
+
+        windPoints = CalcWindFieldPoints();
     }
 
     private void OnDestroy()
     {
-        //windPoints.Release();
+        windPointsBuffer.Release();
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
-        Gizmos.DrawRay(transform.position, GetWind());
+        //Gizmos.DrawRay(transform.position, GetWind());
+
+        if(EditorApplication.isPlaying)
+        {
+            foreach(WindFieldPoint point in windPoints)
+            {
+                Gizmos.DrawRay(point.position, point.wind);
+            }
+        }
     }
 
 

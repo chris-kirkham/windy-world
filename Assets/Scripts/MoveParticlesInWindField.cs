@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
@@ -29,6 +28,7 @@ public class MoveParticlesInWindField : MonoBehaviour
 
     private float updateInterval = 0f;
 
+    System.Diagnostics.Stopwatch particleJobStopwatch;
 
     private void Start()
     {
@@ -41,8 +41,10 @@ public class MoveParticlesInWindField : MonoBehaviour
 
     private void Update()
     {
+        particleJobStopwatch = System.Diagnostics.Stopwatch.StartNew();
+
         //int i = 0;
-        if(active)
+        if (active)
         {
             if(useJobSystem)
             {
@@ -89,18 +91,9 @@ public class MoveParticlesInWindField : MonoBehaviour
     {
         if (useJobSystem)
         {
-            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            particleJobStopwatch.Stop();
+            Debug.Log("Jobified particle update time: " + particleJobStopwatch.ElapsedMilliseconds + " ms.");
             moveParticlesJob.Schedule(particles);
-            stopwatch.Stop();
-            Debug.Log("Jobified particle update time: " + stopwatch.ElapsedMilliseconds + " ms.");
-        }
-    }
-
-    private void LateUpdate()
-    {
-        if(useJobSystem)
-        {
-           //moveParticlesHandle.Complete();
         }
     }
 
@@ -113,10 +106,10 @@ public class MoveParticlesInWindField : MonoBehaviour
     private struct MoveParticlesJob : IJobParticleSystem
     {
         //public NativeHashMap<SpatialHashKeyBlittable, Vector3> nativeWindFieldCells;
-        public Vector3 globalWind;
-        public float windFieldCellSize;
-        public float mass;
-        public float lerpAmount;
+        [ReadOnly] public Vector3 globalWind;
+        [ReadOnly] public float windFieldCellSize;
+        [ReadOnly] public float mass;
+        [ReadOnly] public float lerpAmount;
 
         public void Execute(ParticleSystemJobData particles)
         {
@@ -130,7 +123,7 @@ public class MoveParticlesInWindField : MonoBehaviour
 
             for(int i = 0; i < particles.count; i++)
             {
-                SpatialHashKeyBlittable key = new SpatialHashKeyBlittable(new Vector3(positionsX[i], positionsY[i], positionsZ[i]), windFieldCellSize);
+                //SpatialHashKeyBlittable key = new SpatialHashKeyBlittable(new Vector3(positionsX[i], positionsY[i], positionsZ[i]), windFieldCellSize);
 
                 Vector3 wind = globalWind;
                 //nativeWindFieldCells.TryGetValue(key, out wind);

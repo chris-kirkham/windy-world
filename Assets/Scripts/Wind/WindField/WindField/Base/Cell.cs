@@ -58,7 +58,7 @@ namespace Wind
                     UpdateWind();
                     break;
                 default:
-                    Debug.LogError("Unhandled ProducerMode! If you added a new one, update this function.");
+                    //Debug.LogError("Unhandled ProducerMode! If you added a new one, update this function.");
                     break;
             }
         }

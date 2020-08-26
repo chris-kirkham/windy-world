@@ -53,6 +53,7 @@ public class WindSpline : WindProducer
 
     private void OnDrawGizmos()
     {
+        /*
         if(EditorApplication.isPlaying)
         {
             for (int i = 0; i < spline.curves.Count; i++)
@@ -69,6 +70,7 @@ public class WindSpline : WindProducer
                 }
             }
         }
+        */
     }
 
 }
