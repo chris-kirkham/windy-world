@@ -63,15 +63,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindArea\Editor\WindAreaInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\BezierCurveInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\BezierSplineInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\LineInspector.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\SplineUIParams.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\CurveArrowVis.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\LineArrowVis.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\SplineArrowVis.cs" />
-    <Compile Include="Assets\Scripts\Wind\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\WindArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindArea\Editor\WindAreaInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\BezierCurveInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\BezierSplineInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\LineInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\SplineUIParams.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\CurveArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\LineArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\SplineArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\WindArrowVis.cs" />
     <None Include="Assets\Shaders\Editor\Wind\WindArrow.shader" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
