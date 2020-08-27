@@ -21,6 +21,7 @@ public class WindArea : WindProducer
 
     //compute 
     public ComputeShader calcWindPointsShader;
+    int calcWindPointsShaderKernel;
     private ComputeBuffer windPointsBuffer; //stores the wind points output by the compute shader
     private const int stride = (sizeof(float) * 6) + sizeof(uint) + (sizeof(int) * 2);
     private const int GROUP_SIZE_1D = 64; //MUST BE SAME AS IN COMPUTE SHADER
@@ -35,6 +36,8 @@ public class WindArea : WindProducer
     void Awake()
     {
         windWorld = wind;
+
+        calcWindPointsShaderKernel = calcWindPointsShader.FindKernel("CalcWindPoints");
         windPointsBuffer = new ComputeBuffer(numCells.x * numCells.y * numCells.z, stride, ComputeBufferType.Default);
 
         lastWindVec = GetWind();
@@ -93,14 +96,13 @@ public class WindArea : WindProducer
         WindFieldPoint[] points = new WindFieldPoint[windPointsBuffer.count];
         //https://forum.unity.com/threads/system-says-struct-is-blittable-unity-says-struct-isnt-blittable.590251/
         //https://forum.unity.com/threads/computebuffer-getdata.165501/
-        windPointsBuffer.SetData(points);
+        windPointsBuffer.SetData(points); //necessary?
 
         //calculate start point of wind area (centre of least cell)
         Vector3 halfNumCells = new Vector3((float)numCells.x / 2, (float)numCells.y / 2, (float)numCells.z / 2);
         float halfCellSize = cellSize / 2;
         Vector3 startPos = transform.TransformPoint(-(halfNumCells * cellSize) + (Vector3.one * halfCellSize)); 
         float[] startPosAsArray = new float[3] { startPos.x, startPos.y, startPos.z };
-        //Debug.Log(startPos);
         
         //set shader vars
         calcWindPointsShader.SetFloats("startPos", startPosAsArray);
@@ -111,8 +113,7 @@ public class WindArea : WindProducer
         Vector3 wind = GetWind();
         calcWindPointsShader.SetFloats("wind", new float[3] { wind.x, wind.y, wind.z } );
 
-        int kernelHandle = calcWindPointsShader.FindKernel("CalcWindPoints");
-        calcWindPointsShader.SetBuffer(kernelHandle, "Result", windPointsBuffer);
+        calcWindPointsShader.SetBuffer(calcWindPointsShaderKernel, "Result", windPointsBuffer);
 
         //find number of thread groups 
         //3D
@@ -128,7 +129,7 @@ public class WindArea : WindProducer
         int[] numGroups = new int[3] { (numCells.x * numCells.y * numCells.z) / GROUP_SIZE_1D, 1, 1 };
         if (numGroups[0] <= 0) numGroups[0] = 1;
         //Debug.Log("numCells = " + numCells + ", numGroups = " + String.Join(", ", numGroups));
-        calcWindPointsShader.Dispatch(kernelHandle, numGroups[0], numGroups[1], numGroups[2]);
+        calcWindPointsShader.Dispatch(calcWindPointsShaderKernel, numGroups[0], numGroups[1], numGroups[2]);
 
         stopwatch.Stop();
         //Debug.Log("WindArea update time for " + numCells.x * numCells.y * numCells.z + " cells : " + stopwatch.ElapsedMilliseconds + " milliseconds");
@@ -136,7 +137,7 @@ public class WindArea : WindProducer
         stopwatch.Restart();
         windPointsBuffer.GetData(points);
         stopwatch.Stop();
-        Debug.Log("WindArea GetData time: " + stopwatch.ElapsedMilliseconds + "milliseconds");
+        //Debug.Log("WindArea GetData time: " + stopwatch.ElapsedMilliseconds + "milliseconds");
         return points;
     }
     protected override void UpdateWindFieldPoints()

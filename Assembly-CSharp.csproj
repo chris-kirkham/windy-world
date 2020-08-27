@@ -86,6 +86,7 @@
     <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\BaseCurves\Points.cs" />
     <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Static\BezierCurves.cs" />
     <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\WindSpline.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSplineArea\SplineArea.cs" />
     <Compile Include="Assets\Scripts\Wind\Wind-affected objects\WindAffectedPhysObj.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Debug\OctreeCellsDebug.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Debug\WindFieldDebug.cs" />
@@ -109,6 +110,7 @@
     <None Include="Assets\Scripts\ComputeTest.compute" />
     <None Include="Assets\Scripts\Wind\Wind producers\WindArea\WindArea_CalcWindPoints.compute" />
     <None Include="Assets\Scripts\Wind\Wind producers\WindArea\Indexing.cginc" />
+    <None Include="Assets\Scripts\Wind\Wind producers\WindSplineArea\SplineAreaCompute.compute" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

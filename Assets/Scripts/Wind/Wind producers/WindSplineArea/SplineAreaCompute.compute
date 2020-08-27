@@ -1,0 +1,43 @@
+﻿#pragma kernel CalcWindPoints
+
+#include "Indexing.cginc"
+
+#define GROUP_SIZE 64
+
+struct WindFieldPoint
+{
+    //https://developer.nvidia.com/content/understanding-structured-buffer-performance
+    float3 pos;
+    float3 wind;
+    uint depth;
+    int priority;
+    int mode;
+};
+
+RWStructuredBuffer<WindFieldPoint> Result;
+StructuredBuffer<float3> positions, windDirs, rightDirs, upDirs;
+int numCellsX, numCellsY;
+float cellSizeXY, halfCellSizeXY;
+
+[numthreads(GROUP_SIZE,1,1)]
+void CalcWindPoints(uint3 id : SV_DispatchThreadID)
+{
+    int3 xyz = UnIndex(id.x);
+    float3 right = rightDirs[xyz.z];
+    float3 up = upDirs[xyz.z];
+
+    //calculate least (bottom-left) xy cell for this z position
+    //(this only needs doing once per z position - can I move it... somewhere? to avoid calculating it every time)
+    float lengthX = (numCellsX * cellSizeXY) - halfCellSizeXY;
+    float lengthY = (numCellsY * cellSizeXY) - halfCellSizeXY;
+    float3 leastPos = positions[xyz.z] - ((right * lengthX) + (up * lengthY));
+
+    WindFieldPoint outPoint;
+    outPoint.pos = leastPos + (right * xyz.x) + (up * xyz.y);
+    outPoint.wind = windDirs[xyz.z];
+    outPoint.depth = 0;
+    outPoint.priority = 0;
+    outPoint.mode = 0;
+
+    Result[id.x] = outPoint;
+}

@@ -1,4 +1,72 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: preprocessCompute
-  insize=1657 outsize=1656 ok=1
+  insize=1669 outsize=1668 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(46): unrecognized identifier 'OutPoint'
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(46): unrecognized identifier 'outPoint'
+  api=4 insize=1668 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=587 outsize=586 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at SplineAreaCompute.compute(4): syntax error : unexpected token '.'
+  error: 2 plat 4 at SplineAreaCompute.compute(4): syntax error : unexpected token 'Indexing'
+  api=4 insize=586 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=602 outsize=601 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at SplineAreaCompute.compute(4): syntax error : unexpected token '.'
+  error: 2 plat 4 at SplineAreaCompute.compute(4): syntax error : unexpected token 'Indexing'
+  api=4 insize=601 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=604 outsize=603 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at SplineAreaCompute.compute(4): syntax error : unexpected token '.'
+  error: 2 plat 4 at SplineAreaCompute.compute(4): syntax error : unexpected token 'Indexing'
+  api=4 insize=603 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=1593 outsize=1592 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(45): unrecognized identifier 'OutPoint'
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(45): unrecognized identifier 'outPoint'
+  api=4 insize=1592 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=546 outsize=545 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at SplineAreaCompute.compute(3): failed to open source file: 'Indexing.cginc'
+  api=4 insize=545 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=1599 outsize=1598 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at Indexing.cginc(16): integer modulus may be much slower, try using uints if possible.
+  error: 1 plat 4 at Indexing.cginc(17): integer divides may be much slower, try using uints if possible.
+  error: 1 plat 4 at Indexing.cginc(17): integer modulus may be much slower, try using uints if possible.
+  error: 1 plat 4 at Indexing.cginc(18): integer divides may be much slower, try using uints if possible.
+  api=4 insize=1598 outsize=1432 ok=1
+Cmd: preprocessCompute
+  insize=1599 outsize=1598 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at Indexing.cginc(16): integer modulus may be much slower, try using uints if possible.
+  error: 1 plat 4 at Indexing.cginc(17): integer divides may be much slower, try using uints if possible.
+  error: 1 plat 4 at Indexing.cginc(17): integer modulus may be much slower, try using uints if possible.
+  error: 1 plat 4 at Indexing.cginc(18): integer divides may be much slower, try using uints if possible.
+  api=4 insize=1598 outsize=1432 ok=1
+Cmd: preprocessCompute
+  insize=1599 outsize=1598 ok=1
+Cmd: compileComputeKernel
+  api=4 insize=1598 outsize=1032 ok=1
+Cmd: preprocessCompute
+  insize=562 outsize=561 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at SplineAreaCompute.compute(3): failed to open source file: 'Indexing.cginc'
+  api=4 insize=561 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=561 outsize=560 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at SplineAreaCompute.compute(3): failed to open source file: 'Indexing.cginc'
+  api=4 insize=560 outsize=0 ok=0
+Cmd: preprocessCompute
+  insize=1293 outsize=1292 ok=1
+Cmd: compileComputeKernel
+  error: 2 plat 4 at SplineAreaCompute.compute(3): failed to open source file: 'Indexing.cginc'
+  api=4 insize=1292 outsize=0 ok=0

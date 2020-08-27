@@ -1,12 +1,11 @@
-﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CalcWindPoints
+﻿#pragma kernel CalcWindPoints
 
 #include "Indexing.cginc"
 
 #define GROUP_SIZE_1D 64
 #define GROUP_SIZE_3D 4
 
-struct OutPoint
+struct WindFieldPoint
 {
     //https://developer.nvidia.com/content/understanding-structured-buffer-performance
     float3 pos;
@@ -18,7 +17,7 @@ struct OutPoint
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-RWStructuredBuffer<OutPoint> Result;
+RWStructuredBuffer<WindFieldPoint> Result;
 float3 startPos; //least wind point position in the wind area. other points are calculated relative to this
 float3 fwd, up, right; //forward, up, and right vectors of the wind area
 int3 numPoints; //(x, y, z) number of wind points
@@ -43,7 +42,7 @@ void CalcWindPoints (uint3 id : SV_DispatchThreadID)
 [numthreads(GROUP_SIZE_1D, 1, 1)]
 void CalcWindPoints(uint3 id : SV_DispatchThreadID)
 {
-    OutPoint outPoint;
+    WindFieldPoint outPoint;
     int3 xyz = UnIndex(id.x, numPoints.x, numPoints.y);
     outPoint.pos = startPos + (xyz.x * right) + (xyz.y * up) + (xyz.z * fwd);
     outPoint.wind = wind;
