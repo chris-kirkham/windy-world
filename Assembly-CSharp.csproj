@@ -109,8 +109,8 @@
     <Compile Include="Assets\TEST_SpawnTestPhysObjs.cs" />
     <None Include="Assets\Scripts\ComputeTest.compute" />
     <None Include="Assets\Scripts\Wind\Wind producers\WindArea\WindArea_CalcWindPoints.compute" />
-    <None Include="Assets\Scripts\Wind\Wind producers\WindArea\Indexing.cginc" />
-    <None Include="Assets\Scripts\Wind\Wind producers\WindSplineArea\SplineAreaCompute.compute" />
+    <None Include="Assets\Scripts\Wind\Wind producers\Indexing.cginc" />
+    <None Include="Assets\Scripts\Wind\Wind producers\WindSplineArea\SplineArea_CalcWindPoints.compute" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

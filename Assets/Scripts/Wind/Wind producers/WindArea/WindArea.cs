@@ -102,10 +102,9 @@ public class WindArea : WindProducer
         Vector3 halfNumCells = new Vector3((float)numCells.x / 2, (float)numCells.y / 2, (float)numCells.z / 2);
         float halfCellSize = cellSize / 2;
         Vector3 startPos = transform.TransformPoint(-(halfNumCells * cellSize) + (Vector3.one * halfCellSize)); 
-        float[] startPosAsArray = new float[3] { startPos.x, startPos.y, startPos.z };
         
         //set shader vars
-        calcWindPointsShader.SetFloats("startPos", startPosAsArray);
+        calcWindPointsShader.SetFloats("startPos", new float[3] { startPos.x, startPos.y, startPos.z } );
         calcWindPointsShader.SetFloats("right", new float[3] { transform.right.x * cellSize, transform.right.y * cellSize, transform.right.z * cellSize } );
         calcWindPointsShader.SetFloats("up", new float[3] { transform.up.x * cellSize, transform.up.y * cellSize, transform.up.z * cellSize } );
         calcWindPointsShader.SetFloats("fwd", new float[3] { transform.forward.x * cellSize, transform.forward.y * cellSize, transform.forward.z * cellSize } );
@@ -171,7 +170,7 @@ public class WindArea : WindProducer
         windPointsBuffer.Release();
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.blue;
         //Gizmos.DrawRay(transform.position, GetWind());

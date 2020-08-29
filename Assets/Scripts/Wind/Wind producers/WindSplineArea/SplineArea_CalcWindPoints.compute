@@ -1,6 +1,6 @@
 ﻿#pragma kernel CalcWindPoints
 
-#include "Indexing.cginc"
+#include "../Indexing.cginc"
 
 #define GROUP_SIZE 64
 
@@ -22,18 +22,18 @@ float cellSizeXY, halfCellSizeXY;
 [numthreads(GROUP_SIZE,1,1)]
 void CalcWindPoints(uint3 id : SV_DispatchThreadID)
 {
-    int3 xyz = UnIndex(id.x);
+    int3 xyz = UnIndex(id.x, numCellsX, numCellsY);
     float3 right = rightDirs[xyz.z];
     float3 up = upDirs[xyz.z];
 
     //calculate least (bottom-left) xy cell for this z position
     //(this only needs doing once per z position - can I move it... somewhere? to avoid calculating it every time)
-    float lengthX = (numCellsX * cellSizeXY) - halfCellSizeXY;
-    float lengthY = (numCellsY * cellSizeXY) - halfCellSizeXY;
-    float3 leastPos = positions[xyz.z] - ((right * lengthX) + (up * lengthY));
+    //float lengthX = (numCellsX * cellSizeXY) - halfCellSizeXY;
+    //float lengthY = (numCellsY * cellSizeXY) - halfCellSizeXY;
+    //float3 leastPos = positions[xyz.z] - ((right * lengthX) + (up * lengthY));
 
     WindFieldPoint outPoint;
-    outPoint.pos = leastPos + (right * xyz.x) + (up * xyz.y);
+    outPoint.pos = positions[xyz.z] + (right * xyz.x) + (up * xyz.y);
     outPoint.wind = windDirs[xyz.z];
     outPoint.depth = 0;
     outPoint.priority = 0;

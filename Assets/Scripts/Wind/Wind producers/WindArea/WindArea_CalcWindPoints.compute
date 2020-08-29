@@ -1,6 +1,6 @@
 ﻿#pragma kernel CalcWindPoints
 
-#include "Indexing.cginc"
+#include "../Indexing.cginc"
 
 #define GROUP_SIZE_1D 64
 #define GROUP_SIZE_3D 4

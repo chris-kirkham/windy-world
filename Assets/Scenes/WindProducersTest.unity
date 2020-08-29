@@ -439,10 +439,11 @@ MonoBehaviour:
   priority: 0
   active: 1
   updateInterval: 0
-  numCellsX: 1
-  numCellsY: 1
-  windSamplesPerCurve: 0
-  splineAreaCompute: {fileID: 0}
+  numCellsX: 2
+  numCellsY: 2
+  windSamplesPerCurve: 16
+  cellSizeXY: 1
+  splineAreaCompute: {fileID: 7200000, guid: 6ec3b71e12d79f446b12cbc10119375a, type: 3}
 --- !u!114 &1426281355
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -468,7 +469,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1426281353}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.5914023, y: -0.57496446, z: 3.329947}
+  m_LocalPosition: {x: -5.84, y: -0.57496446, z: 3.329947}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
