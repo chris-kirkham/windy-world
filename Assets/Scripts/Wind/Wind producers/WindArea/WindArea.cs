@@ -23,7 +23,7 @@ public class WindArea : WindProducer
     public ComputeShader calcWindPointsShader;
     int calcWindPointsShaderKernel;
     private ComputeBuffer windPointsBuffer; //stores the wind points output by the compute shader
-    private const int stride = (sizeof(float) * 6) + sizeof(uint) + (sizeof(int) * 2);
+    private const int stride = WindFieldPoint.stride;
     private const int GROUP_SIZE_1D = 64; //MUST BE SAME AS IN COMPUTE SHADER
     private const int GROUP_SIZE_3D = 4; //MUST BE SAME AS IN COMPUTE SHADER
 

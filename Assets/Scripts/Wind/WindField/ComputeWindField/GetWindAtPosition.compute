@@ -1,0 +1,16 @@
+﻿#pragma kernel GetWindAtPosition
+
+#include "../../Common/Cgincs/Hash.cginc"
+
+RWStructuredBuffer<float3> Wind; //return buffer
+
+Texture3D<float3> windField;
+float windFieldCellSize;
+float3 windFieldStart;
+float3 samplePosition;
+
+[numthreads(1,1,1)]
+void GetWindAtPosition(uint3 id : SV_DispatchThreadID)
+{
+	Wind[0] = windField[hash(samplePosition, windFieldCellSize, windFieldStart)];
+}

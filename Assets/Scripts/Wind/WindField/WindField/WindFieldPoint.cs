@@ -49,5 +49,8 @@ namespace Wind
             //return position.ToString();
             return "Pos = " + position + ", wind dir = " + wind;
         }
+
+        public const int stride = (sizeof(float) * 6) + sizeof(uint) + (sizeof(int) * 2); //is this bad practice???
     }
+
 }

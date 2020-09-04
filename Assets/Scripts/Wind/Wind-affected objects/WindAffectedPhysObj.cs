@@ -12,7 +12,7 @@ public class WindAffectedPhysObj : MonoBehaviour
 
     [Range(1, 10)] public int randomNPointsSamples = 1;
 
-    public Wind.WindField windField;
+    public Wind.ComputeWindField windField;
 
     private Rigidbody rb;
     private Mesh mesh;

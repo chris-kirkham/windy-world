@@ -10,7 +10,6 @@ namespace Wind
     {
         private BezierSpline spline;
 
-
         [Min(1)] public int numCellsX = 1;
         [Min(1)] public int numCellsY = 1;
         private int numCellsZ;
