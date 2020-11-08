@@ -28,9 +28,9 @@ namespace Wind
             getWindCompute.SetBuffer(getWindComputeKernel, "Wind", wind);
 
             //set other variables
-            getWindCompute.SetTexture(getWindComputeKernel, "windFieldStatic", windField.GetWindFieldRenderTexture());
-            getWindCompute.SetTexture(getWindComputeKernel, "windFieldDynamic", windField.GetWindFieldRenderTexture());
-            getWindCompute.SetTexture(getWindComputeKernel, "windFieldNoise", windField.GetWindFieldRenderTexture());
+            getWindCompute.SetTexture(getWindComputeKernel, "windFieldStatic", windField.GetStaticWindField());
+            getWindCompute.SetTexture(getWindComputeKernel, "windFieldDynamic", windField.GetDynamicWindField());
+            getWindCompute.SetTexture(getWindComputeKernel, "windFieldNoise", windField.GetNoiseWindField());
             Vector3 globalWind = windField.GetGlobalWind();
             getWindCompute.SetFloats("globalWind", new float[3] { globalWind.x, globalWind.y, globalWind.z });
             getWindCompute.SetFloat("windFieldCellSize", windField.GetCellSize());

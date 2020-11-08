@@ -1,0 +1,20 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel WindFieldTo1DBuffer
+
+#include "../Cgincs/Indexing.cginc"
+
+#define GROUP_SIZE 4
+
+RWStructuredBuffer<float3> Result;
+
+Texture3D<float3> windFieldStatic;
+Texture3D<float3> windFieldDynamic;
+Texture3D<float3> windFieldNoise;
+float3 globalWind;
+int numCellsX, numCellsY;
+
+[numthreads(GROUP_SIZE,GROUP_SIZE,GROUP_SIZE)]
+void WindFieldTo1DBuffer(uint3 id : SV_DispatchThreadID)
+{
+    Result[Index(id, numCellsX, numCellsY)] = windFieldStatic[id] + windFieldDynamic[id] + windFieldNoise[id] + globalWind;
+}

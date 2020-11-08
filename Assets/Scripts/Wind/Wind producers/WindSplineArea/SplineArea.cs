@@ -10,11 +10,11 @@ namespace Wind
     {
         private BezierSpline spline;
 
-        [Min(1)] public int numCellsX = 1;
-        [Min(1)] public int numCellsY = 1;
-        private int numCellsZ;
-        [Min(1)] public int windSamplesPerCurve = 10;
-        [Min(0)] public float cellSizeXY = 1;
+        [SerializeField] [Min(1)] private int numCellsX = 1;
+        [SerializeField] [Min(1)] private int numCellsY = 1;
+        private int numCellsZ; //windSamplesPerCurve * number of curves in spline
+        [SerializeField] [Min(1)] private int windSamplesPerCurve = 10;
+        [SerializeField] [Min(0)] private float cellSizeXY = 1;
 
         //compute
         public ComputeShader splineAreaCompute;
@@ -24,7 +24,7 @@ namespace Wind
 
         private int GROUP_SIZE = 64;
 
-        protected override void Start()
+        protected override void Awake()
         {
             spline = GetComponent<BezierSpline>();
 
@@ -32,7 +32,7 @@ namespace Wind
             splineAreaComputeHandle = splineAreaCompute.FindKernel("CalcWindPoints");
             windPointsBuffer = new ComputeBuffer(numCellsX * numCellsY * numCellsZ, windPointsBufferStride, ComputeBufferType.Default);
 
-            base.Start();
+            base.Awake();
         }
 
         protected override ComputeBuffer CalcWindFieldPoints()
@@ -111,6 +111,12 @@ namespace Wind
         {
         
         }
+
+        public override ComputeBuffer GetProducerPointsAsBuffer()
+        {
+            throw new System.NotImplementedException();
+        }
+
 
         // Update is called once per frame
         void Update()

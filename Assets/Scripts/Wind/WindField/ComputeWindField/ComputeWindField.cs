@@ -24,6 +24,7 @@ namespace Wind
         //3D render textures which act as vector fields to store wind information
         private RenderTexture windFieldStatic; //stores wind vectors from static wind producers; updated only on game start  
         private RenderTexture windFieldDynamic; //stores wind vectors from dynamic wind producers; updated from dynamic producer list every tick
+        private RenderTexture windFieldNoise; //stores generated wind noise vectors; updated every tick
         private RenderTextureDescriptor windFieldRTDesc; //descriptor for the wind field render textures; used to initialise all wind 
 
         //wind producer lists
@@ -66,9 +67,11 @@ namespace Wind
             windFieldStatic.Create();
             windFieldDynamic = new RenderTexture(windFieldRTDesc);
             windFieldDynamic.Create();
+            windFieldNoise = new RenderTexture(windFieldRTDesc);
+            windFieldNoise.Create();
 
             //add static wind producers to static rt
-            foreach(WindProducer wp in staticWindProducers)
+            foreach (WindProducer wp in staticWindProducers)
             {
                 addPointsScript.AddPoints(windFieldStatic, WindFieldLeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
             }
@@ -89,10 +92,37 @@ namespace Wind
             }
         }
 
-        //Returns the 3D RenderTexture which acts as the wind field
-        public RenderTexture GetWindFieldRenderTexture()
+        //adds a wind producer to the corresponding (static or dynamic) wind field.
+        public void Include(WindProducer windProducer)
+        {
+            switch(windProducer.mode)
+            {
+                case WindProducerMode.Static:
+                    staticWindProducers.Add(windProducer);
+                    break;
+                case WindProducerMode.Dynamic:
+                    dynamicWindProducers.Add(windProducer);
+                    break;
+                default:
+                    Debug.LogError("Trying to add a wind producer with an unhandled wind producer mode to this wind field." +
+                        "Did you add another mode and forget to update this function???");
+                    break;
+            }
+        }
+
+        public RenderTexture GetStaticWindField()
         {
             return windFieldStatic;
+        }
+
+        public RenderTexture GetDynamicWindField()
+        {
+            return windFieldDynamic;
+        }
+
+        public RenderTexture GetNoiseWindField()
+        {
+            return windFieldNoise;
         }
 
         public Vector3 GetWind(Vector3 position)
@@ -109,6 +139,11 @@ namespace Wind
         public float GetCellSize()
         {
             return cellSize;
+        }
+
+        public Vector3Int GetNumCells()
+        {
+            return numCells;
         }
 
         private void UpdateLeastCorner()

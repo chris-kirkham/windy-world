@@ -20,7 +20,9 @@ namespace Wind
         protected ComputeBuffer windPointsBuffer;
         protected float cellSize; //size of cells of given wind field
 
-        protected virtual void Start()
+        //N.B. Awake() rather than Start() becasue wind producers need to be added to their wind field before the wind field tries to access them (which it does on Start()).
+        //This works but the flow of it isn't clear, so I should try to find a better way to do it
+        protected virtual void Awake()
         {
             if (windField == null)
             {
@@ -67,7 +69,7 @@ namespace Wind
         public void AddToWindField()
         {
             Debug.Log("adding " + GetType() + " to wind field");
-            //windField.Include(this);
+            windField.Include(this);
         }
 
         /*
@@ -76,6 +78,8 @@ namespace Wind
         {
         }
         */
+
+        public abstract ComputeBuffer GetProducerPointsAsBuffer();
 
         public override string ToString()
         {

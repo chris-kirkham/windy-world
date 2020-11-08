@@ -71,6 +71,9 @@
     <Compile Include="Assets\Scripts\Player\FollowObjectAroundPivot.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerCamera_Follow.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\Wind\Common\Wind visualisation\WindVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Common\Wind visualisation\WindVis_WindField.cs" />
+    <Compile Include="Assets\Scripts\Wind\Common\Wind visualisation\WindVis_WindProducer.cs" />
     <Compile Include="Assets\Scripts\Wind\Static\DirectionalPerlin.cs" />
     <Compile Include="Assets\Scripts\Wind\Wind producers\WindArea\Debug\WindAreaVis.cs" />
     <Compile Include="Assets\Scripts\Wind\Wind producers\WindArea\WindArea.cs" />
@@ -93,6 +96,7 @@
     <Compile Include="Assets\Scripts\Wind\WindField\WindField\WindFieldPoint.cs" />
     <Compile Include="Assets\TEST_SpawnTestPhysObjs.cs" />
     <None Include="Assets\Scripts\Wind\WindField\ComputeWindField\AddPointsToWindField.compute" />
+    <None Include="Assets\Scripts\Wind\Common\Wind visualisation\ConvertWindFieldTo1DBuffer.compute" />
     <None Include="Assets\Scripts\Wind\Wind producers\WindArea\WindArea_CalcWindPoints.compute" />
     <None Include="Assets\Scripts\Wind\Common\Cgincs\Hash.cginc" />
     <None Include="Assets\Scripts\Wind\WindField\ComputeWindField\GetWindAtPosition.compute" />
@@ -100,6 +104,7 @@
     <None Include="Assets\Scripts\Wind\Common\Cgincs\WindFieldPoint.cginc" />
     <None Include="Assets\Scripts\Noise\PerlinGenerator.compute" />
     <None Include="Assets\Scripts\Wind\Wind producers\WindSplineArea\SplineArea_CalcWindPoints.compute" />
+    <None Include="Assets\Scripts\Wind\Common\Wind visualisation\WindVis.shader" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

@@ -2,6 +2,7 @@
 Shader "Instanced/Boid_InstancedIndirectCompute"
 {
 	Properties{
+		_ArrowScale("Arrow scale", Float) = 1.0
 		_Colour("Colour", Color) = (1, 1, 1, 1)
 		_Emission("Emission", Color) = (0, 0, 0, 1)
 		_MainTex("Albedo (RGB)", 2D) = "white" {}
@@ -18,7 +19,10 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 			#pragma multi_compile_instancing
 			#pragma instancing_options procedural:setup
 
-			sampler2D _MainTex;
+			#include "../Cgincs/WindFieldPoint.cginc"
+
+			float _ArrowScale;
+
 			float4 _Colour;
 			float4 _Emission;
 			half _Glossiness;
@@ -26,7 +30,7 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 
 			//assigned to in setup()
 			float4x4 _LookAt;
-			float4 _BoidPos;
+			float4 _Position;
 
 			struct Input {
 				float2 uv_MainTex;
@@ -35,8 +39,7 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
 			//https://github.com/Shinao/Unity-GPU-Boids/blob/master/Assets/3-GPU_Boids_Compute_Draw/Boids_Simple.shader - has lookat matrix
 			//also https://stackoverflow.com/questions/11190786/3d-rotation-matrix-from-direction-vector-forward-up-right
-				StructuredBuffer<float4> boidPositions;
-				StructuredBuffer<float3> boidForwardDirs;
+			StructuredBuffer<WindFieldPoint> points;
 			#endif
 
 		//constructs a look-at matrix from the given position and forward/up vectors
@@ -61,16 +64,16 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 			
 				/// Positions are calculated in the compute shader.
 				/// here we just use them.
-				_BoidPos = boidPositions[unity_InstanceID];
-				float scale = _BoidPos.w;
-				float3 forward = boidForwardDirs[unity_InstanceID];
+				_Position = points[unity_InstanceID].pos;
+				float scale = Length(points[unity_InstanceID].wind) * _ArrowScale;
+				float3 forward = points[unity_InstanceID].wind;
 
-				_LookAt = lookAtMatrix(_BoidPos, _BoidPos + (forward * -1), float3(0.0, 1.0, 0.0));
+				_LookAt = lookAtMatrix(_Position, _Position + (forward * -1), float3(0.0, 1.0, 0.0));
 
 				unity_ObjectToWorld._11_21_31_41 = float4(scale, 0, 0, 0);
 				unity_ObjectToWorld._12_22_32_42 = float4(0, scale, 0, 0);
 				unity_ObjectToWorld._13_23_33_43 = float4(0, 0, scale, 0);
-				unity_ObjectToWorld._14_24_34_44 = float4(_BoidPos.xyz, 1);
+				unity_ObjectToWorld._14_24_34_44 = float4(_Position.xyz, 1);
 				unity_WorldToObject = unity_ObjectToWorld;
 				unity_WorldToObject._14_24_34 *= -1;
 				unity_WorldToObject._11_22_33 = 1.0f / unity_WorldToObject._11_22_33;
@@ -96,12 +99,11 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 			#else
 				col = float4(1, 0, 1, 1);
 			#endif
-				fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * col;
-				o.Albedo = c.rgb;
+				o.Albedo = col.rgb;
 				o.Emission = _Emission.rgb;
 				o.Metallic = _Metallic;
 				o.Smoothness = _Glossiness;
-				o.Alpha = c.a;
+				o.Alpha = col.a;
 		}
 		ENDCG
 		}

@@ -31,7 +31,7 @@ public class WindArea : WindProducer
     private bool numCellsDirty = false;
     private Vector3Int lastNumCells;
 
-    void Awake()
+    protected override void Awake()
     {
         windWorld = wind;
 
@@ -40,6 +40,8 @@ public class WindArea : WindProducer
 
         lastWindVec = GetWind();
         lastNumCells = numCells;
+
+        base.Awake();
     }
 
     void Update()

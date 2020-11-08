@@ -17,11 +17,11 @@ public class WindSpline : WindProducer
     private bool rotationDirty = false;
 
 
-    protected override void Start()
+    protected override void Awake()
     {
         spline = GetComponent<BezierSpline>();
         tInterval = 1f / (float)samplesPerCurve;
-        base.Start();
+        base.Awake();
     }
 
     private void Update()
