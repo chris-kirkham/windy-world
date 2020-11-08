@@ -34,7 +34,6 @@ void CalcWindPoints(uint3 id : SV_DispatchThreadID)
     int3 xyz = UnIndex(id.x, numPoints.x, numPoints.y);
     outPoint.pos = startPos + (xyz.x * right) + (xyz.y * up) + (xyz.z * fwd);
     outPoint.wind = wind;
-    outPoint.depth = 0;
     outPoint.priority = 0;
     outPoint.mode = 0;
 

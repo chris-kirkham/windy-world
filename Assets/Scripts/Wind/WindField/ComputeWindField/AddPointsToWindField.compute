@@ -11,6 +11,7 @@ StructuredBuffer<WindFieldPoint> windPoints;
 float cellSize;
 float3 windFieldStartPos;
 
+
 [numthreads(GROUP_SIZE,1,1)]
 void AddPointsToWindField(uint3 id : SV_DispatchThreadID)
 {

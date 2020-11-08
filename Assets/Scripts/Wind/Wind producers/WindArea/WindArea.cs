@@ -22,8 +22,6 @@ public class WindArea : WindProducer
     //compute 
     public ComputeShader calcWindPointsShader;
     int calcWindPointsShaderKernel;
-    private ComputeBuffer windPointsBuffer; //stores the wind points output by the compute shader
-    private const int stride = WindFieldPoint.stride;
     private const int GROUP_SIZE_1D = 64; //MUST BE SAME AS IN COMPUTE SHADER
     private const int GROUP_SIZE_3D = 4; //MUST BE SAME AS IN COMPUTE SHADER
 
@@ -38,7 +36,7 @@ public class WindArea : WindProducer
         windWorld = wind;
 
         calcWindPointsShaderKernel = calcWindPointsShader.FindKernel("CalcWindPoints");
-        windPointsBuffer = new ComputeBuffer(numCells.x * numCells.y * numCells.z, stride, ComputeBufferType.Default);
+        windPointsBuffer = new ComputeBuffer(numCells.x * numCells.y * numCells.z, WindFieldPoint.stride, ComputeBufferType.Default);
 
         lastWindVec = GetWind();
         lastNumCells = numCells;
@@ -85,18 +83,13 @@ public class WindArea : WindProducer
         return relativeToLocalRotation ? windWorld : wind;
     }
 
-    protected override WindFieldPoint[] CalcWindFieldPoints()
+    protected override ComputeBuffer CalcWindFieldPoints()
     {
-        System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-        stopwatch.Start();
-
-        //COMPUTE SHADER METHOD
-        windPointsBuffer.Release();
-        windPointsBuffer = new ComputeBuffer(numCells.x * numCells.y * numCells.z, stride, ComputeBufferType.Default);
-        WindFieldPoint[] points = new WindFieldPoint[windPointsBuffer.count];
+        if(windPointsBuffer != null) windPointsBuffer.Release();
+        windPointsBuffer = new ComputeBuffer(numCells.x * numCells.y * numCells.z, WindFieldPoint.stride, ComputeBufferType.Default);
+        
         //https://forum.unity.com/threads/system-says-struct-is-blittable-unity-says-struct-isnt-blittable.590251/
         //https://forum.unity.com/threads/computebuffer-getdata.165501/
-        windPointsBuffer.SetData(points); //necessary?
 
         //calculate start point of wind area (centre of least cell)
         Vector3 halfNumCells = new Vector3((float)numCells.x / 2, (float)numCells.y / 2, (float)numCells.z / 2);
@@ -104,6 +97,7 @@ public class WindArea : WindProducer
         Vector3 startPos = transform.TransformPoint(-(halfNumCells * cellSize) + (Vector3.one * halfCellSize)); 
         
         //set shader vars
+        calcWindPointsShader.SetBuffer(calcWindPointsShaderKernel, "Result", windPointsBuffer);
         calcWindPointsShader.SetFloats("startPos", new float[3] { startPos.x, startPos.y, startPos.z } );
         calcWindPointsShader.SetFloats("right", new float[3] { transform.right.x * cellSize, transform.right.y * cellSize, transform.right.z * cellSize } );
         calcWindPointsShader.SetFloats("up", new float[3] { transform.up.x * cellSize, transform.up.y * cellSize, transform.up.z * cellSize } );
@@ -112,33 +106,12 @@ public class WindArea : WindProducer
         Vector3 wind = GetWind();
         calcWindPointsShader.SetFloats("wind", new float[3] { wind.x, wind.y, wind.z } );
 
-        calcWindPointsShader.SetBuffer(calcWindPointsShaderKernel, "Result", windPointsBuffer);
+        int numGroupsX = Mathf.Max(1, (numCells.x * numCells.y * numCells.z) / GROUP_SIZE_1D);
+        calcWindPointsShader.Dispatch(calcWindPointsShaderKernel, numGroupsX, 1, 1);
 
-        //find number of thread groups 
-        //3D
-        /*
-        int[] numGroups = new int[3] { numCells.x / GROUP_SIZE_3D, numCells.y / GROUP_SIZE_3D, numCells.z / GROUP_SIZE_3D }; 
-        for (int i = 0; i < numGroups.Length; i++)
-        {
-            if (numGroups[i] <= 0) numGroups[i] = 1;
-        }
-        */
-
-        //1D
-        int[] numGroups = new int[3] { (numCells.x * numCells.y * numCells.z) / GROUP_SIZE_1D, 1, 1 };
-        if (numGroups[0] <= 0) numGroups[0] = 1;
-        //Debug.Log("numCells = " + numCells + ", numGroups = " + String.Join(", ", numGroups));
-        calcWindPointsShader.Dispatch(calcWindPointsShaderKernel, numGroups[0], numGroups[1], numGroups[2]);
-
-        stopwatch.Stop();
-        //Debug.Log("WindArea update time for " + numCells.x * numCells.y * numCells.z + " cells : " + stopwatch.ElapsedMilliseconds + " milliseconds");
-
-        stopwatch.Restart();
-        windPointsBuffer.GetData(points);
-        stopwatch.Stop();
-        //Debug.Log("WindArea GetData time: " + stopwatch.ElapsedMilliseconds + "milliseconds");
-        return points;
+        return windPointsBuffer;
     }
+
     protected override void UpdateWindFieldPoints()
     {
         /*
@@ -148,7 +121,6 @@ public class WindArea : WindProducer
             //if number of cells has changed, do full update of all wind field points;
             //if only wind vector has changed, just update existing wind field points with new wind vector.
             //Moving position will never affect the wind vector; changing rotation will if the wind is set to be relative to local rotation
-            //TODO: I'm trying to update wind automatically by using reference vars, but it's not working
             if (numCellsDirty)
             {
                 Debug.Log("numCellsDirty at wind area at " + transform.position);
@@ -162,27 +134,6 @@ public class WindArea : WindProducer
         }
         */
 
-        windPoints = CalcWindFieldPoints();
+        windPointsBuffer = CalcWindFieldPoints();
     }
-
-    private void OnDestroy()
-    {
-        windPointsBuffer.Release();
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.blue;
-        //Gizmos.DrawRay(transform.position, GetWind());
-
-        if(EditorApplication.isPlaying)
-        {
-            foreach(WindFieldPoint point in windPoints)
-            {
-                Gizmos.DrawRay(point.position, point.wind);
-            }
-        }
-    }
-
-
 }

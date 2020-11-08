@@ -10,6 +10,7 @@ namespace Wind
         private ComputeWindField windField;
         
         public ComputeShader getWindCompute;
+        private ComputeBuffer wind; //compute buffer of length 1; just to get wind sample out of compute shader
         private int getWindComputeKernel;
 
         void Start()
@@ -22,12 +23,17 @@ namespace Wind
         public Vector3 GetWind(Vector3 position)
         {
             //create and set result buffer
-            ComputeBuffer wind = new ComputeBuffer(1, sizeof(float) * 3);
+            if (wind != null) wind.Release();
+            wind = new ComputeBuffer(1, sizeof(float) * 3);
             getWindCompute.SetBuffer(getWindComputeKernel, "Wind", wind);
 
             //set other variables
-            getWindCompute.SetTexture(getWindComputeKernel, "windField", windField.GetWindFieldRenderTexture());
-            getWindCompute.SetFloat("windFieldCellSize", windField.cellSize);
+            getWindCompute.SetTexture(getWindComputeKernel, "windFieldStatic", windField.GetWindFieldRenderTexture());
+            getWindCompute.SetTexture(getWindComputeKernel, "windFieldDynamic", windField.GetWindFieldRenderTexture());
+            getWindCompute.SetTexture(getWindComputeKernel, "windFieldNoise", windField.GetWindFieldRenderTexture());
+            Vector3 globalWind = windField.GetGlobalWind();
+            getWindCompute.SetFloats("globalWind", new float[3] { globalWind.x, globalWind.y, globalWind.z });
+            getWindCompute.SetFloat("windFieldCellSize", windField.GetCellSize());
             Vector3 leastCorner = windField.WindFieldLeastCorner;
             getWindCompute.SetFloats("windFieldStart", new float[3] { leastCorner.x, leastCorner.y, leastCorner.z });
             getWindCompute.SetFloats("samplePosition", new float[3] { position.x, position.y, position.z });

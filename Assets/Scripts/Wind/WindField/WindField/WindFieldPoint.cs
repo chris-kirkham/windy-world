@@ -16,9 +16,6 @@ namespace Wind
         //Wind vector
         public Vector3 wind;
 
-        //depth from the root node at which to add this point to the wind field
-        public uint depth;
-
         //The behaviour mode of the wind producer that created this object. See WindProducerMode script for a detailed description
         public WindProducerMode mode;
 
@@ -26,21 +23,19 @@ namespace Wind
         //the wind vector of points with the same priority will be added to find that cell's overall wind vector
         public int priority;
 
-        public WindFieldPoint(Vector3 position, Vector3 wind, WindProducerMode mode, int priority = 0, uint depth = 0)
+        public WindFieldPoint(Vector3 position, Vector3 wind, WindProducerMode mode, int priority = 0)
         {
             this.position = position;
             this.wind = wind;
             this.priority = 0;
-            this.depth = 0;
             this.mode = mode;
         }
 
-        public WindFieldPoint(Vector3 position, ref Vector3 wind, WindProducerMode mode, int priority = 0, uint depth = 0)
+        public WindFieldPoint(Vector3 position, ref Vector3 wind, WindProducerMode mode, int priority = 0)
         {
             this.position = position;
             this.wind = wind;
             this.priority = 0;
-            this.depth = 0;
             this.mode = mode;
         }
 

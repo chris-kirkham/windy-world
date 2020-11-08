@@ -1,0 +1,19 @@
+﻿#pragma kernel GenerateNoise2D
+#pragma kernel GenerateNoise3D
+
+#define GROUP_SIZE_2D 32
+#define GROUP_SIZE_3D 8
+
+RWTexture2D<float4> Result;
+
+[numthreads(GROUP_SIZE_2D, GROUP_SIZE_2D, 1)]
+void GenerateNoise2D(uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+}
+
+[numthreads(GROUP_SIZE_3D, GROUP_SIZE_3D, GROUP_SIZE_3D)]
+void GenerateNoise3D(uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = float4(id.x & id.y, (id.x & 15) / 15.0, (id.y & 15) / 15.0, 0.0);
+}

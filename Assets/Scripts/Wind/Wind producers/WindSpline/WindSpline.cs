@@ -24,7 +24,6 @@ public class WindSpline : WindProducer
         base.Start();
     }
 
-
     private void Update()
     {
         if(mode == WindProducerMode.Dynamic) tInterval = 1f / (float)samplesPerCurve;
@@ -32,15 +31,19 @@ public class WindSpline : WindProducer
     
     //Fast but very simple way of getting wind points, with no guarantee that the number of points will match up with the wind field cells
     //(i.e. that there will be no missed cells or multiple points per cell)
-    protected override WindFieldPoint[] CalcWindFieldPoints()
+    protected override ComputeBuffer CalcWindFieldPoints()
     {
         List<WindFieldPoint> points = new List<WindFieldPoint>();
         for(int i = 0; i < spline.curves.Count; i++)
         {
-            for (float t = 0; t < 1; t += tInterval) points.Add(new WindFieldPoint(spline.GetWorldPoint(i, t), Vector3.Normalize(spline.GetWorldDir(i, t)) * windStrength, mode, priority, depth));
+            for (float t = 0; t < 1; t += tInterval) points.Add(new WindFieldPoint(spline.GetWorldPoint(i, t), Vector3.Normalize(spline.GetWorldDir(i, t)) * windStrength, mode, priority));
         }
 
-        return points.ToArray();
+        if (windPointsBuffer != null) windPointsBuffer.Release();
+        windPointsBuffer = new ComputeBuffer(points.Count, WindFieldPoint.stride);
+        windPointsBuffer.SetData(points);
+        
+        return windPointsBuffer;
     }
 
     protected override void UpdateWindFieldPoints()

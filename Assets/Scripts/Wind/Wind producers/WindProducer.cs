@@ -11,15 +11,14 @@ namespace Wind
     /// </summary>
     public abstract class WindProducer : MonoBehaviour
     {
-        public WindField windField;
-        public WindProducerMode mode = WindProducerMode.Dynamic;
-        public uint depth = 0; //Depth at which this object should be added to the wind field octree. A cell at depth n is half the size of one at depth (n-1) 
+        public ComputeWindField windField;
+        public WindProducerMode mode = WindProducerMode.Static;
         public int priority = 0;
         public bool active = true;
         public float updateInterval = 0f;
 
-        protected WindFieldPoint[] windPoints;
-        protected float cellSize; //Actual size of the wind field cell at cellDepth
+        protected ComputeBuffer windPointsBuffer;
+        protected float cellSize; //size of cells of given wind field
 
         protected virtual void Start()
         {
@@ -28,10 +27,15 @@ namespace Wind
                 throw new NullReferenceException("No wind field given for WindFieldProducer " + ToString() + "!");
             }
 
-            cellSize = windField.GetCellSize() / Mathf.Pow(2, depth);
-            windPoints = CalcWindFieldPoints();
+            cellSize = windField.GetCellSize();
+            windPointsBuffer = CalcWindFieldPoints();
             AddToWindField();
             StartCoroutine(UpdateProducer());
+        }
+
+        private void OnDisable()
+        {
+            if (windPointsBuffer != null) windPointsBuffer.Release();
         }
 
         /* Returns an approximation of the wind producer in the form of individual WindFieldPoint(s) to be added to wind field cells.
@@ -41,9 +45,8 @@ namespace Wind
          * to its corresponding positional cells.    
          *
          * The points returned by this function should be an approximation of the wind producer's shape and wind vector(s). */
-        protected abstract WindFieldPoint[] CalcWindFieldPoints();
+        protected abstract ComputeBuffer CalcWindFieldPoints();
 
-        //
         protected abstract void UpdateWindFieldPoints();
 
         //Calls UpdateWindFieldPoints at the given interval.
@@ -56,15 +59,15 @@ namespace Wind
             }
         }
 
-        public WindFieldPoint[] GetWindFieldPoints()
+        public ComputeBuffer GetWindFieldPointsBuffer()
         {
-            return windPoints;
+            return windPointsBuffer;
         }
 
         public void AddToWindField()
         {
             Debug.Log("adding " + GetType() + " to wind field");
-            windField.Include(this);
+            //windField.Include(this);
         }
 
         /*

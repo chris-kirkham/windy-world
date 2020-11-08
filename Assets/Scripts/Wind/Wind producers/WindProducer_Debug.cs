@@ -12,7 +12,7 @@ namespace Wind
     public class WindProducer_Debug : MonoBehaviour
     {
         private WindProducer windProducer;
-        private WindFieldPoint[] windPoints;
+        private ComputeBuffer windPointsBuffer;
 
         public bool showWindArrows = true;
         public float updateInterval = 0f;
@@ -21,7 +21,7 @@ namespace Wind
         {
             windProducer = GetComponent<WindProducer>();
             Debug.Log("windProducer = " + windProducer);
-            windPoints = windProducer.GetWindFieldPoints();
+            windPointsBuffer = windProducer.GetWindFieldPointsBuffer();
             StartCoroutine(UpdateVis());
         }
 
@@ -29,18 +29,16 @@ namespace Wind
         {
             if (showWindArrows)
             {
-                foreach (WindFieldPoint wp in windPoints)
-                {
-                    Debug.DrawRay(wp.position, wp.wind, Color.white);
-                }
+                //TODO: Graphics.DrawInstancedIndirect wind points
             }
         }
 
+        //Updates wind data for visualisation. Does not draw it (visualisation must be drawn every frame or will get flickering)
         private IEnumerator UpdateVis()
         {
             while (showWindArrows)
             {
-                windPoints = windProducer.GetWindFieldPoints();
+                windPointsBuffer = windProducer.GetWindFieldPointsBuffer();
                 yield return new WaitForSecondsRealtime(updateInterval);
             }
 

@@ -20,7 +20,6 @@ void CalcWindPoints(uint3 id : SV_DispatchThreadID)
     WindFieldPoint outPoint;
     outPoint.pos = positions[xyz.z] + (right * xyz.x) + (up * xyz.y);
     outPoint.wind = windDirs[xyz.z];
-    outPoint.depth = 0;
     outPoint.priority = 0;
     outPoint.mode = 0;
 

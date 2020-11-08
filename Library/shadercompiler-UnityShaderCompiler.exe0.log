@@ -1,44 +1,33 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: preprocessCompute
-  insize=733 outsize=732 ok=1
+  insize=483 outsize=482 ok=1
 Cmd: compileComputeKernel
-  error: 2 plat 4 at AddPointsToWindField.compute(23): cannot convert from 'const struct WindFieldPoint' to 'float3'
-  api=4 insize=732 outsize=0 ok=0
+  error: 2 plat 4 at GetWindAtPosition.compute(17): undeclared identifier 'windField'
+  api=4 insize=482 outsize=0 ok=0
 Cmd: preprocessCompute
-  insize=741 outsize=740 ok=1
+  insize=632 outsize=631 ok=1
 Cmd: compileComputeKernel
-  error: 2 plat 4 at AddPointsToWindField.compute(24): invalid subscript 'position'
-  api=4 insize=740 outsize=0 ok=0
+  api=4 insize=631 outsize=1018 ok=1
 Cmd: preprocessCompute
-  insize=736 outsize=735 ok=1
+  insize=515 outsize=514 ok=1
 Cmd: compileComputeKernel
-  api=4 insize=735 outsize=701 ok=1
+  api=4 insize=514 outsize=701 ok=1
 Cmd: preprocessCompute
-  insize=734 outsize=733 ok=1
+  insize=1352 outsize=1351 ok=1
 Cmd: compileComputeKernel
-  error: 2 plat 4 at AddPointsToWindField.compute(14): redefinition of 'hash'
-  api=4 insize=733 outsize=0 ok=0
+  error: 2 plat 4 at WindArea_CalcWindPoints.compute(37): invalid subscript 'depth'
+  api=4 insize=1351 outsize=0 ok=0
 Cmd: preprocessCompute
-  insize=513 outsize=512 ok=1
+  insize=799 outsize=798 ok=1
 Cmd: compileComputeKernel
-  api=4 insize=512 outsize=701 ok=1
+  error: 2 plat 4 at SplineArea_CalcWindPoints.compute(23): invalid subscript 'depth'
+  api=4 insize=798 outsize=0 ok=0
 Cmd: preprocessCompute
-  insize=628 outsize=627 ok=1
+  insize=1327 outsize=1326 ok=1
 Cmd: compileComputeKernel
-  api=4 insize=627 outsize=716 ok=1
-Cmd: disassembleShader
-  api=4 insize=376 outsize=1007 ok=1
+  api=4 insize=1326 outsize=1000 ok=1
 Cmd: preprocessCompute
-  insize=626 outsize=625 ok=1
+  insize=774 outsize=773 ok=1
 Cmd: compileComputeKernel
-  error: 2 plat 4 at GetWindAtPosition.compute(12): redefinition of 'hash'
-  api=4 insize=625 outsize=0 ok=0
-Cmd: preprocessCompute
-  insize=407 outsize=406 ok=1
-Cmd: compileComputeKernel
-  api=4 insize=406 outsize=716 ok=1
-Cmd: preprocessCompute
-  insize=405 outsize=404 ok=1
-Cmd: compileComputeKernel
-  api=4 insize=404 outsize=716 ok=1
+  api=4 insize=773 outsize=1131 ok=1

@@ -10,34 +10,27 @@ namespace Wind
     [RequireComponent(typeof(ComputeWindField))] //main wind field script
     public class AddPointsToWindField : MonoBehaviour
     {
-        private ComputeWindField windField;
-
         public ComputeShader addPointsCompute;
         private int addPointsKernel;
-        private const int GROUP_SIZE = 64; //same as in compute shader
+        private uint groupSize; //same as in compute shader
 
         public void Start()
         {
-            windField = GetComponent<ComputeWindField>();
-
             addPointsKernel = addPointsCompute.FindKernel("AddPointsToWindField");
+            addPointsCompute.GetKernelThreadGroupSizes(addPointsKernel, out groupSize, out _, out _);
         }
 
-        //public RenderTexture AddPoints(ComputeBuffer windPoints, RenderTexture windField)
-        public void AddPoints(ComputeBuffer windPoints)
+        //Adds the given wind points to the given wind field render texture. RT is passed by reference so no need to return it???
+        public void AddPoints(RenderTexture windFieldRT, Vector3 windFieldLeastCorner, float windFieldCellSize, ComputeBuffer windPoints)
         {
-            int numGroups = Mathf.CeilToInt((float)windPoints.count / GROUP_SIZE); //always round numGroups up so no points get missed out?
-            if (numGroups <= 0) numGroups = 0;
+            int numGroups = Mathf.Max(1, Mathf.CeilToInt((float)windPoints.count / groupSize)); //always round numGroups up so no points get missed out; min 1 group
 
-            addPointsCompute.SetTexture(addPointsKernel, "WindField", windField.GetWindFieldRenderTexture());
+            addPointsCompute.SetTexture(addPointsKernel, "WindField", windFieldRT);
             addPointsCompute.SetBuffer(addPointsKernel, "windPoints", windPoints);
-            addPointsCompute.SetFloat("cellSize", windField.cellSize);
-            Vector3 leastCorner = windField.WindFieldLeastCorner;
-            addPointsCompute.SetFloats("windFieldStartPos", new float[3] { leastCorner.x, leastCorner.y, leastCorner.z });
+            addPointsCompute.SetFloat("cellSize", windFieldCellSize);
+            addPointsCompute.SetFloats("windFieldStartPos", new float[3] { windFieldLeastCorner.x, windFieldLeastCorner.y, windFieldLeastCorner.z });
 
             addPointsCompute.Dispatch(addPointsKernel, numGroups, 1, 1);
-
-            //return windField;
         }
     }
 }

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -97,7 +97,8 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: b9b249134d6cd5446a0ac23b5a3527dc,
+    type: 2}
   m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
@@ -136,7 +137,7 @@ GameObject:
   - component: {fileID: 225225768}
   - component: {fileID: 225225767}
   m_Layer: 0
-  m_Name: Sphere
+  m_Name: Sphere physobj
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -156,7 +157,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mode: 0
   randomNPointsSamples: 1
-  windField: {fileID: 1708616165}
+  windField: {fileID: 9193611478870468555}
 --- !u!54 &225225768
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -245,7 +246,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &418833808
 GameObject:
@@ -339,7 +340,7 @@ Transform:
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &428824844
 PrefabInstance:
@@ -352,6 +353,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: WindSpline
+      objectReference: {fileID: 0}
+    - target: {fileID: 1368854248876435521, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1368854248876435580, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
         type: 3}
@@ -441,7 +447,7 @@ PrefabInstance:
         type: 3}
       propertyPath: windField
       value: 
-      objectReference: {fileID: 780842719}
+      objectReference: {fileID: 9193611478870468555}
     - target: {fileID: 4078157456869273949, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
       propertyPath: numCells.x
@@ -519,18 +525,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c34a7323182168647a61436ba2eb2f4e, type: 3}
---- !u!114 &780842719 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 9193611479831120489, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-    type: 3}
-  m_PrefabInstance: {fileID: 2068753829}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1bb12ca5ed30dfb46a819c8495666588, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1341306770
 GameObject:
   m_ObjectHideFlags: 0
@@ -560,7 +554,7 @@ Light:
   m_Type: 1
   m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.5
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -653,14 +647,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae462bb6802c65f438377f200c3ac915, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  windField: {fileID: 0}
+  windField: {fileID: 9193611478870468555}
   mode: 1
-  depth: 0
   priority: 0
   active: 1
   updateInterval: 0
-  numCellsX: 2
-  numCellsY: 2
+  numCellsX: 8
+  numCellsY: 8
   windSamplesPerCurve: 16
   cellSizeXY: 1
   splineAreaCompute: {fileID: 7200000, guid: 6ec3b71e12d79f446b12cbc10119375a, type: 3}
@@ -680,7 +673,7 @@ MonoBehaviour:
   - points:
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 1}
-    - {x: 0, y: 0, z: 2}
+    - {x: -3.050518, y: 0, z: -0.15752172}
 --- !u!4 &1426281356
 Transform:
   m_ObjectHideFlags: 0
@@ -778,7 +771,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1708616164
+--- !u!1 &9193611478870468554
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -786,24 +779,24 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1708616166}
-  - component: {fileID: 1708616165}
-  - component: {fileID: 1708616168}
-  - component: {fileID: 1708616167}
+  - component: {fileID: 9193611478870468559}
+  - component: {fileID: 9193611478870468557}
+  - component: {fileID: 9193611478870468556}
+  - component: {fileID: 9193611478870468555}
   m_Layer: 0
-  m_Name: ComputeWindField
+  m_Name: WindField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1708616165
+--- !u!114 &9193611478870468555
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1708616164}
+  m_GameObject: {fileID: 9193611478870468554}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c51903234df3bf74f89074a889009ea9, type: 3}
@@ -811,119 +804,44 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   numCells: {x: 1, y: 1, z: 1}
   cellSize: 1
---- !u!4 &1708616166
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1708616164}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -31.913094, y: 9.121888, z: 7.1641607}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1708616167
+  globalWind: {x: 1, y: 0, z: 0}
+--- !u!114 &9193611478870468556
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1708616164}
+  m_GameObject: {fileID: 9193611478870468554}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6244f6b282e731544b4ebeea8d9b9f1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   getWindCompute: {fileID: 7200000, guid: 8a3831588ad6bfd47bdcc445aded59b1, type: 3}
---- !u!114 &1708616168
+--- !u!114 &9193611478870468557
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1708616164}
+  m_GameObject: {fileID: 9193611478870468554}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 841cd11bb09a1ef4889fc63ca4043b8c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cellSize: 0
-  windFieldStartPos: {x: 0, y: 0, z: 0}
   addPointsCompute: {fileID: 7200000, guid: 227f9abb14a92cf4b9dca07fabb3c475, type: 3}
---- !u!1001 &2068753829
-PrefabInstance:
+--- !u!4 &9193611478870468559
+Transform:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4894500246097342448, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: showCellBorders
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -15.621986
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 25.535973
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -16.13643
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120490, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9193611479831120495, guid: 7cb47dd79a0dc6c449ebb54a30526c3f,
-        type: 3}
-      propertyPath: m_Name
-      value: WindField
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 7cb47dd79a0dc6c449ebb54a30526c3f, type: 3}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9193611478870468554}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -15.621986, y: 25.535973, z: -16.13643}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

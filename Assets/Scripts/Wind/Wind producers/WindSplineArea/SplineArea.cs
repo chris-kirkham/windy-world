@@ -19,7 +19,7 @@ namespace Wind
         //compute
         public ComputeShader splineAreaCompute;
         private int splineAreaComputeHandle;
-        private ComputeBuffer windPointsBuffer;
+
         private const int windPointsBufferStride = (sizeof(float) * 6) + sizeof(uint) + (sizeof(int) * 2);
 
         private int GROUP_SIZE = 64;
@@ -35,11 +35,11 @@ namespace Wind
             base.Start();
         }
 
-        protected override WindFieldPoint[] CalcWindFieldPoints()
+        protected override ComputeBuffer CalcWindFieldPoints()
         {
             int numCellsZ = spline.curves.Count * windSamplesPerCurve;
             
-            windPointsBuffer.Release();
+            if(windPointsBuffer != null) windPointsBuffer.Release();
             windPointsBuffer = new ComputeBuffer(numCellsX * numCellsY * numCellsZ, windPointsBufferStride, ComputeBufferType.Default);
 
             List<Vector3> startPositions = new List<Vector3>(numCellsZ);
@@ -53,11 +53,9 @@ namespace Wind
             ComputeBuffer upDirsBuffer = new ComputeBuffer(numCellsZ, splineBuffersStride);
             ComputeBuffer rightDirsBuffer = new ComputeBuffer(numCellsZ, splineBuffersStride);
 
-
             //lengthX and lengthY are used to calculate startPos (the position of the least cell) for each curve sample
             float lengthX = ((numCellsX / 2f) * cellSizeXY) - (cellSizeXY / 2);
             float lengthY = ((numCellsY / 2f) * cellSizeXY) - (cellSizeXY / 2);
-            Debug.Log("numCellsX = " + numCellsX + ", numCellsY = " + numCellsY + ", cellSizeXY = " + cellSizeXY);
             float sampleInc = 1f / windSamplesPerCurve;
             for (int i = 0; i < spline.curves.Count; i++)
             {
@@ -106,10 +104,7 @@ namespace Wind
             rightDirsBuffer.Release();
             upDirsBuffer.Release();
 
-            WindFieldPoint[] points = new WindFieldPoint[windPointsBuffer.count];
-            windPointsBuffer.GetData(points);
-
-            return points;
+            return windPointsBuffer;
         }
 
         protected override void UpdateWindFieldPoints()
@@ -120,21 +115,7 @@ namespace Wind
         // Update is called once per frame
         void Update()
         {
-            windPoints = CalcWindFieldPoints();
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-
-            if (EditorApplication.isPlaying)
-            {
-                foreach (WindFieldPoint point in windPoints)
-                {
-                    Vector3 windDir = point.wind.normalized;
-                    Gizmos.color = new Color(Mathf.Abs(windDir.x), Mathf.Abs(windDir.y), Mathf.Abs(windDir.z));
-                    Gizmos.DrawRay(point.position, point.wind.normalized);
-                }
-            }
+            CalcWindFieldPoints();
         }
 
     }
