@@ -20,9 +20,10 @@ namespace Wind
         protected ComputeBuffer windPointsBuffer;
         protected float cellSize; //size of cells of given wind field
 
-        //N.B. Awake() rather than Start() becasue wind producers need to be added to their wind field before the wind field tries to access them (which it does on Start()).
-        //This works but the flow of it isn't clear, so I should try to find a better way to do it
-        protected virtual void Awake()
+        //N.B. OnEnable() rather than Start() because wind producers need to be added to their wind field before the wind field tries to access them (which it does on Start()).
+        //This works but the flow of it isn't clear, ESPECIALLY BECAUSE THE WIND FIELD NEEDS TO INITIALISE ITS PRODUCER LISTS BEFORE THIS TRIES TO ADD THEM (which it does in Awake())
+        //so I should try to find a better way to do it
+        protected virtual void OnEnable()
         {
             if (windField == null)
             {
@@ -33,6 +34,12 @@ namespace Wind
             windPointsBuffer = CalcWindFieldPoints();
             AddToWindField();
             StartCoroutine(UpdateProducer());
+        }
+
+        //The wind points buffer is updated on validate in case anything relevant to it was changed in the inspector
+        protected virtual void OnValidate()
+        {
+            windPointsBuffer = CalcWindFieldPoints();
         }
 
         private void OnDisable()
@@ -78,8 +85,6 @@ namespace Wind
         {
         }
         */
-
-        public abstract ComputeBuffer GetProducerPointsAsBuffer();
 
         public override string ToString()
         {

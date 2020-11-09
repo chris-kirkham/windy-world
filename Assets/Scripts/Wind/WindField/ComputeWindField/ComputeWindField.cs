@@ -28,8 +28,8 @@ namespace Wind
         private RenderTextureDescriptor windFieldRTDesc; //descriptor for the wind field render textures; used to initialise all wind 
 
         //wind producer lists
-        private List<WindProducer> staticWindProducers;
-        private List<WindProducer> dynamicWindProducers;
+        private List<WindProducer> staticWindProducers = new List<WindProducer>();
+        private List<WindProducer> dynamicWindProducers = new List<WindProducer>();
 
         //general wind field parameters
         [SerializeField] private Vector3Int numCells = Vector3Int.one;
@@ -37,14 +37,14 @@ namespace Wind
         [SerializeField] private Vector3 globalWind = Vector3.zero;
         public Vector3 WindFieldLeastCorner { get; private set; } //least corner of wind field
 
+        //used to initialise wind producer lists before wind producers try to add them (in their OnEnable()). Need to find a clearer/better way to do this
+        private void Awake()
+        {
+        }
+
         private void Start()
         {
             InitWindField();
-
-            //get other scripts
-            addPointsScript = GetComponent<AddPointsToWindField>();
-            getWindScript = GetComponent<GetWindAtPosition>();
-
             UpdateLeastCorner();
         }
 
@@ -55,6 +55,10 @@ namespace Wind
 
         private void InitWindField()
         {
+            //get other scripts
+            addPointsScript = GetComponent<AddPointsToWindField>();
+            getWindScript = GetComponent<GetWindAtPosition>();
+
             //set wind field RT description
             windFieldRTDesc = new RenderTextureDescriptor(numCells.x, numCells.y, RenderTextureFormat.ARGBFloat);
             windFieldRTDesc.depthBufferBits = 0;
@@ -101,6 +105,7 @@ namespace Wind
                     staticWindProducers.Add(windProducer);
                     break;
                 case WindProducerMode.Dynamic:
+                    Debug.Log(dynamicWindProducers);
                     dynamicWindProducers.Add(windProducer);
                     break;
                 default:

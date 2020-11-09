@@ -30,7 +30,8 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 
 			//assigned to in setup()
 			float4x4 _LookAt;
-			float4 _Position;
+			float3 _Position;
+			float3 _Forward;
 
 			struct Input {
 				float2 uv_MainTex;
@@ -65,10 +66,10 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 				/// Positions are calculated in the compute shader.
 				/// here we just use them.
 				_Position = points[unity_InstanceID].pos;
-				float scale = Length(points[unity_InstanceID].wind) * _ArrowScale;
-				float3 forward = points[unity_InstanceID].wind;
+				float scale = length(points[unity_InstanceID].wind) * _ArrowScale;
+				_Forward = points[unity_InstanceID].wind;
 
-				_LookAt = lookAtMatrix(_Position, _Position + (forward * -1), float3(0.0, 1.0, 0.0));
+				_LookAt = lookAtMatrix(_Position, _Position + (_Forward * -1), float3(0.0, 1.0, 0.0));
 
 				unity_ObjectToWorld._11_21_31_41 = float4(scale, 0, 0, 0);
 				unity_ObjectToWorld._12_22_32_42 = float4(0, scale, 0, 0);
@@ -86,7 +87,7 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
 				v.vertex = mul(_LookAt, v.vertex);
-				//v.vertex.xyz += _BoidPos;
+				//v.vertex.xyz += _Position;
 			#endif
 		}
 
@@ -95,7 +96,8 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 			float4 col = 1.0f;
 
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-				col = _Colour;
+				//col = _Colour;
+				col = float4(abs(normalize(_Forward)), 1);
 			#else
 				col = float4(1, 0, 1, 1);
 			#endif

@@ -158,6 +158,7 @@ MonoBehaviour:
   mode: 0
   randomNPointsSamples: 1
   windField: {fileID: 9193611478870468555}
+  windSampleMesh: {fileID: 0}
 --- !u!54 &225225768
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -416,6 +417,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1, type: 3}
+--- !u!1 &570205694 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4078157456869273950, guid: c34a7323182168647a61436ba2eb2f4e,
+    type: 3}
+  m_PrefabInstance: {fileID: 711229925}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &570205695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 570205694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f31a065bc8bb944cabde5a4cc46af15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windArrowMesh: {fileID: -5495902117074765545, guid: 25c9e2c302868a640ba60646d626d990,
+    type: 3}
+  windArrowMaterial: {fileID: 2100000, guid: eb4f2603b369e64409675ddb0a0e9c93, type: 2}
 --- !u!1001 &711229925
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -462,6 +484,11 @@ PrefabInstance:
         type: 3}
       propertyPath: numCells.z
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4078157456869273951, guid: c34a7323182168647a61436ba2eb2f4e,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 8.35
       objectReference: {fileID: 0}
     - target: {fileID: 4078157458139265672, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
@@ -523,7 +550,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: WindArea
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4078157456869273948, guid: c34a7323182168647a61436ba2eb2f4e, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: c34a7323182168647a61436ba2eb2f4e, type: 3}
 --- !u!1 &1341306770
 GameObject:
@@ -628,6 +656,7 @@ GameObject:
   - component: {fileID: 1426281356}
   - component: {fileID: 1426281355}
   - component: {fileID: 1426281354}
+  - component: {fileID: 1426281357}
   m_Layer: 0
   m_Name: WindSplineArea
   m_TagString: Untagged
@@ -654,8 +683,8 @@ MonoBehaviour:
   updateInterval: 0
   numCellsX: 8
   numCellsY: 8
-  windSamplesPerCurve: 16
-  cellSizeXY: 1
+  windSamplesPerCurve: 8
+  cellSizeXY: 0.25
   splineAreaCompute: {fileID: 7200000, guid: 6ec3b71e12d79f446b12cbc10119375a, type: 3}
 --- !u!114 &1426281355
 MonoBehaviour:
@@ -673,7 +702,11 @@ MonoBehaviour:
   - points:
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 1}
-    - {x: -3.050518, y: 0, z: -0.15752172}
+    - {x: -6.0388045, y: 1.3468666, z: 2.0530915}
+  - points:
+    - {x: -6.0388045, y: 1.3468666, z: 2.0530915}
+    - {x: -11.817018, y: 1.5486021, z: 8.670439}
+    - {x: -14.542635, y: -0.1680584, z: 6.0374384}
 --- !u!4 &1426281356
 Transform:
   m_ObjectHideFlags: 0
@@ -682,12 +715,27 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1426281353}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.84, y: -0.57496446, z: 3.329947}
+  m_LocalPosition: {x: 2.19, y: 10.93, z: -1.58}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1426281357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1426281353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f31a065bc8bb944cabde5a4cc46af15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windArrowMesh: {fileID: -5495902117074765545, guid: 25c9e2c302868a640ba60646d626d990,
+    type: 3}
+  windArrowMaterial: {fileID: 2100000, guid: eb4f2603b369e64409675ddb0a0e9c93, type: 2}
 --- !u!1 &1652099124
 GameObject:
   m_ObjectHideFlags: 0
@@ -783,6 +831,7 @@ GameObject:
   - component: {fileID: 9193611478870468557}
   - component: {fileID: 9193611478870468556}
   - component: {fileID: 9193611478870468555}
+  - component: {fileID: 9193611478870468558}
   m_Layer: 0
   m_Name: WindField
   m_TagString: Untagged
@@ -802,8 +851,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c51903234df3bf74f89074a889009ea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numCells: {x: 1, y: 1, z: 1}
-  cellSize: 1
+  numCells: {x: 64, y: 64, z: 64}
+  cellSize: 0.1
   globalWind: {x: 1, y: 0, z: 0}
 --- !u!114 &9193611478870468556
 MonoBehaviour:
@@ -831,6 +880,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   addPointsCompute: {fileID: 7200000, guid: 227f9abb14a92cf4b9dca07fabb3c475, type: 3}
+--- !u!114 &9193611478870468558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9193611478870468554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f673e68446e9c4bb721df14c077a68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  windArrowMesh: {fileID: -5495902117074765545, guid: 11e0f282afee1fa44b21d2186ec3fe1f,
+    type: 3}
+  windArrowMaterial: {fileID: 2100000, guid: eb4f2603b369e64409675ddb0a0e9c93, type: 2}
+  windFieldTo1DCompute: {fileID: 7200000, guid: 161f6b1fab4bee84995e653e5df4c604,
+    type: 3}
 --- !u!4 &9193611478870468559
 Transform:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ namespace Wind
     /// https://medium.com/@bagoum/devlog-002-graphics-drawmeshinstancedindirect-a4024e05737f
     /// https://forum.unity.com/threads/drawmeshinstancedindirect-example-comments-and-questions.446080/
     /// https://github.com/tiiago11/Unity-InstancedIndirectExamples/tree/master/Demos-DrawMeshInstancedIndirect/Assets/InstancedIndirectCompute
+    [ExecuteAlways]
     public abstract class WindVis : MonoBehaviour
     {
         [SerializeField] protected Mesh windArrowMesh;
@@ -26,7 +27,7 @@ namespace Wind
 
         private Bounds bounds;
 
-        void Start()
+        void OnEnable()
         {
             argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
             args = new uint[5] { 0, 0, 0, 0, 0 };
@@ -45,9 +46,6 @@ namespace Wind
             argsBuffer.SetData(args);
 
             Graphics.DrawMeshInstancedIndirect(windArrowMesh, 0, windArrowMaterial, bounds, argsBuffer);
-
-            //release wind points buffer; it's set every frame by the 
-            if (windPoints != null) windPoints.Release();
         }
 
         private void OnDisable()

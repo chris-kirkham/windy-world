@@ -19,9 +19,10 @@ namespace Wind
         private bool windDirty = false;
         private Vector3 lastWindVec;
 
-        private void Awake()
+        protected override void OnEnable()
         {
             lastWindVec = wind;
+            base.OnEnable();
         }
 
         private void Update()

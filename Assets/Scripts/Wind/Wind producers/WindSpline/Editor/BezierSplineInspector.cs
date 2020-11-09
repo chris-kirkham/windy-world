@@ -106,12 +106,8 @@ public class BezierSplineInspector : Editor
                     Handles.color = SplineUIParams.normalColour;
                     //show normals
                 }
-                
-                //GameObject windArrow = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Models/Editor/WindVis/WindArrow.prefab");
-                //Instantiate(windArrow, spline.GetWorldPoint(i, t - segmentLength), Quaternion.identity);
-}
+            }
         }
-
     }
 
     private enum CurveType { Line, Quadratic, Cubic };

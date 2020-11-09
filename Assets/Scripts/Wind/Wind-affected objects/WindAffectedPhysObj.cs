@@ -13,6 +13,7 @@ public class WindAffectedPhysObj : MonoBehaviour
     [Range(1, 10)] public int randomNPointsSamples = 1;
 
     public Wind.ComputeWindField windField;
+    public Mesh windSampleMesh;
 
     private Rigidbody rb;
     private Mesh mesh;
@@ -33,7 +34,7 @@ public class WindAffectedPhysObj : MonoBehaviour
         }
     }
 
-    Tuple<Vector3, Vector3>[] GetWindSamples()
+    private Tuple<Vector3, Vector3>[] GetWindSamples()
     {
         switch (mode)
         {
@@ -78,9 +79,25 @@ public class WindAffectedPhysObj : MonoBehaviour
                     return samples;
                 }
             case WindSampleMode.Mesh:
-                throw new NotImplementedException();
+                if(windSampleMesh == null)
+                {
+                    Debug.LogError("Trying to sample wind from a mesh, but sample mesh is null! Returning zero vector.");
+                    return new Tuple<Vector3, Vector3>[1] { new Tuple<Vector3, Vector3>(Vector3.zero, transform.position) };
+                }
+                else
+                {
+                    Vector3[] samplePositions = windSampleMesh.vertices;
+                    Tuple<Vector3, Vector3>[] samples = new Tuple<Vector3, Vector3>[samplePositions.Length];
+                    for(int i = 0; i < samplePositions.Length; i++)
+                    {
+                        samples[i] = new Tuple<Vector3, Vector3>(windField.GetWind(samplePositions[i]), samplePositions[i]);
+                    }
+
+                    return samples;
+                }
             default:
-                throw new NotImplementedException();
+                Debug.LogError("Trying to sample wind with and unhandled WindSampleMode! Did you add another mode and forget to update this function?");
+                return new Tuple<Vector3, Vector3>[1] { new Tuple<Vector3, Vector3>(Vector3.zero, transform.position) };
         }
     }
 

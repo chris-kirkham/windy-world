@@ -5,20 +5,24 @@ using UnityEngine;
 namespace Wind
 {
     [RequireComponent(typeof(WindProducer))]
+    [ExecuteAlways]
     public class WindVis_WindProducer : WindVis
     {
-        WindProducer windProducer;
-
-        ComputeBuffer windProducerPointsBuffer;
+        private WindProducer windProducer;
 
         void Start()
         {
             windProducer = GetComponent<WindProducer>();
         }
 
+        private void OnValidate()
+        {
+            DrawWindPoints(GetComponent<WindProducer>().GetWindFieldPointsBuffer());
+        }
+
         void Update()
         {
-            DrawWindPoints(windProducer.GetProducerPointsAsBuffer());
+            DrawWindPoints(windProducer.GetWindFieldPointsBuffer());
         }
     }
 }

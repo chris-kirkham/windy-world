@@ -5,6 +5,7 @@ using UnityEngine;
 namespace Wind
 {
     [RequireComponent(typeof(ComputeWindField))]
+    [ExecuteAlways]
     public class WindVis_WindField : WindVis
     {
         private ComputeWindField windField;
@@ -24,6 +25,12 @@ namespace Wind
             kernel = windFieldTo1DCompute.FindKernel("WindFieldTo1DBuffer");
             groupSizes = new uint[3];
             windFieldTo1DCompute.GetKernelThreadGroupSizes(kernel, out groupSizes[0], out groupSizes[1], out groupSizes[2]);
+        }
+
+        void OnValidate()
+        {
+            UpdateWindFieldBuffer();
+            DrawWindPoints(windField1DBuffer);
         }
 
         void Update()

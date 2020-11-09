@@ -10,23 +10,23 @@ public class WindSpline : WindProducer
     private BezierSpline spline;
     public float windStrength = 1;
 
-    [Range(1, 100)] public int samplesPerCurve = 1;
-    private float tInterval;
+    private const int MIN_SAMPLES_PER_CURVE = 1;
+    private const int MAX_SAMPLES_PER_CURVE = 100;
+    [Range(MIN_SAMPLES_PER_CURVE, MAX_SAMPLES_PER_CURVE)] [SerializeField] private int samplesPerCurve = 1;
 
     //Dirty flags
     private bool rotationDirty = false;
 
-
-    protected override void Awake()
+    protected override void OnEnable()
     {
         spline = GetComponent<BezierSpline>();
-        tInterval = 1f / (float)samplesPerCurve;
-        base.Awake();
+        base.OnEnable();
     }
 
-    private void Update()
+    protected override void OnValidate()
     {
-        if(mode == WindProducerMode.Dynamic) tInterval = 1f / (float)samplesPerCurve;
+        spline = GetComponent<BezierSpline>();
+        base.OnValidate();
     }
     
     //Fast but very simple way of getting wind points, with no guarantee that the number of points will match up with the wind field cells
@@ -34,6 +34,7 @@ public class WindSpline : WindProducer
     protected override ComputeBuffer CalcWindFieldPoints()
     {
         List<WindFieldPoint> points = new List<WindFieldPoint>();
+        float tInterval = Mathf.Max(1f / MAX_SAMPLES_PER_CURVE, 1f / samplesPerCurve);
         for(int i = 0; i < spline.curves.Count; i++)
         {
             for (float t = 0; t < 1; t += tInterval) points.Add(new WindFieldPoint(spline.GetWorldPoint(i, t), Vector3.Normalize(spline.GetWorldDir(i, t)) * windStrength, mode, priority));

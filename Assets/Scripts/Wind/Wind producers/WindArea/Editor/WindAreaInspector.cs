@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Wind;
 
 [CustomEditor(typeof(WindArea))]
 public class WindAreaInspector : Editor

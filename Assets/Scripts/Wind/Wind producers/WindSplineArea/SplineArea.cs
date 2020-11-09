@@ -20,19 +20,23 @@ namespace Wind
         public ComputeShader splineAreaCompute;
         private int splineAreaComputeHandle;
 
-        private const int windPointsBufferStride = (sizeof(float) * 6) + sizeof(uint) + (sizeof(int) * 2);
-
         private int GROUP_SIZE = 64;
 
-        protected override void Awake()
+        protected override void OnEnable()
         {
             spline = GetComponent<BezierSpline>();
 
             numCellsZ = spline.curves.Count * windSamplesPerCurve;
             splineAreaComputeHandle = splineAreaCompute.FindKernel("CalcWindPoints");
-            windPointsBuffer = new ComputeBuffer(numCellsX * numCellsY * numCellsZ, windPointsBufferStride, ComputeBufferType.Default);
+            windPointsBuffer = new ComputeBuffer(numCellsX * numCellsY * numCellsZ, WindFieldPoint.stride, ComputeBufferType.Default);
 
-            base.Awake();
+            base.OnEnable();
+        }
+
+        protected override void OnValidate()
+        {
+            spline = GetComponent<BezierSpline>();
+            base.OnValidate();
         }
 
         protected override ComputeBuffer CalcWindFieldPoints()
@@ -40,7 +44,7 @@ namespace Wind
             int numCellsZ = spline.curves.Count * windSamplesPerCurve;
             
             if(windPointsBuffer != null) windPointsBuffer.Release();
-            windPointsBuffer = new ComputeBuffer(numCellsX * numCellsY * numCellsZ, windPointsBufferStride, ComputeBufferType.Default);
+            windPointsBuffer = new ComputeBuffer(numCellsX * numCellsY * numCellsZ, WindFieldPoint.stride, ComputeBufferType.Default);
 
             List<Vector3> startPositions = new List<Vector3>(numCellsZ);
             List<Vector3> windDirs = new List<Vector3>(numCellsZ);
@@ -109,14 +113,8 @@ namespace Wind
 
         protected override void UpdateWindFieldPoints()
         {
-        
+            windPointsBuffer = CalcWindFieldPoints();
         }
-
-        public override ComputeBuffer GetProducerPointsAsBuffer()
-        {
-            throw new System.NotImplementedException();
-        }
-
 
         // Update is called once per frame
         void Update()
