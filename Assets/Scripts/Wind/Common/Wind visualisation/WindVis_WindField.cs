@@ -27,16 +27,10 @@ namespace Wind
             windFieldTo1DCompute.GetKernelThreadGroupSizes(kernel, out groupSizes[0], out groupSizes[1], out groupSizes[2]);
         }
 
-        void OnValidate()
-        {
-            UpdateWindFieldBuffer();
-            DrawWindPoints(windField1DBuffer);
-        }
-
         void Update()
         {
             UpdateWindFieldBuffer();
-            DrawWindPoints(windField1DBuffer);
+            //DrawWindPoints(windField1DBuffer);
         }
 
         private void OnDisable()
@@ -50,6 +44,7 @@ namespace Wind
 
             if (windField1DBuffer != null) windField1DBuffer.Release();
             windField1DBuffer = new ComputeBuffer(windFieldNumCells.x * windFieldNumCells.y * windFieldNumCells.z, bufferStride);
+            //windFieldTo1DCompute.SetBuffer(kernel, "Result", windField1DBuffer);
 
             windFieldTo1DCompute.SetTexture(kernel, "windFieldStatic", windField.GetStaticWindField());
             windFieldTo1DCompute.SetTexture(kernel, "windFieldDynamic", windField.GetDynamicWindField());
@@ -66,7 +61,7 @@ namespace Wind
                 Mathf.Max(1, Mathf.CeilToInt(windFieldNumCells.z / (float)groupSizes[2]))
             };
 
-            windFieldTo1DCompute.Dispatch(kernel, numGroups[0], numGroups[1], numGroups[2]);
+            //windFieldTo1DCompute.Dispatch(kernel, numGroups[0], numGroups[1], numGroups[2]);
         }
     }
 }

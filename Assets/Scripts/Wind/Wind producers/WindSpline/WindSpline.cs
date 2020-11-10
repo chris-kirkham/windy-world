@@ -23,12 +23,14 @@ public class WindSpline : WindProducer
         base.OnEnable();
     }
 
+    /*
     protected override void OnValidate()
     {
         spline = GetComponent<BezierSpline>();
         base.OnValidate();
     }
-    
+    */
+
     //Fast but very simple way of getting wind points, with no guarantee that the number of points will match up with the wind field cells
     //(i.e. that there will be no missed cells or multiple points per cell)
     protected override ComputeBuffer CalcWindFieldPoints()
@@ -49,10 +51,7 @@ public class WindSpline : WindProducer
 
     protected override void UpdateWindFieldPoints()
     {
-        if(mode == WindProducerMode.Dynamic)
-        {
-
-        }
+        windPointsBuffer = CalcWindFieldPoints();
     }
 
     private void OnDrawGizmos()

@@ -48,10 +48,13 @@ namespace Wind
             UpdateLeastCorner();
         }
 
+        /*
         private void OnValidate()
         {
+            InitWindField();
             UpdateLeastCorner();
         }
+        */
 
         private void InitWindField()
         {
@@ -105,7 +108,6 @@ namespace Wind
                     staticWindProducers.Add(windProducer);
                     break;
                 case WindProducerMode.Dynamic:
-                    Debug.Log(dynamicWindProducers);
                     dynamicWindProducers.Add(windProducer);
                     break;
                 default:

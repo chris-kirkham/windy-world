@@ -11,9 +11,7 @@ GameObject:
   - component: {fileID: 4078157456869273951}
   - component: {fileID: 4078157456869273944}
   - component: {fileID: 4078157456869273947}
-  - component: {fileID: 4078157456869273946}
   - component: {fileID: 4078157456869273949}
-  - component: {fileID: 4078157456869273948}
   m_Layer: 0
   m_Name: WindArea
   m_TagString: Untagged
@@ -82,19 +80,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!65 &4078157456869273946
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4078157456869273950}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4078157456869273949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,27 +94,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   windField: {fileID: 0}
   mode: 1
-  depth: 0
   priority: 0
   active: 1
-  dynamicUpdateInterval: 0
+  updateInterval: 0
   wind: {x: 0, y: 0, z: 0}
   relativeToLocalRotation: 0
   numCells: {x: 2, y: 2, z: 2}
   calcWindPointsShader: {fileID: 7200000, guid: b647c3ab9010efb40a90171a07c3dbee,
     type: 3}
---- !u!114 &4078157456869273948
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4078157456869273950}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94d0126ff80670343926609d1bcd586c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &4078157458139265675
 GameObject:
   m_ObjectHideFlags: 0

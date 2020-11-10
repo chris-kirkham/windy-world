@@ -15,12 +15,7 @@ namespace Wind
             windProducer = GetComponent<WindProducer>();
         }
 
-        private void OnValidate()
-        {
-            DrawWindPoints(GetComponent<WindProducer>().GetWindFieldPointsBuffer());
-        }
-
-        void Update()
+        private void OnDrawGizmos()
         {
             DrawWindPoints(windProducer.GetWindFieldPointsBuffer());
         }

@@ -18,6 +18,13 @@ namespace Wind
         [SerializeField] protected Mesh windArrowMesh;
         [SerializeField] protected Material windArrowMaterial;
 
+        //material exclusive to this instance of the WindVis. Copies its parameters from windArrowMaterial on enable.
+        //this is used so each object with a WindVis script attached has its own material and so doesn't overwrite the "master" windArrowMaterial's points buffer in DrawWindPoints.
+        //
+        //If we used .SetBuffer on windArrowMaterial, Unity would end up only drawing the arrows of the last object to call DrawWindPoints, since each call would overwrite the buffer. 
+        //Apparently this issue can also be fixed using MaterialPropertyBlock, but this seems simpler (probably has some nasty side effects though)
+        private Material thisObjMaterial; 
+
         //"Buffer with arguments, bufferWithArgs, has to have five integer numbers at given argsOffset offset: index count per instance,
         //instance count, start index location, base vertex location, start instance location." - Sun Tzu
         private ComputeBuffer argsBuffer;
@@ -29,6 +36,8 @@ namespace Wind
 
         void OnEnable()
         {
+            thisObjMaterial = new Material(windArrowMaterial);
+
             argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
             args = new uint[5] { 0, 0, 0, 0, 0 };
 
@@ -37,15 +46,23 @@ namespace Wind
 
         protected void DrawWindPoints(ComputeBuffer windPoints)
         {
-            windArrowMaterial.SetBuffer("points", windPoints);
-
+            //using thisObjMaterial rather than windArrowMaterial so we don't overwrite other instances of this scripts' buffers. See big comment on variable declaration for more
+            thisObjMaterial.SetBuffer("points", windPoints);
+            if (windPoints == null)
+            {
+                Debug.LogError("Null wind points buffer passed to WindVis::DrawWindPoints! Returning...");
+                return;
+            }
             //args
+            if (argsBuffer != null) argsBuffer.Release();
+            argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
+            args = new uint[5] { 0, 0, 0, 0, 0 };
             uint numIndices = windArrowMesh != null ? windArrowMesh.GetIndexCount(0) : 0;
             args[0] = numIndices;
             args[1] = (uint)windPoints.count;
             argsBuffer.SetData(args);
 
-            Graphics.DrawMeshInstancedIndirect(windArrowMesh, 0, windArrowMaterial, bounds, argsBuffer);
+            Graphics.DrawMeshInstancedIndirect(windArrowMesh, 0, thisObjMaterial, bounds, argsBuffer);
         }
 
         private void OnDisable()

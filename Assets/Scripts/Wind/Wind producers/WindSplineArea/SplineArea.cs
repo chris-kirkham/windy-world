@@ -18,26 +18,29 @@ namespace Wind
 
         //compute
         public ComputeShader splineAreaCompute;
-        private int splineAreaComputeHandle;
-
-        private int GROUP_SIZE = 64;
+        private int kernel;
+        private uint groupSize;
 
         protected override void OnEnable()
         {
             spline = GetComponent<BezierSpline>();
 
             numCellsZ = spline.curves.Count * windSamplesPerCurve;
-            splineAreaComputeHandle = splineAreaCompute.FindKernel("CalcWindPoints");
+            kernel = splineAreaCompute.FindKernel("CalcWindPoints");
+            splineAreaCompute.GetKernelThreadGroupSizes(kernel, out groupSize, out _, out _);
             windPointsBuffer = new ComputeBuffer(numCellsX * numCellsY * numCellsZ, WindFieldPoint.stride, ComputeBufferType.Default);
 
             base.OnEnable();
         }
 
+        /*
         protected override void OnValidate()
         {
             spline = GetComponent<BezierSpline>();
+            splineAreaCompute.GetKernelThreadGroupSizes(kernel, out groupSize, out _, out _);
             base.OnValidate();
         }
+        */
 
         protected override ComputeBuffer CalcWindFieldPoints()
         {
@@ -87,20 +90,20 @@ namespace Wind
             upDirsBuffer.SetData(upDirs);
 
             //set compute stuff
-            splineAreaCompute.SetBuffer(splineAreaComputeHandle, "Result", windPointsBuffer);
-            splineAreaCompute.SetBuffer(splineAreaComputeHandle, "positions", startPositionsBuffer);
-            splineAreaCompute.SetBuffer(splineAreaComputeHandle, "windDirs", windDirsBuffer);
-            splineAreaCompute.SetBuffer(splineAreaComputeHandle, "rightDirs", rightDirsBuffer);
-            splineAreaCompute.SetBuffer(splineAreaComputeHandle, "upDirs", upDirsBuffer);
+            splineAreaCompute.SetBuffer(kernel, "Result", windPointsBuffer);
+            splineAreaCompute.SetBuffer(kernel, "positions", startPositionsBuffer);
+            splineAreaCompute.SetBuffer(kernel, "windDirs", windDirsBuffer);
+            splineAreaCompute.SetBuffer(kernel, "rightDirs", rightDirsBuffer);
+            splineAreaCompute.SetBuffer(kernel, "upDirs", upDirsBuffer);
             splineAreaCompute.SetInt("numCellsX", numCellsX);
             splineAreaCompute.SetInt("numCellsY", numCellsY);
             splineAreaCompute.SetFloat("cellSizeXY", cellSize);
             splineAreaCompute.SetFloat("halfCellSizeXY", cellSize / 2);
 
             //dispatch shader
-            int numGroups = (numCellsX * numCellsY * numCellsZ) / GROUP_SIZE;
+            int numGroups = (numCellsX * numCellsY * numCellsZ) / (int)groupSize;
             if (numGroups <= 0) numGroups = 1;
-            splineAreaCompute.Dispatch(splineAreaComputeHandle, numGroups, 1, 1);
+            splineAreaCompute.Dispatch(kernel, numGroups, 1, 1);
 
             //release buffers
             startPositionsBuffer.Release();
@@ -116,11 +119,9 @@ namespace Wind
             windPointsBuffer = CalcWindFieldPoints();
         }
 
-        // Update is called once per frame
         void Update()
         {
             CalcWindFieldPoints();
         }
-
     }
 }

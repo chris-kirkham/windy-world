@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace Wind
 {
+    [ExecuteAlways]
     public class WindArea : WindProducer
     {
         public Vector3 wind; //wind vector settable in editor. This will either be the local or world direction, depending on if using local
@@ -58,6 +59,7 @@ namespace Wind
 
         }
 
+        /*
         protected override void OnValidate()
         {
             if (numCells.x > maxCellsX)
@@ -80,6 +82,7 @@ namespace Wind
 
             base.OnValidate();
         }
+        */
 
         /*----GETTERS AND SETTERS----*/
         //Gets world space wind vector

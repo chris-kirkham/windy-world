@@ -9,6 +9,7 @@ namespace Wind
     /// <summary>
     /// Abstract base class for wind-producing objects that should be added to a wind field. 
     /// </summary>
+    [ExecuteAlways]
     public abstract class WindProducer : MonoBehaviour
     {
         public ComputeWindField windField;
@@ -36,11 +37,13 @@ namespace Wind
             StartCoroutine(UpdateProducer());
         }
 
+        /*
         //The wind points buffer is updated on validate in case anything relevant to it was changed in the inspector
         protected virtual void OnValidate()
         {
             windPointsBuffer = CalcWindFieldPoints();
         }
+        */
 
         private void OnDisable()
         {
@@ -56,7 +59,11 @@ namespace Wind
          * The points returned by this function should be an approximation of the wind producer's shape and wind vector(s). */
         protected abstract ComputeBuffer CalcWindFieldPoints();
 
-        protected abstract void UpdateWindFieldPoints();
+        //By default, simply recalculates the wind points.
+        protected virtual void UpdateWindFieldPoints()
+        {
+            windPointsBuffer = CalcWindFieldPoints();
+        }
 
         //Calls UpdateWindFieldPoints at the given interval.
         private IEnumerator UpdateProducer()
@@ -85,6 +92,18 @@ namespace Wind
         {
         }
         */
+        
+        private void OnDrawGizmos()
+        {
+            WindFieldPoint[] points = new WindFieldPoint[windPointsBuffer.count];
+            windPointsBuffer.GetData(points);
+            for (int i = 0; i < points.Length; i++)
+            {
+                Vector3 windDir = points[i].wind.normalized;
+                Gizmos.color = new Color(Mathf.Abs(windDir.x), Mathf.Abs(windDir.y), Mathf.Abs(windDir.z));
+                Gizmos.DrawRay(points[i].position, windDir);
+            }
+        }
 
         public override string ToString()
         {
