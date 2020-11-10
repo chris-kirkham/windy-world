@@ -8,7 +8,6 @@ using UnityEngine;
 
 namespace Wind
 {
-    [ExecuteAlways]
     public class WindArea : WindProducer
     {
         public Vector3 wind; //wind vector settable in editor. This will either be the local or world direction, depending on if using local

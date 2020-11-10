@@ -35,26 +35,13 @@ namespace Wind
         [SerializeField] private Vector3Int numCells = Vector3Int.one;
         [SerializeField] [Min(0)] private float cellSize = 1f;
         [SerializeField] private Vector3 globalWind = Vector3.zero;
-        public Vector3 WindFieldLeastCorner { get; private set; } //least corner of wind field
-
-        //used to initialise wind producer lists before wind producers try to add them (in their OnEnable()). Need to find a clearer/better way to do this
-        private void Awake()
-        {
-        }
+        public Vector3 LeastCorner { get; private set; } //least corner of wind field
 
         private void Start()
         {
             InitWindField();
             UpdateLeastCorner();
         }
-
-        /*
-        private void OnValidate()
-        {
-            InitWindField();
-            UpdateLeastCorner();
-        }
-        */
 
         private void InitWindField()
         {
@@ -80,11 +67,14 @@ namespace Wind
             //add static wind producers to static rt
             foreach (WindProducer wp in staticWindProducers)
             {
-                addPointsScript.AddPoints(windFieldStatic, WindFieldLeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
+                addPointsScript.AddPoints(windFieldStatic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
             }
 
             //add dynamic wind producers to dynamic rt
             UpdateDynamicWindField();
+
+            Debug.Log("Static wind producers size: " + staticWindProducers.Count);
+            Debug.Log("Dynamic wind producers size: " + dynamicWindProducers.Count);
         }
 
         //Clears the dynamic wind field render texture and (re-)adds the wind producers in the dynamic wind producers list
@@ -95,7 +85,7 @@ namespace Wind
 
             foreach(WindProducer wp in dynamicWindProducers)
             {
-                addPointsScript.AddPoints(windFieldDynamic, WindFieldLeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
+                addPointsScript.AddPoints(windFieldDynamic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
             }
         }
 
@@ -155,7 +145,7 @@ namespace Wind
 
         private void UpdateLeastCorner()
         {
-            WindFieldLeastCorner = transform.position 
+            LeastCorner = transform.position 
                 + (Vector3.left * ((float)numCells.x / 2f)) 
                 + (Vector3.down * ((float)numCells.y / 2f)) 
                 + (Vector3.back * ((float)numCells.z / 2f));

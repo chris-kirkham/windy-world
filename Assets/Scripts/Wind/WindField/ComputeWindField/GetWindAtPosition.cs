@@ -34,7 +34,7 @@ namespace Wind
             Vector3 globalWind = windField.GetGlobalWind();
             getWindCompute.SetFloats("globalWind", new float[3] { globalWind.x, globalWind.y, globalWind.z });
             getWindCompute.SetFloat("windFieldCellSize", windField.GetCellSize());
-            Vector3 leastCorner = windField.WindFieldLeastCorner;
+            Vector3 leastCorner = windField.LeastCorner;
             getWindCompute.SetFloats("windFieldStart", new float[3] { leastCorner.x, leastCorner.y, leastCorner.z });
             getWindCompute.SetFloats("samplePosition", new float[3] { position.x, position.y, position.z });
 

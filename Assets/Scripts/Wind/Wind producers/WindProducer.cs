@@ -82,7 +82,7 @@ namespace Wind
 
         public void AddToWindField()
         {
-            Debug.Log("adding " + GetType() + " to wind field");
+            Debug.Log("adding " + ToString() + " to wind field");
             windField.Include(this);
         }
 
@@ -93,6 +93,7 @@ namespace Wind
         }
         */
         
+        /*
         private void OnDrawGizmos()
         {
             WindFieldPoint[] points = new WindFieldPoint[windPointsBuffer.count];
@@ -104,6 +105,7 @@ namespace Wind
                 Gizmos.DrawRay(points[i].position, windDir);
             }
         }
+        */
 
         public override string ToString()
         {

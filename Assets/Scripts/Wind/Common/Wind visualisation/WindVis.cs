@@ -12,7 +12,6 @@ namespace Wind
     /// https://medium.com/@bagoum/devlog-002-graphics-drawmeshinstancedindirect-a4024e05737f
     /// https://forum.unity.com/threads/drawmeshinstancedindirect-example-comments-and-questions.446080/
     /// https://github.com/tiiago11/Unity-InstancedIndirectExamples/tree/master/Demos-DrawMeshInstancedIndirect/Assets/InstancedIndirectCompute
-    [ExecuteAlways]
     public abstract class WindVis : MonoBehaviour
     {
         [SerializeField] protected Mesh windArrowMesh;

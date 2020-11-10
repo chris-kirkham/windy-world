@@ -26,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4002732226165971138}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.2400184, y: 1.0642508, z: -0.9577042}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4002732226248728619}
@@ -48,9 +48,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   windField: {fileID: 0}
   mode: 1
-  depth: 0
   priority: 0
   active: 1
+  updateInterval: 0
   useRotationAsWindVector: 1
   wind: {x: 0, y: 0, z: 1}
   windStrength: 1
