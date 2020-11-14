@@ -15,6 +15,7 @@ namespace Wind
         private int numCellsZ; //windSamplesPerCurve * number of curves in spline
         [SerializeField] [Min(1)] private int windSamplesPerCurve = 10;
         [SerializeField] [Min(0)] private float cellSizeXY = 1;
+        [SerializeField] [Min(0.001f)] private float windStrength = 1;
 
         //compute
         public ComputeShader splineAreaCompute;
@@ -68,7 +69,7 @@ namespace Wind
             {
                 for (float t = 0; t < 1; t += sampleInc)
                 {
-                    Vector3 windDir = spline.GetWorldDir(i, t);
+                    Vector3 windDir = spline.GetWorldDir(i, t).normalized * windStrength;
                     Vector3 right = -Vector3.Cross(windDir, Vector3.up).normalized;
                     Vector3 up = Vector3.Cross(windDir, right).normalized;
                     Vector3 startPos = spline.GetWorldPoint(i, t) - ((right * lengthX) + (up * lengthY));

@@ -167,8 +167,8 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 225225766}
   serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
+  m_Mass: 0.5
+  m_Drag: 0.1
   m_AngularDrag: 0.05
   m_UseGravity: 1
   m_IsKinematic: 0
@@ -418,7 +418,7 @@ PrefabInstance:
     - target: {fileID: 1368854248876435582, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
         type: 3}
       propertyPath: windStrength
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1368854248876435582, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
         type: 3}
@@ -443,12 +443,12 @@ PrefabInstance:
     - target: {fileID: 1368854248876435583, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
         type: 3}
       propertyPath: curves.Array.data[0].points.Array.data[1].y
-      value: 0.20832336
+      value: 1.8287808
       objectReference: {fileID: 0}
     - target: {fileID: 1368854248876435583, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
         type: 3}
       propertyPath: curves.Array.data[0].points.Array.data[1].z
-      value: -1.0037079
+      value: 2.0911686
       objectReference: {fileID: 0}
     - target: {fileID: 1368854248876435583, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
         type: 3}
@@ -493,7 +493,7 @@ PrefabInstance:
     - target: {fileID: 1368854248876435583, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1,
         type: 3}
       propertyPath: curves.Array.data[0].points.Array.data[1].x
-      value: 0.99908257
+      value: 3.4377074
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4c0fb79162aaa0c4abe9b96cf5aa92f1, type: 3}
@@ -517,7 +517,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   windArrowMesh: {fileID: -5495902117074765545, guid: 25c9e2c302868a640ba60646d626d990,
     type: 3}
-  windArrowMaterial: {fileID: 2100000, guid: eb4f2603b369e64409675ddb0a0e9c93, type: 2}
+  windArrowMaterial: {fileID: 2100000, guid: 9f326b5e62c73104486c9f8fe31403a0, type: 2}
 --- !u!1 &1341306770
 GameObject:
   m_ObjectHideFlags: 0
@@ -642,14 +642,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   windField: {fileID: 9193611478870468555}
-  mode: 0
+  mode: 1
   priority: 0
   active: 1
   updateInterval: 0
-  numCellsX: 4
-  numCellsY: 4
-  windSamplesPerCurve: 16
-  cellSizeXY: 0.5
+  numCellsX: 16
+  numCellsY: 16
+  windSamplesPerCurve: 32
+  cellSizeXY: 8
+  windStrength: 4
   splineAreaCompute: {fileID: 7200000, guid: 6ec3b71e12d79f446b12cbc10119375a, type: 3}
 --- !u!114 &1426281355
 MonoBehaviour:
@@ -665,13 +666,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   curves:
   - points:
-    - {x: 0, y: 0, z: 0}
-    - {x: -0.53372836, y: 3.3080215, z: 4.415928}
-    - {x: -0.23646641, y: -4.4415436, z: 9.102458}
+    - {x: 15.938398, y: -11.318284, z: 7.1479197}
+    - {x: 2.290126, y: -6.099185, z: -0.06359291}
+    - {x: -9.584834, y: -3.489831, z: 10.135026}
   - points:
-    - {x: -0.23646641, y: -4.4415436, z: 9.102458}
-    - {x: -5.918503, y: 0.2744341, z: 11.31638}
-    - {x: -10.285689, y: 0.0023708344, z: 11.048842}
+    - {x: -9.584834, y: -3.489831, z: 10.135026}
+    - {x: -20.335806, y: 0.2744341, z: 19.266798}
+    - {x: -23.757963, y: 4.9793835, z: 15.643009}
+  - points:
+    - {x: -23.757963, y: 4.9793835, z: 15.643009}
+    - {x: -29.432386, y: 11.104553, z: 7.8487873}
+    - {x: -13.073916, y: 32.487156, z: -21.132816}
 --- !u!4 &1426281356
 Transform:
   m_ObjectHideFlags: 0
@@ -680,8 +685,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1426281353}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.22, y: 10.93, z: -3.45}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 2.22, y: 10.709, z: -3.995}
+  m_LocalScale: {x: 4, y: 4, z: 4}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -693,14 +698,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1426281353}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f31a065bc8bb944cabde5a4cc46af15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   windArrowMesh: {fileID: -5495902117074765545, guid: 25c9e2c302868a640ba60646d626d990,
     type: 3}
-  windArrowMaterial: {fileID: 2100000, guid: eb4f2603b369e64409675ddb0a0e9c93, type: 2}
+  windArrowMaterial: {fileID: 2100000, guid: 9f326b5e62c73104486c9f8fe31403a0, type: 2}
 --- !u!1 &1652099124
 GameObject:
   m_ObjectHideFlags: 0
@@ -791,6 +796,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1109373060686196032, guid: c34a7323182168647a61436ba2eb2f4e,
+        type: 3}
+      propertyPath: windArrowMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: 9f326b5e62c73104486c9f8fe31403a0, type: 2}
     - target: {fileID: 4034607831637506052, guid: c34a7323182168647a61436ba2eb2f4e,
         type: 3}
       propertyPath: m_Name
@@ -895,9 +905,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c51903234df3bf74f89074a889009ea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numCells: {x: 4, y: 4, z: 4}
-  cellSize: 2
-  globalWind: {x: 1, y: 0, z: 0}
+  noiseTex: {fileID: 11700000, guid: fbd749fc1c36ec84f838ee9501e329a4, type: 2}
+  numCells: {x: 64, y: 64, z: 64}
+  cellSize: 8
+  globalWind: {x: 0, y: 1, z: 0}
+  DEBUG_WindFieldTestsCompute: {fileID: 7200000, guid: 732ff015c6e98c14588346dba5e3f68a,
+    type: 3}
 --- !u!114 &9193611478870468556
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -936,7 +949,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f673e68446e9c4bb721df14c077a68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  windArrowMesh: {fileID: -5495902117074765545, guid: 11e0f282afee1fa44b21d2186ec3fe1f,
+  windArrowMesh: {fileID: -5495902117074765545, guid: 25c9e2c302868a640ba60646d626d990,
     type: 3}
   windArrowMaterial: {fileID: 2100000, guid: eb4f2603b369e64409675ddb0a0e9c93, type: 2}
   windFieldTo1DCompute: {fileID: 7200000, guid: 161f6b1fab4bee84995e653e5df4c604,

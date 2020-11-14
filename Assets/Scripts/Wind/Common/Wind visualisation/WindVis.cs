@@ -22,7 +22,7 @@ namespace Wind
         //
         //If we used .SetBuffer on windArrowMaterial, Unity would end up only drawing the arrows of the last object to call DrawWindPoints, since each call would overwrite the buffer. 
         //Apparently this issue can also be fixed using MaterialPropertyBlock, but this seems simpler (probably has some nasty side effects though)
-        private Material thisObjMaterial; 
+        protected Material thisObjMaterial; 
 
         //"Buffer with arguments, bufferWithArgs, has to have five integer numbers at given argsOffset offset: index count per instance,
         //instance count, start index location, base vertex location, start instance location." - Sun Tzu
@@ -43,17 +43,19 @@ namespace Wind
             bounds = new Bounds(transform.position, Vector3.one * 100000f);
         }
 
-        protected void DrawWindPoints(ComputeBuffer windPoints)
+        protected virtual void DrawWindPoints(ComputeBuffer windPoints)
         {
-            //using thisObjMaterial rather than windArrowMaterial so we don't overwrite other instances of this scripts' buffers. See big comment on variable declaration for more
-            thisObjMaterial.SetBuffer("points", windPoints);
             if (windPoints == null)
             {
                 Debug.LogError("Null wind points buffer passed to WindVis::DrawWindPoints! Returning...");
                 return;
             }
+
+            //using thisObjMaterial rather than windArrowMaterial so we don't overwrite other instances of this scripts' buffers. See big comment on variable declaration for more
+            thisObjMaterial.SetBuffer("points", windPoints);
+            
             //args
-            if (argsBuffer != null) argsBuffer.Release();
+            argsBuffer.Release();
             argsBuffer = new ComputeBuffer(5, sizeof(uint), ComputeBufferType.IndirectArguments);
             args = new uint[5] { 0, 0, 0, 0, 0 };
             uint numIndices = windArrowMesh != null ? windArrowMesh.GetIndexCount(0) : 0;

@@ -20,6 +20,11 @@ namespace Wind
             getWindComputeKernel = getWindCompute.FindKernel("GetWindAtPosition");
         }
 
+        private void OnDestroy()
+        {
+            if (wind != null) wind.Release();
+        }
+
         public Vector3 GetWind(Vector3 position)
         {
             //create and set result buffer

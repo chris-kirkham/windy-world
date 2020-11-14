@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 namespace Wind
 {
@@ -10,7 +11,7 @@ namespace Wind
     {
         private WindProducer windProducer;
 
-        void Start()
+        void Awake()
         {
             windProducer = GetComponent<WindProducer>();
         }

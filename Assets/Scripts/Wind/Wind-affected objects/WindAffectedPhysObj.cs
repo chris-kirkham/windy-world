@@ -25,7 +25,7 @@ public class WindAffectedPhysObj : MonoBehaviour
         if (windField == null) Debug.LogError("No wind field selected for " + this + "!");
     }
 
-    void Update()
+    void FixedUpdate()
     {
         Tuple<Vector3, Vector3>[] samples = GetWindSamples();
         foreach(Tuple<Vector3, Vector3> sample in samples)
@@ -100,6 +100,4 @@ public class WindAffectedPhysObj : MonoBehaviour
                 return new Tuple<Vector3, Vector3>[1] { new Tuple<Vector3, Vector3>(Vector3.zero, transform.position) };
         }
     }
-
-
 }

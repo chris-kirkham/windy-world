@@ -27,19 +27,27 @@ namespace Wind
             kernel = windFieldTo1DCompute.FindKernel("WindFieldTo1DBuffer");
             groupSizes = new uint[3];
             windFieldTo1DCompute.GetKernelThreadGroupSizes(kernel, out groupSizes[0], out groupSizes[1], out groupSizes[2]);
-
-
         }
 
-        void Update()
+        private void Update()
         {
-            UpdateWindFieldBuffer();
-            DrawWindPoints(windField1DBuffer);
+            if (EditorApplication.isPlaying)
+            {
+                UpdateWindFieldBuffer();
+                DrawWindPoints(windField1DBuffer);
+            }
         }
 
         private void OnDisable()
         {
             if (windField1DBuffer != null) windField1DBuffer.Release();
+        }
+
+        //identical to drawing wind points for wind producers, but set the wind field cell size in the shader (affects wind arrow scale)
+        protected override void DrawWindPoints(ComputeBuffer windPoints)
+        {
+            thisObjMaterial.SetFloat("_WindFieldCellSize", windField.GetCellSize());
+            base.DrawWindPoints(windPoints);
         }
 
         private void UpdateWindFieldBuffer()
@@ -72,27 +80,9 @@ namespace Wind
 
             int numGroupsX = Mathf.Max(1, Mathf.CeilToInt((windFieldNumCells.x * windFieldNumCells.y * windFieldNumCells.z) / 64));
 
-            Debug.Log("numGroupsX = " + string.Join(",", numGroupsX));
-
             //windFieldTo1DCompute.Dispatch(kernel, numGroups[0], numGroups[1], numGroups[2]);
             windFieldTo1DCompute.Dispatch(kernel, numGroupsX, 1, 1);
         }
 
-        private void OnDrawGizmos()
-        {
-            if(EditorApplication.isPlaying)
-            {
-                WindFieldPoint[] points = new WindFieldPoint[windField1DBuffer.count];
-                windField1DBuffer.GetData(points);
-
-                foreach (WindFieldPoint point in points)
-                {
-                    Vector3 windDir = point.wind.normalized;
-                    Gizmos.color = new Color(Mathf.Abs(windDir.x), Mathf.Abs(windDir.y), Mathf.Abs(windDir.z));
-                    Gizmos.DrawRay(point.position, windDir);
-                }
-            }
-            
-        }
     }
 }

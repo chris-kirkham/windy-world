@@ -3,15 +3,16 @@
 
 #include "../Cgincs/Indexing.cginc"
 #include "../Cgincs/WindFieldPoint.cginc"
+#include "UnityCG.cginc"
 
 #define GROUP_SIZE 4
 #define GROUP_SIZE_1D 64
 
 RWStructuredBuffer<WindFieldPoint> Result;
 
-Texture3D<float3> windFieldStatic;
-Texture3D<float3> windFieldDynamic;
-Texture3D<float3> windFieldNoise;
+RWTexture3D<float3> windFieldStatic;
+RWTexture3D<float3> windFieldDynamic;
+RWTexture3D<float3> windFieldNoise;
 float3 globalWind;
 int numCellsX, numCellsY;
 float cellSize;
@@ -30,5 +31,6 @@ void WindFieldTo1DBuffer(uint3 id : SV_DispatchThreadID)
 void WindFieldTo1DBuffer(uint3 id : SV_DispatchThreadID)
 {
     int3 xyz = UnIndex(id.x, numCellsX, numCellsY);
-    Result[id.x] = ConstructWindFieldPoint(((float3)xyz * cellSize) + leastCorner, globalWind, 0, 0);
+    Result[id.x] = ConstructWindFieldPoint(((float3)xyz * cellSize) + leastCorner, windFieldStatic[xyz] + windFieldDynamic[xyz] + windFieldNoise[xyz] + globalWind, 0, 0);
+    //Result[id.x] = ConstructWindFieldPoint(((float3) xyz * cellSize) + leastCorner, float3((xyz.x / (float) numCellsX), (xyz.y / (float) numCellsY), (xyz.z / (float) numCellsY)) * sin(_Time.y), 0, 0);
 }

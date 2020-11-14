@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Entities.UniversalDelegates;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -26,6 +24,7 @@ namespace Wind
         private RenderTexture windFieldDynamic; //stores wind vectors from dynamic wind producers; updated from dynamic producer list every tick
         private RenderTexture windFieldNoise; //stores generated wind noise vectors; updated every tick
         private RenderTextureDescriptor windFieldRTDesc; //descriptor for the wind field render textures; used to initialise all wind 
+        public Texture3D noiseTex;
 
         //wind producer lists
         private List<WindProducer> staticWindProducers = new List<WindProducer>();
@@ -37,14 +36,22 @@ namespace Wind
         [SerializeField] private Vector3 globalWind = Vector3.zero;
         public Vector3 LeastCorner { get; private set; } //least corner of wind field
 
+        public ComputeShader DEBUG_WindFieldTestsCompute;
+        private int DEBUG_TestAssignToRenderTexturesKernel;
+        private int DEBUG_TestSpatialHashingKernel;
+
         private void Start()
         {
             InitWindField();
-            UpdateLeastCorner();
+
+            DEBUG_TestAssignToRenderTexturesKernel = DEBUG_WindFieldTestsCompute.FindKernel("DEBUG_TestAssignToRenderTextures");
+            DEBUG_TestSpatialHashingKernel = DEBUG_WindFieldTestsCompute.FindKernel("DEBUG_TestSpatialHashing");
         }
 
         private void InitWindField()
         {
+            Debug.Log("Initialising wind field..."); 
+
             //get other scripts
             addPointsScript = GetComponent<AddPointsToWindField>();
             getWindScript = GetComponent<GetWindAtPosition>();
@@ -67,25 +74,35 @@ namespace Wind
             //add static wind producers to static rt
             foreach (WindProducer wp in staticWindProducers)
             {
-                addPointsScript.AddPoints(windFieldStatic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
+                windFieldStatic = addPointsScript.AddPoints(windFieldStatic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
             }
 
             //add dynamic wind producers to dynamic rt
             UpdateDynamicWindField();
 
+            UpdateLeastCorner();
+
             Debug.Log("Static wind producers size: " + staticWindProducers.Count);
             Debug.Log("Dynamic wind producers size: " + dynamicWindProducers.Count);
+            Debug.Log("Wind field least corner = " + LeastCorner);
+        }
+
+        private void Update()
+        {
+            //DEBUG_TestAssignToWindFieldRenderTextures();
+            //DEBUG_TestSpatialHashing();
+            UpdateDynamicWindField();
         }
 
         //Clears the dynamic wind field render texture and (re-)adds the wind producers in the dynamic wind producers list
         private void UpdateDynamicWindField()
         {
-            if (windFieldDynamic != null) windFieldDynamic.Release();
-            windFieldDynamic = new RenderTexture(windFieldRTDesc);
+            //if (windFieldDynamic != null) windFieldDynamic.Release();
+            //windFieldDynamic = new RenderTexture(windFieldRTDesc);
 
             foreach(WindProducer wp in dynamicWindProducers)
             {
-                addPointsScript.AddPoints(windFieldDynamic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
+                windFieldDynamic = addPointsScript.AddPoints(windFieldDynamic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
             }
         }
 
@@ -124,8 +141,8 @@ namespace Wind
 
         public Vector3 GetWind(Vector3 position)
         {
-            return globalWind;
-            //return getWindScript.GetWind(position);
+            //return globalWind;
+            return getWindScript.GetWind(position);
         }
 
         public Vector3 GetGlobalWind()
@@ -146,9 +163,49 @@ namespace Wind
         private void UpdateLeastCorner()
         {
             LeastCorner = transform.position 
-                + (Vector3.left * ((float)numCells.x / 2f)) 
-                + (Vector3.down * ((float)numCells.y / 2f)) 
-                + (Vector3.back * ((float)numCells.z / 2f));
+                + (Vector3.left * (numCells.x / 2f) * cellSize) 
+                + (Vector3.down * (numCells.y / 2f) * cellSize) 
+                + (Vector3.back * (numCells.z / 2f) * cellSize);
+        }
+
+        //Function to visually debug whether the wind field's render textures are being assigned to properly.
+        private void DEBUG_TestAssignToWindFieldRenderTextures()
+        {
+            DEBUG_WindFieldTestsCompute.SetTexture(DEBUG_TestAssignToRenderTexturesKernel, "windFieldStatic", windFieldStatic);
+            DEBUG_WindFieldTestsCompute.SetTexture(DEBUG_TestAssignToRenderTexturesKernel, "windFieldDynamic", windFieldDynamic);
+            DEBUG_WindFieldTestsCompute.SetTexture(DEBUG_TestAssignToRenderTexturesKernel, "windFieldNoise", windFieldNoise);
+            DEBUG_WindFieldTestsCompute.SetFloat("cellSize", cellSize);
+            DEBUG_WindFieldTestsCompute.SetFloats("windFieldStartPos", new float[3] { LeastCorner.x, LeastCorner.y, LeastCorner.z });
+
+            uint[] groupSize = new uint[3];
+            DEBUG_WindFieldTestsCompute.GetKernelThreadGroupSizes(DEBUG_TestAssignToRenderTexturesKernel, out groupSize[0], out groupSize[1], out groupSize[2]);
+            int[] numGroups = new int[3];
+            numGroups[0] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.x / groupSize[0]));
+            numGroups[1] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.y / groupSize[1]));
+            numGroups[2] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.z / groupSize[2]));
+            Debug.Log("numGroups = (" + numGroups[0] + ", " + numGroups[1] + ", " + numGroups[2] + ")");
+
+            DEBUG_WindFieldTestsCompute.Dispatch(DEBUG_TestAssignToRenderTexturesKernel, numGroups[0], numGroups[1], numGroups[2]);
+        }
+
+        //Function to visually debug whether wind field is being hashed to properly
+        private void DEBUG_TestSpatialHashing()
+        {
+            DEBUG_WindFieldTestsCompute.SetTexture(DEBUG_TestSpatialHashingKernel, "windFieldStatic", windFieldStatic);
+            DEBUG_WindFieldTestsCompute.SetTexture(DEBUG_TestSpatialHashingKernel, "windFieldDynamic", windFieldDynamic);
+            DEBUG_WindFieldTestsCompute.SetTexture(DEBUG_TestSpatialHashingKernel, "windFieldNoise", windFieldNoise);
+            DEBUG_WindFieldTestsCompute.SetFloat("cellSize", cellSize);
+            DEBUG_WindFieldTestsCompute.SetFloats("windFieldStartPos", new float[3] { LeastCorner.x, LeastCorner.y, LeastCorner.z });
+
+            uint[] groupSize = new uint[3];
+            DEBUG_WindFieldTestsCompute.GetKernelThreadGroupSizes(DEBUG_TestSpatialHashingKernel, out groupSize[0], out groupSize[1], out groupSize[2]);
+            int[] numGroups = new int[3];
+            numGroups[0] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.x / groupSize[0]));
+            numGroups[1] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.y / groupSize[1]));
+            numGroups[2] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.z / groupSize[2]));
+            Debug.Log("numGroups = (" + numGroups[0] + ", " + numGroups[1] + ", " + numGroups[2] + ")");
+
+            DEBUG_WindFieldTestsCompute.Dispatch(DEBUG_TestSpatialHashingKernel, numGroups[0], numGroups[1], numGroups[2]);
         }
 
     }

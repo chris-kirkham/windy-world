@@ -4,9 +4,9 @@
 
 RWStructuredBuffer<float3> Wind; //return buffer (length 1; one wind sample)
 
-Texture3D<float3> windFieldStatic;
-Texture3D<float3> windFieldDynamic;
-Texture3D<float3> windFieldNoise;
+RWTexture3D<float3> windFieldStatic;
+RWTexture3D<float3> windFieldDynamic;
+RWTexture3D<float3> windFieldNoise;
 float3 globalWind;
 
 float windFieldCellSize;
@@ -16,6 +16,6 @@ float3 samplePosition;
 [numthreads(1,1,1)]
 void GetWindAtPosition(uint3 id : SV_DispatchThreadID)
 {
-	int3 posHash = hash(samplePosition, windFieldCellSize, windFieldStart);
+	uint3 posHash = hash(samplePosition, windFieldCellSize, windFieldStart);
 	Wind[0] = windFieldStatic[posHash] + windFieldDynamic[posHash] + windFieldNoise[posHash] + globalWind;
 }

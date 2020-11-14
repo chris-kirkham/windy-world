@@ -21,7 +21,7 @@ namespace Wind
         }
 
         //Adds the given wind points to the given wind field render texture. RT is passed by reference so no need to return it???
-        public void AddPoints(RenderTexture windFieldRT, Vector3 windFieldLeastCorner, float windFieldCellSize, ComputeBuffer windPoints)
+        public RenderTexture AddPoints(RenderTexture windFieldRT, Vector3 windFieldLeastCorner, float windFieldCellSize, ComputeBuffer windPoints)
         {
             int numGroups = Mathf.Max(1, Mathf.CeilToInt((float)windPoints.count / groupSize)); //always round numGroups up so no points get missed out; min 1 group
 
@@ -31,6 +31,8 @@ namespace Wind
             addPointsCompute.SetFloats("windFieldStartPos", new float[3] { windFieldLeastCorner.x, windFieldLeastCorner.y, windFieldLeastCorner.z });
 
             addPointsCompute.Dispatch(addPointsKernel, numGroups, 1, 1);
+            
+            return windFieldRT;
         }
     }
 }
