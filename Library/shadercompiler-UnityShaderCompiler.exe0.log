@@ -1,5 +1,6 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
+<<<<<<< HEAD
 Cmd: preprocess
   insize=7844 outsize=2494 ok=1
 Cmd: compileSnippet
@@ -140,3 +141,27 @@ Cmd: compileSnippet
   api=4 type=0 insize=7319 outsize=3634 kw=UNDERLAY_ON GLOW_ON BEVEL_ON pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
 Cmd: compileSnippet
   api=4 type=1 insize=7319 outsize=5306 kw=UNDERLAY_ON GLOW_ON BEVEL_ON pd=UNITY_ENABLE_REFLECTION_BUFFERS UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS UNITY_PBS_USE_BRDF1 UNITY_SPECCUBE_BOX_PROJECTION UNITY_SPECCUBE_BLENDING UNITY_ENABLE_DETAIL_NORMALMAP SHADER_API_DESKTOP UNITY_COLORSPACE_GAMMA UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_LIGHTMAP_FULL_HDR ok=1
+=======
+Cmd: preprocessCompute
+  insize=178 outsize=177 ok=1
+Cmd: preprocessCompute
+  insize=519 outsize=518 ok=1
+Cmd: preprocess
+  insize=3399 outsize=1528 ok=1
+Cmd: preprocessCompute
+  insize=1346 outsize=1347 ok=1
+Cmd: preprocessCompute
+  insize=1493 outsize=1492 ok=1
+Cmd: preprocessCompute
+  insize=1327 outsize=1326 ok=1
+Cmd: preprocessCompute
+  insize=1264 outsize=1265 ok=1
+Cmd: preprocessCompute
+  insize=551 outsize=552 ok=1
+Cmd: preprocessCompute
+  insize=740 outsize=739 ok=1
+Cmd: preprocessCompute
+  insize=774 outsize=773 ok=1
+Cmd: preprocess
+  insize=3284 outsize=1453 ok=1
+>>>>>>> master

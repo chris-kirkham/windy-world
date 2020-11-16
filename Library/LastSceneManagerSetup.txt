@@ -1,5 +1,9 @@
 sceneSetups:
+<<<<<<< HEAD
 - path: Assets/Scenes/PlayerControllerTest.unity
+=======
+- path: Assets/Scenes/WindProducersTest.unity
+>>>>>>> master
   isLoaded: 1
   isActive: 1
   isSubScene: 0

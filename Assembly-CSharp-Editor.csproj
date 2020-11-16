@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <Compile Include="Assets\Scripts\Cameras\Editor\ThirdPersonFollowInspector.cs" />
     <Compile Include="Assets\Scripts\Player\Movement\Editor\PlayerMovementInspector.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\BezierCurveInspector.cs" />
@@ -72,6 +73,17 @@
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\LineArrowVis.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\SplineArrowVis.cs" />
     <Compile Include="Assets\Scripts\Wind\WindField\Wind producers\Wind producer types\WindSpline\Editor\WindArrow\WindArrowVis.cs" />
+=======
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindArea\Editor\WindAreaInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\BezierCurveInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\BezierSplineInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\LineInspector.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\SplineUIParams.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\CurveArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\LineArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\SplineArrowVis.cs" />
+    <Compile Include="Assets\Scripts\Wind\Wind producers\WindSpline\Editor\WindArrow\WindArrowVis.cs" />
+>>>>>>> master
     <None Include="Assets\Shaders\Editor\Wind\WindArrow.shader" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
@@ -279,6 +291,15 @@
     </Reference>
     <Reference Include="Unity.Analytics.StandardEvents">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/PackageCache/com.unity.analytics@3.3.5/AnalyticsStandardEvents/Unity.Analytics.StandardEvents.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Burst.Unsafe">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/PackageCache/com.unity.burst@1.3.0-preview.12/Unity.Burst.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/PackageCache/com.unity.collections@0.9.0-preview.6/System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/PackageCache/com.unity.nuget.newtonsoft-json@2.0.0-preview/Runtime/Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.Purchasing">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/PackageCache/com.unity.purchasing@2.0.6/Editor/UnityEditor.Purchasing.dll</HintPath>
@@ -649,9 +670,24 @@
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
+<<<<<<< HEAD
     <Reference Include="UnityEngine.Monetization">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.Monetization.dll</HintPath>
     </Reference>
+=======
+    <Reference Include="UnityEditor.CacheServer">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEditor.CacheServer.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Monetization">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.Monetization.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ScriptableBuildPipeline.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Burst">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Burst.dll</HintPath>
+    </Reference>
+>>>>>>> master
     <Reference Include="com.unity.multiplayer-hlapi.Editor">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/com.unity.multiplayer-hlapi.Editor.dll</HintPath>
     </Reference>
@@ -661,6 +697,7 @@
     <Reference Include="Unity.ProBuilder">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.ProBuilder.dll</HintPath>
     </Reference>
+<<<<<<< HEAD
     <Reference Include="UnityEngine.Advertisements">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
     </Reference>
@@ -676,6 +713,62 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
     </Reference>
+=======
+    <Reference Include="Unity.Jobs">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Jobs.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Jobs.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Jobs.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Entities.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Entities.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Burst.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Burst.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Advertisements">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Collections">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Properties.UI">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Properties.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ProBuilder.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.ProBuilder.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Serialization.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Serialization.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ProBuilder.AssetIdRemapUtility">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.ProBuilder.AssetIdRemapUtility.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Properties">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Properties.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Scenes.Hybrid">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Scenes.Hybrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Scenes.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Scenes.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics.Extensions">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Mathematics.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Searcher.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Searcher.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics.Extensions.Hybrid">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Mathematics.Extensions.Hybrid.dll</HintPath>
+    </Reference>
+>>>>>>> master
     <Reference Include="Unity.Timeline">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
     </Reference>
@@ -685,6 +778,7 @@
     <Reference Include="com.unity.multiplayer-weaver.Editor">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/com.unity.multiplayer-weaver.Editor.dll</HintPath>
     </Reference>
+<<<<<<< HEAD
     <Reference Include="UnityEngine.XR.LegacyInputHelpers">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.XR.LegacyInputHelpers.dll</HintPath>
     </Reference>
@@ -697,6 +791,50 @@
     <Reference Include="Unity.2D.Tilemap.Editor">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.2D.Tilemap.Editor.dll</HintPath>
     </Reference>
+=======
+    <Reference Include="Unity.Entities.BuildUtils">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Entities.BuildUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.XR.LegacyInputHelpers">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEngine.XR.LegacyInputHelpers.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Serialization">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Serialization.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Rider.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Entities.Hybrid.EndToEnd.Tests">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Entities.Hybrid.EndToEnd.Tests.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Entities.Hybrid">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Entities.Hybrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Deformations">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Deformations.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.2D.Sprite.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.2D.Sprite.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Properties.UI.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Properties.UI.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.2D.Tilemap.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.2D.Tilemap.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Entities">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Entities.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Transforms">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Transforms.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Transforms.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Transforms.Editor.dll</HintPath>
+    </Reference>
+>>>>>>> master
     <Reference Include="UnityEditor.SpatialTracking">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEditor.SpatialTracking.dll</HintPath>
     </Reference>
@@ -706,6 +844,15 @@
     <Reference Include="Unity.ProBuilder.AddOns.Editor">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.ProBuilder.AddOns.Editor.dll</HintPath>
     </Reference>
+<<<<<<< HEAD
+=======
+    <Reference Include="Unity.ScriptableBuildPipeline">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics.Editor">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Mathematics.Editor.dll</HintPath>
+    </Reference>
+>>>>>>> master
     <Reference Include="Unity.TextMeshPro">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
@@ -718,6 +865,12 @@
     <Reference Include="UnityEditor.UI">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
     </Reference>
+<<<<<<< HEAD
+=======
+    <Reference Include="Unity.Transforms.Hybrid">
+      <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/Unity.Transforms.Hybrid.dll</HintPath>
+    </Reference>
+>>>>>>> master
     <Reference Include="com.unity.multiplayer-hlapi.Runtime">
       <HintPath>C:/Users/Chris/Unity/windy-world/Library/ScriptAssemblies/com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
     </Reference>

@@ -1,0 +1,23 @@
+﻿#pragma kernel UpdateNoiseRenderTexture
+
+#include "UnityCG.cginc"
+#include "../cgincs/bccNoise4.cginc"
+
+RWTexture3D<float3> noiseWindField;
+Texture3D<float3> noiseTex;
+float3 noiseStrength;
+float3 noiseScale;
+float3 noiseTimeScale;
+
+//converts noise texture values from [0, 1] to [-1, 1]
+float3 noiseToDirection(float3 noise)
+{
+    return (noise * 2) - 1;
+}
+
+[numthreads(4,4,4)]
+void UpdateNoiseRenderTexture(uint3 id : SV_DispatchThreadID)
+{
+    //noiseWindField[id] = noiseToDirection(noiseTex[id + (_Time.y * noiseTimeScale)] * noiseStrength); //if using noise texture
+    noiseWindField[id] = Bcc4NoiseClassic((float3)id * noiseScale + (_Time.y * noiseTimeScale)) * noiseStrength; //if using noise algorithm
+}

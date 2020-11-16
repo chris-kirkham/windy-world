@@ -1,0 +1,41 @@
+﻿#pragma kernel CalcWindPoints
+
+#include "../../Common/Cgincs/Indexing.cginc"
+#include "../../Common/Cgincs/WindFieldPoint.cginc"
+
+#define GROUP_SIZE_1D 64
+
+RWStructuredBuffer<WindFieldPoint> Result;
+float3 startPos; //least wind point position in the wind area. other points are calculated relative to this
+float3 fwd, up, right; //forward, up, and right vectors of the wind area
+int3 numPoints; //(x, y, z) number of wind points
+float3 wind; //wind direction of the wind area (same for all points)
+
+/* 
+//3D version - doesn't work
+[numthreads(GROUP_SIZE_3D, GROUP_SIZE_3D, GROUP_SIZE_3D)]
+void CalcWindPoints (uint3 id : SV_DispatchThreadID)
+{
+    OutPoint outPoint;
+    outPoint.pos = startPos + (id.x * right) + (id.y * up) + (id.z * fwd);
+    outPoint.wind = wind;
+    outPoint.depth = 0;
+    outPoint.priority = 0;
+    outPoint.mode = 0;
+
+    Result[Index(id.x, id.y, id.z, numPoints.x, numPoints.y)] = outPoint;
+}
+*/
+
+[numthreads(GROUP_SIZE_1D, 1, 1)]
+void CalcWindPoints(uint3 id : SV_DispatchThreadID)
+{
+    WindFieldPoint outPoint;
+    int3 xyz = UnIndex(id.x, numPoints.x, numPoints.y);
+    outPoint.pos = startPos + (xyz.x * right) + (xyz.y * up) + (xyz.z * fwd);
+    outPoint.wind = wind;
+    outPoint.priority = 0;
+    outPoint.mode = 0;
+
+    Result[id.x] = outPoint;
+}

@@ -1,0 +1,39 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel WindFieldTo1DBuffer
+
+#include "../Cgincs/Indexing.cginc"
+#include "../Cgincs/WindFieldPoint.cginc"
+#include "UnityCG.cginc"
+
+#define GROUP_SIZE 4
+#define GROUP_SIZE_1D 64
+
+RWStructuredBuffer<WindFieldPoint> Result;
+
+RWTexture3D<float3> windFieldStatic;
+RWTexture3D<float3> windFieldDynamic;
+Texture3D<float3> windFieldNoise;
+float3 globalWind;
+int numCellsX, numCellsY;
+float cellSize;
+float3 leastCorner;
+
+
+/*
+[numthreads(GROUP_SIZE,GROUP_SIZE,GROUP_SIZE)]
+void WindFieldTo1DBuffer(uint3 id : SV_DispatchThreadID)
+{
+    Result[Index(id, numCellsX, numCellsY)] = ConstructWindFieldPoint(id, globalWind, 0, 0);
+    //Result[Index(id, numCellsX, numCellsY)] = ConstructPositionDirection((id * cellSize) + leastCorner, windFieldStatic[id] + windFieldDynamic[id] + windFieldNoise[id] + globalWind);
+}
+*/
+
+[numthreads(GROUP_SIZE_1D, 1, 1)]
+void WindFieldTo1DBuffer(uint3 id : SV_DispatchThreadID)
+{
+    int3 xyz = UnIndex(id.x, numCellsX, numCellsY);
+    Result[id.x] = ConstructWindFieldPoint(((float3) xyz * cellSize) + leastCorner, windFieldStatic[xyz] + windFieldDynamic[xyz] + windFieldNoise[xyz] + globalWind, 0, 0);
+    
+    //DEBUG - test xyz positions
+    //Result[id.x] = ConstructWindFieldPoint(((float3) xyz * cellSize) + leastCorner, float3((xyz.x / (float) numCellsX), (xyz.y / (float) numCellsY), (xyz.z / (float) numCellsY)) * sin(_Time.y), 0, 0);
+}

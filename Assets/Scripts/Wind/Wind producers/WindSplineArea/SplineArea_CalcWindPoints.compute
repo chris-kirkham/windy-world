@@ -1,0 +1,27 @@
+﻿#pragma kernel CalcWindPoints
+
+#include "../../Common/Cgincs/Indexing.cginc"
+#include "../../Common/Cgincs/WindFieldPoint.cginc"
+
+#define GROUP_SIZE 64
+
+RWStructuredBuffer<WindFieldPoint> Result;
+StructuredBuffer<float3> positions, windDirs, rightDirs, upDirs;
+int numCellsX, numCellsY;
+float cellSizeXY, halfCellSizeXY;
+
+[numthreads(GROUP_SIZE,1,1)]
+void CalcWindPoints(uint3 id : SV_DispatchThreadID)
+{
+    int3 xyz = UnIndex(id.x, numCellsX, numCellsY);
+    float3 right = rightDirs[xyz.z];
+    float3 up = upDirs[xyz.z];
+
+    WindFieldPoint outPoint;
+    outPoint.pos = positions[xyz.z] + (right * xyz.x) + (up * xyz.y);
+    outPoint.wind = windDirs[xyz.z];
+    outPoint.priority = 0;
+    outPoint.mode = 0;
+
+    Result[id.x] = outPoint;
+}

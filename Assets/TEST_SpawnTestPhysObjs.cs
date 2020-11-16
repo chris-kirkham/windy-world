@@ -6,8 +6,9 @@ public class TEST_SpawnTestPhysObjs : MonoBehaviour
 {
     public int num = 0;
     public float spawnRadius = 10;
-    
-    void Start()
+    public Wind.ComputeWindField windField;
+
+    void Awake()
     {
         //create a list of initial children so the next loop doesn't take from objects it initialised when picking from children
         List<GameObject> testObjs = new List<GameObject>(transform.childCount);
@@ -21,6 +22,7 @@ public class TEST_SpawnTestPhysObjs : MonoBehaviour
             GameObject obj = Instantiate(testObjs[Random.Range(0, testObjs.Count - 1)], transform.position + (Random.insideUnitSphere * spawnRadius), Quaternion.identity);
             obj.GetComponent<Renderer>().material.SetColor("_Color", Color.HSVToRGB(Random.value, 1, 1));
             obj.transform.SetParent(transform);
+            obj.GetComponent<WindAffectedPhysObj>().windField = windField;
         }
     }
 }

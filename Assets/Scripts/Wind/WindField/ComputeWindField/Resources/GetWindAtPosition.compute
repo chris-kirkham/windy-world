@@ -1,0 +1,31 @@
+﻿#pragma kernel GetWindAtPosition
+#pragma kernel GetWindAtPositions
+
+#include "../../../Common/Cgincs/Hash.cginc"
+
+//return buffer (length == 1 when getting a single wind sample from GetWindAtPosition, length == length of position buffer when getting multiple samples from GetWindAtPositions)
+RWStructuredBuffer<float3> Wind; 
+
+RWTexture3D<float3> windFieldStatic;
+RWTexture3D<float3> windFieldDynamic;
+RWTexture3D<float3> windFieldNoise;
+float3 globalWind;
+
+float windFieldCellSize;
+float3 windFieldStart;
+float3 samplePosition; //for getting single wind sample in GetWindAtPosition
+StructuredBuffer<float3> samplePositions; //for getting multiple wind samples at once in GetWindAtPositions
+
+[numthreads(1,1,1)]
+void GetWindAtPosition(uint3 id : SV_DispatchThreadID)
+{
+	uint3 posHash = hash(samplePosition, windFieldCellSize, windFieldStart);
+    Wind[0] = windFieldStatic[posHash] + windFieldDynamic[posHash] + windFieldNoise[posHash] + globalWind;
+}
+
+[numthreads(64, 1, 1)]
+void GetWindAtPositions(uint3 id : SV_DispatchThreadID)
+{
+    uint3 posHash = hash(samplePositions[id.x], windFieldCellSize, windFieldStart);
+    Wind[id.x] = windFieldStatic[posHash] + windFieldDynamic[posHash] + windFieldNoise[posHash] + globalWind;
+}
