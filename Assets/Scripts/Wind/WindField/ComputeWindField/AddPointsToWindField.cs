@@ -10,12 +10,13 @@ namespace Wind
     [RequireComponent(typeof(ComputeWindField))] //main wind field script
     public class AddPointsToWindField : MonoBehaviour
     {
-        public ComputeShader addPointsCompute;
+        private ComputeShader addPointsCompute;
         private int addPointsKernel;
         private uint groupSize; //same as in compute shader
 
-        public void Start()
+        public void Awake()
         {
+            addPointsCompute = Resources.Load<ComputeShader>("AddPointsToWindField");
             addPointsKernel = addPointsCompute.FindKernel("AddPointsToWindField");
             addPointsCompute.GetKernelThreadGroupSizes(addPointsKernel, out groupSize, out _, out _);
         }

@@ -14,6 +14,7 @@ namespace Wind
     /// https://github.com/tiiago11/Unity-InstancedIndirectExamples/tree/master/Demos-DrawMeshInstancedIndirect/Assets/InstancedIndirectCompute
     public abstract class WindVis : MonoBehaviour
     {
+        [SerializeField] protected bool displayWindArrows = true;
         [SerializeField] protected Mesh windArrowMesh;
         [SerializeField] protected Material windArrowMaterial;
 

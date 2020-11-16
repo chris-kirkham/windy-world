@@ -18,7 +18,7 @@ namespace Wind
 
         private void OnDrawGizmos()
         {
-            DrawWindPoints(windProducer.GetWindFieldPointsBuffer());
+            if(displayWindArrows) DrawWindPoints(windProducer.GetWindFieldPointsBuffer());
         }
     }
 }

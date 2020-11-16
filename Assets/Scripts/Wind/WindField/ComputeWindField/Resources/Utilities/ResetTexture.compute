@@ -1,0 +1,9 @@
+﻿#pragma kernel ResetTexture
+
+RWTexture3D<float3> Result;
+
+[numthreads(4,4,4)]
+void ResetTexture(uint3 id : SV_DispatchThreadID)
+{
+    Result[id] = float3(0, 0, 0);
+}

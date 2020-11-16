@@ -58,9 +58,9 @@ namespace Wind
 
         }
 
-        /*
-        protected override void OnValidate()
+        private void OnValidate()
         {
+            /*
             if (numCells.x > maxCellsX)
             {
                 Debug.LogError("numCells.x > maxCellsX! (" + numCells.x + ", max " + maxCellsX + "). Clamping");
@@ -78,10 +78,10 @@ namespace Wind
                 Debug.LogError("numCells.z > maxCellsZ! (" + numCells.z + ", max " + maxCellsZ + "). Clamping");
                 numCells.z = maxCellsZ;
             }
+            */
 
-            base.OnValidate();
+            UpdateWindWorld();
         }
-        */
 
         /*----GETTERS AND SETTERS----*/
         //Gets world space wind vector
@@ -119,6 +119,12 @@ namespace Wind
             return windPointsBuffer;
         }
 
+        private void UpdateWindWorld()
+        {
+            windWorld = relativeToLocalRotation ? transform.TransformDirection(wind) : wind;
+        }
+
+        /*
         protected override void UpdateWindFieldPoints()
         {
             /*
@@ -139,9 +145,9 @@ namespace Wind
                     foreach (WindFieldPoint wp in windPoints) wp.wind = GetWind();
                 }
             }
-            */
 
             windPointsBuffer = CalcWindFieldPoints();
         }
+        */
     }
 }

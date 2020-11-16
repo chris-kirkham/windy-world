@@ -70,7 +70,7 @@ namespace Wind
         {
             while(true)
             {
-                UpdateWindFieldPoints();
+                if(mode == WindProducerMode.Dynamic) UpdateWindFieldPoints();
                 yield return new WaitForSecondsRealtime(updateInterval);     
             }
         }

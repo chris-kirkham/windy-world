@@ -1,0 +1,19 @@
+﻿#pragma kernel AddPointsToWindField
+
+#include "../../../Common/Cgincs/WindFieldPoint.cginc"
+#include "../../../Common/Cgincs/Hash.cginc"
+
+#define GROUP_SIZE 64
+
+RWTexture3D<float3> WindField;
+
+StructuredBuffer<WindFieldPoint> windPoints;
+float cellSize;
+float3 windFieldStartPos;
+
+[numthreads(GROUP_SIZE,1,1)]
+void AddPointsToWindField(uint3 id : SV_DispatchThreadID)
+{
+	WindFieldPoint windPoint = windPoints[id.x];
+	WindField[hash(windPoint.pos, cellSize, windFieldStartPos)] = windPoint.wind;
+}

@@ -26,6 +26,11 @@ namespace Wind
         private RenderTextureDescriptor windFieldRTDesc; //descriptor for the wind field render textures; used to initialise all wind 
         public Texture3D noiseTex;
 
+        //compute shader to zero out wind field rt
+        private ComputeShader resetWindFieldRT;
+        private int resetWindFieldRTKernel;
+        private uint[] resetWindFieldKernelGroupSizes;
+        
         //wind producer lists
         private List<WindProducer> staticWindProducers = new List<WindProducer>();
         private List<WindProducer> dynamicWindProducers = new List<WindProducer>();
@@ -36,14 +41,44 @@ namespace Wind
         [SerializeField] private Vector3 globalWind = Vector3.zero;
         public Vector3 LeastCorner { get; private set; } //least corner of wind field
 
-        public ComputeShader DEBUG_WindFieldTestsCompute;
+        //wind field noise parameters
+        [Tooltip("Strength of wind noise on each axis. Set to zero for no noise.")] 
+        [SerializeField] private Vector3 noiseStrength = Vector3.one;
+
+        [Tooltip("Scale of the noise on each axis.")]
+        [SerializeField] private Vector3 noiseScale = Vector3.one;
+
+        [Tooltip("Speed at which noise texture scrolls on each axis. Set to zero for static noise.")]
+        [SerializeField] private Vector3 noiseTimeScale = Vector3.one;
+
+        //noise updater compute
+        private ComputeShader updateNoiseRT;
+        private int updateNoiseRTKernel;
+        private uint[] updateNoiseRTGroupSizes;
+
+        //DEBUG
+        private ComputeShader DEBUG_WindFieldTestsCompute;
         private int DEBUG_TestAssignToRenderTexturesKernel;
         private int DEBUG_TestSpatialHashingKernel;
 
         private void Start()
         {
+            //reset wind field compute
+            resetWindFieldRT = Resources.Load<ComputeShader>("Utilities/ResetTexture");
+            resetWindFieldRTKernel = resetWindFieldRT.FindKernel("ResetTexture");
+            resetWindFieldKernelGroupSizes = new uint[3];
+            resetWindFieldRT.GetKernelThreadGroupSizes(resetWindFieldRTKernel, out resetWindFieldKernelGroupSizes[0], out resetWindFieldKernelGroupSizes[1], out resetWindFieldKernelGroupSizes[2]);
+
+            //update noise wind field compute
+            updateNoiseRT = Resources.Load<ComputeShader>("UpdateNoiseRenderTexture");
+            Debug.Log("updateNoiseRT = " + updateNoiseRT);
+            updateNoiseRTKernel = updateNoiseRT.FindKernel("UpdateNoiseRenderTexture");
+            updateNoiseRTGroupSizes = new uint[3];
+            updateNoiseRT.GetKernelThreadGroupSizes(updateNoiseRTKernel, out updateNoiseRTGroupSizes[0], out updateNoiseRTGroupSizes[1], out updateNoiseRTGroupSizes[2]);
+
             InitWindField();
 
+            DEBUG_WindFieldTestsCompute = Resources.Load<ComputeShader>("DEBUG_TestAssignToWindFieldRenderTextures");
             DEBUG_TestAssignToRenderTexturesKernel = DEBUG_WindFieldTestsCompute.FindKernel("DEBUG_TestAssignToRenderTextures");
             DEBUG_TestSpatialHashingKernel = DEBUG_WindFieldTestsCompute.FindKernel("DEBUG_TestSpatialHashing");
         }
@@ -71,16 +106,21 @@ namespace Wind
             windFieldNoise = new RenderTexture(windFieldRTDesc);
             windFieldNoise.Create();
 
+            //have to do this before adding anything to the RTs or they'll have the wrong least corner position
+            UpdateLeastCorner();
+
             //add static wind producers to static rt
             foreach (WindProducer wp in staticWindProducers)
             {
+                Debug.Log("number of wind points: " + wp.GetWindFieldPointsBuffer().count);
                 windFieldStatic = addPointsScript.AddPoints(windFieldStatic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
             }
 
             //add dynamic wind producers to dynamic rt
             UpdateDynamicWindField();
 
-            UpdateLeastCorner();
+            //initialise noise wind field rt
+            UpdateNoiseWindField();
 
             Debug.Log("Static wind producers size: " + staticWindProducers.Count);
             Debug.Log("Dynamic wind producers size: " + dynamicWindProducers.Count);
@@ -89,21 +129,49 @@ namespace Wind
 
         private void Update()
         {
-            //DEBUG_TestAssignToWindFieldRenderTextures();
-            //DEBUG_TestSpatialHashing();
             UpdateDynamicWindField();
+            UpdateNoiseWindField();
         }
 
         //Clears the dynamic wind field render texture and (re-)adds the wind producers in the dynamic wind producers list
         private void UpdateDynamicWindField()
         {
-            //if (windFieldDynamic != null) windFieldDynamic.Release();
-            //windFieldDynamic = new RenderTexture(windFieldRTDesc);
-
-            foreach(WindProducer wp in dynamicWindProducers)
+            if(dynamicWindProducers.Count > 0)
             {
-                windFieldDynamic = addPointsScript.AddPoints(windFieldDynamic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
+                ResetWindFieldRT(windFieldDynamic);
+                foreach (WindProducer wp in dynamicWindProducers)
+                {
+                    windFieldDynamic = addPointsScript.AddPoints(windFieldDynamic, LeastCorner, cellSize, wp.GetWindFieldPointsBuffer());
+                }
             }
+        }
+
+        private void UpdateNoiseWindField()
+        {
+            updateNoiseRT.SetTexture(updateNoiseRTKernel, "noiseWindField", windFieldNoise);
+            updateNoiseRT.SetTexture(updateNoiseRTKernel, "noiseTex", noiseTex);
+            updateNoiseRT.SetFloats("noiseStrength", noiseStrength.ToArray());
+            updateNoiseRT.SetFloats("noiseScale", noiseScale.ToArray());
+            updateNoiseRT.SetFloats("noiseTimeScale", noiseTimeScale.ToArray());
+
+            int[] numGroups = new int[3];
+            numGroups[0] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.x / resetWindFieldKernelGroupSizes[0]));
+            numGroups[1] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.y / resetWindFieldKernelGroupSizes[1]));
+            numGroups[2] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.z / resetWindFieldKernelGroupSizes[2]));
+
+            updateNoiseRT.Dispatch(updateNoiseRTKernel, numGroups[0], numGroups[1], numGroups[2]);
+        }
+
+        private void ResetWindFieldRT(RenderTexture windFieldRT)
+        {
+            resetWindFieldRT.SetTexture(resetWindFieldRTKernel, "Result", windFieldRT);
+
+            int[] numGroups = new int[3];
+            numGroups[0] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.x / resetWindFieldKernelGroupSizes[0]));
+            numGroups[1] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.y / resetWindFieldKernelGroupSizes[1]));
+            numGroups[2] = Mathf.Max(1, Mathf.CeilToInt((float)numCells.z / resetWindFieldKernelGroupSizes[2]));
+
+            resetWindFieldRT.Dispatch(resetWindFieldRTKernel, numGroups[0], numGroups[1], numGroups[2]);
         }
 
         //adds a wind producer to the corresponding (static or dynamic) wind field.
@@ -141,7 +209,6 @@ namespace Wind
 
         public Vector3 GetWind(Vector3 position)
         {
-            //return globalWind;
             return getWindScript.GetWind(position);
         }
 

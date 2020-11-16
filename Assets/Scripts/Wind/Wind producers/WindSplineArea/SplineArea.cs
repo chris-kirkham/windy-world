@@ -114,15 +114,5 @@ namespace Wind
 
             return windPointsBuffer;
         }
-
-        protected override void UpdateWindFieldPoints()
-        {
-            windPointsBuffer = CalcWindFieldPoints();
-        }
-
-        void Update()
-        {
-            CalcWindFieldPoints();
-        }
     }
 }

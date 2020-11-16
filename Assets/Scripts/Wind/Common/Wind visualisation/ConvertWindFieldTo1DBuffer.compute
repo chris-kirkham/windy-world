@@ -12,11 +12,12 @@ RWStructuredBuffer<WindFieldPoint> Result;
 
 RWTexture3D<float3> windFieldStatic;
 RWTexture3D<float3> windFieldDynamic;
-RWTexture3D<float3> windFieldNoise;
+Texture3D<float3> windFieldNoise;
 float3 globalWind;
 int numCellsX, numCellsY;
 float cellSize;
 float3 leastCorner;
+
 
 /*
 [numthreads(GROUP_SIZE,GROUP_SIZE,GROUP_SIZE)]
@@ -31,6 +32,8 @@ void WindFieldTo1DBuffer(uint3 id : SV_DispatchThreadID)
 void WindFieldTo1DBuffer(uint3 id : SV_DispatchThreadID)
 {
     int3 xyz = UnIndex(id.x, numCellsX, numCellsY);
-    Result[id.x] = ConstructWindFieldPoint(((float3)xyz * cellSize) + leastCorner, windFieldStatic[xyz] + windFieldDynamic[xyz] + windFieldNoise[xyz] + globalWind, 0, 0);
+    Result[id.x] = ConstructWindFieldPoint(((float3) xyz * cellSize) + leastCorner, windFieldStatic[xyz] + windFieldDynamic[xyz] + windFieldNoise[xyz] + globalWind, 0, 0);
+    
+    //DEBUG - test xyz positions
     //Result[id.x] = ConstructWindFieldPoint(((float3) xyz * cellSize) + leastCorner, float3((xyz.x / (float) numCellsX), (xyz.y / (float) numCellsY), (xyz.z / (float) numCellsY)) * sin(_Time.y), 0, 0);
 }

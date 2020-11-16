@@ -31,7 +31,7 @@ namespace Wind
 
         private void Update()
         {
-            if (EditorApplication.isPlaying)
+            if (EditorApplication.isPlaying && displayWindArrows)
             {
                 UpdateWindFieldBuffer();
                 DrawWindPoints(windField1DBuffer);
