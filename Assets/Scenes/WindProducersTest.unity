@@ -561,6 +561,11 @@ PrefabInstance:
       propertyPath: randomNPointsSamples
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7336204029200905065, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7336204029455617644, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: windField
@@ -574,6 +579,11 @@ PrefabInstance:
     - target: {fileID: 7336204029455617644, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: randomNPointsSamples
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336204029455617645, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7336204029694941528, guid: 1d74509af3bc76b42b15480572877dcb,
@@ -591,6 +601,11 @@ PrefabInstance:
       propertyPath: randomNPointsSamples
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7336204029694941529, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7336204029784694965, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: windField
@@ -604,6 +619,11 @@ PrefabInstance:
     - target: {fileID: 7336204029784694965, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: randomNPointsSamples
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336204029784694966, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7336204029940218974, guid: 1d74509af3bc76b42b15480572877dcb,
@@ -621,6 +641,11 @@ PrefabInstance:
       propertyPath: randomNPointsSamples
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7336204029940218975, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7336204029946697894, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: windField
@@ -634,6 +659,11 @@ PrefabInstance:
     - target: {fileID: 7336204029946697894, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: randomNPointsSamples
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336204029946697895, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7336204030039726944, guid: 1d74509af3bc76b42b15480572877dcb,
@@ -714,7 +744,7 @@ PrefabInstance:
     - target: {fileID: 7336204030360406353, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: num
-      value: 10
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7336204030360406359, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
@@ -724,7 +754,12 @@ PrefabInstance:
     - target: {fileID: 7336204030360406359, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336204030536901880, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7336204030536901887, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
@@ -739,6 +774,11 @@ PrefabInstance:
     - target: {fileID: 7336204030536901887, guid: 1d74509af3bc76b42b15480572877dcb,
         type: 3}
       propertyPath: randomNPointsSamples
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7336204030633090080, guid: 1d74509af3bc76b42b15480572877dcb,
+        type: 3}
+      propertyPath: m_Mass
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7336204030633090087, guid: 1d74509af3bc76b42b15480572877dcb,
@@ -1181,8 +1221,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c51903234df3bf74f89074a889009ea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noiseTex: {fileID: 11700000, guid: 1d3b7a51a08226a44a683cf15fb12482, type: 2}
-  numCells: {x: 128, y: 128, z: 128}
+  noiseTex: {fileID: 11700000, guid: fbd749fc1c36ec84f838ee9501e329a4, type: 2}
+  numCells: {x: 64, y: 64, z: 64}
   cellSize: 8
   globalWind: {x: 0, y: 0, z: 0}
   noiseStrength: {x: 0.2, y: 0.2, z: 0.2}
