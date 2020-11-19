@@ -40,7 +40,7 @@ public class PlayerMovement_Force : PlayerMovement_Rigidbody
         //update y rotation tracker
         yRotationSinceLastUpdate = Vector3.SignedAngle(lastForward, rb.transform.forward, Vector3.up);
         lastForward = rb.transform.forward;
-        if(Mathf.Abs(yRotationSinceLastUpdate) > 0) Debug.Log("yRotationSpeed = " + yRotationSinceLastUpdate);
+        //if(Mathf.Abs(yRotationSinceLastUpdate) > 0) Debug.Log("yRotationSpeed = " + yRotationSinceLastUpdate);
 
         /* Input */
         Vector3 moveInput = GetMovementInput();

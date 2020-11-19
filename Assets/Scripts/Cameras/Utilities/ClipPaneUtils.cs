@@ -27,9 +27,9 @@ public static class ClipPaneUtils
 
     //Fires rays in a direction from the corners of the camera's near clip pane;   
     //returns true if any hit and false if none hit. The out hits variable only returns successful hits, so it will be empty if none hit.
-    public static bool RaycastsFromNearClipPane(this Camera cam, Vector3 dir, out RaycastHit[] hits, float maxDist, LayerMask layerMask)
+    public static bool RaycastsFromNearClipPane(this Camera cam, Vector3 dir, out List<RaycastHit> hits, float maxDist, LayerMask layerMask, float clipPanePadding = 0f)
     {
-        Vector3[] points = GetNearClipPaneCornersWorld(cam);
+        Vector3[] points = GetNearClipPaneCornersWorld(cam, clipPanePadding);
 
         List<RaycastHit> hitsList = new List<RaycastHit>();
         RaycastHit hit;
@@ -38,20 +38,23 @@ public static class ClipPaneUtils
         if (Physics.Raycast(points[2], dir, out hit, maxDist, layerMask)) hitsList.Add(hit);
         if (Physics.Raycast(points[3], dir, out hit, maxDist, layerMask)) hitsList.Add(hit);
 
-        hits = hitsList.ToArray();
+        hits = hitsList;
         return hitsList.Count > 0;
     }
 
     //Gets near clip pane corner points in world space from a given camera.
     //Returns points in clockwise order from top left
-    public static Vector3[] GetNearClipPaneCornersWorld(this Camera cam)
+    public static Vector3[] GetNearClipPaneCornersWorld(this Camera cam, float clipPanePadding = 0f)
     {
         Vector3[] points = new Vector3[4];
 
+        //clip pane y/x axes multiplied by this to pad clip pane size
+        float paddingMult = clipPanePadding + 1;
+
         //from comment on https://www.youtube.com/watch?v=MkbovxhwM4I
         float z = cam.nearClipPlane;
-        float y = Mathf.Tan(cam.fieldOfView / 2 * Mathf.Deg2Rad) * z;
-        float x = y * cam.aspect;
+        float y = Mathf.Tan(cam.fieldOfView / 2 * Mathf.Deg2Rad) * z * paddingMult;
+        float x = y * cam.aspect * paddingMult;
         points[0] = cam.transform.TransformPoint(new Vector3(-x, y, z)); //top left
         points[1] = cam.transform.TransformPoint(new Vector3(x, y, z)); //top right
         points[2] = cam.transform.TransformPoint(new Vector3(x, -y, z)); //bottom right
@@ -62,14 +65,17 @@ public static class ClipPaneUtils
 
     //Gets near clip pane corner points in local space from a given camera.
     //Returns points in clockwise order from top left
-    public static Vector3[] GetNearClipPaneCornersLocal(this Camera cam)
+    public static Vector3[] GetNearClipPaneCornersLocal(this Camera cam, float clipPanePadding = 0f)
     {
         Vector3[] points = new Vector3[4];
 
+        //clip pane y/x axes multiplied by this to pad clip pane size
+        float paddingMult = clipPanePadding + 1;
+
         //from comment on https://www.youtube.com/watch?v=MkbovxhwM4I
         float z = cam.nearClipPlane;
-        float y = Mathf.Tan(cam.fieldOfView / 2 * Mathf.Deg2Rad) * z;
-        float x = y * cam.aspect;
+        float y = Mathf.Tan(cam.fieldOfView / 2 * Mathf.Deg2Rad) * z * paddingMult;
+        float x = y * cam.aspect * clipPanePadding * paddingMult;
         points[0] = new Vector3(-x, y, z); //top left
         points[1] = new Vector3(x, y, z); //top right
         points[2] = new Vector3(x, -y, z); //bottom right

@@ -274,11 +274,11 @@ public class ThirdPersonFollow : MonoBehaviour
             default:
                 if(worldSpaceOffset)
                 {
-                    desiredPos = followTargetPos + desiredOffset;
+                    desiredPos = AvoidCollision(followTargetPos + desiredOffset);
                 }
                 else
                 {
-                    desiredPos = followTargetPos + followTarget.transform.TransformDirection(desiredOffset);
+                    desiredPos = AvoidCollision(followTargetPos + followTarget.transform.TransformDirection(desiredOffset));
                 }
                 
                 break;
@@ -343,7 +343,7 @@ public class ThirdPersonFollow : MonoBehaviour
     }
 
     //Checks collisions in between current pos and desired pos; set desired pos to between collision point and target position if hit
-    private void AvoidCollision(Vector3 desiredPos)
+    private Vector3 AvoidCollision(Vector3 desiredPos)
     {
         Debug.DrawLine(camPos, desiredPos, Color.green, 0.1f);
         if (Physics.Linecast(camPos, desiredPos, out RaycastHit hit, LayerMask.GetMask("LevelGeometrySolid")))
@@ -351,13 +351,13 @@ public class ThirdPersonFollow : MonoBehaviour
             desiredPos = Vector3.Lerp(hit.point, followTargetPos + (Vector3.up * desiredPos.y), 0.5f);
             Debug.DrawLine(camPos, desiredPos, Color.red, 0.1f);
         }
+
+        return desiredPos;
     }
 
     /*
     private void AvoidCollision(ref Vector3 newPos)
     {
-        
-        
         LayerMask solid = LayerMask.GetMask("LevelGeometrySolid");
         RaycastHit hit;
         foreach(Vector3 clipPaneCorner in nearClipPaneCornersLocal)
@@ -398,7 +398,7 @@ public class ThirdPersonFollow : MonoBehaviour
         for (float i = -halfWhiskerSectorAngle; i <= halfWhiskerSectorAngle; i += angleInc)
         {
             Vector3 dir = Quaternion.AngleAxis(i, Vector3.up) * -followTarget.transform.forward;
-            //Debug.DrawRay(followTargetPos, dir * whiskerLength, Color.HSVToRGB(Mathf.Abs(i) / whiskerSectorAngle, 0.2f, 1f)); //visualise raycasts
+            Debug.DrawRay(followTargetPos, dir * whiskerLength, Color.HSVToRGB(Mathf.Abs(i) / whiskerSectorAngle, 0.2f, 1f)); //visualise raycasts
             if (Physics.Raycast(followTargetPos, dir, whiskerLength)) avoidDir -= new Vector3(dir.x, 0f, dir.z);
         }
 

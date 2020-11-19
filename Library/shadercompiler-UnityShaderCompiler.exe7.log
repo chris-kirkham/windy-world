@@ -1,14 +1,3 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
-<<<<<<< HEAD
-=======
-Cmd: compileComputeKernel
-  error: 1 plat 4 at DEBUG_TestAssignToWindFieldRenderTextures.compute(28): value cannot be NaN, isnan() may not be necessary.  /Gis may force isnan() to be performed
-  error: 1 plat 4 at DEBUG_TestAssignToWindFieldRenderTextures.compute(29): value cannot be NaN, isnan() may not be necessary.  /Gis may force isnan() to be performed
-  error: 1 plat 4 at DEBUG_TestAssignToWindFieldRenderTextures.compute(30): value cannot be NaN, isnan() may not be necessary.  /Gis may force isnan() to be performed
-  api=4 insize=1085 outsize=731 ok=1
-Cmd: compileComputeKernel
-  api=4 insize=1325 outsize=823 ok=1
-
-Quitting shader compiler process
->>>>>>> master
+Cmd: initializeCompiler

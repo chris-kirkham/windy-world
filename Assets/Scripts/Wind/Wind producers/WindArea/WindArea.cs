@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 
 namespace Wind
