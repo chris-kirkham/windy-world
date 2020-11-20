@@ -22,19 +22,27 @@ public class ThirdPersonFollowNew : MonoBehaviour
     public bool preserveCameraHeight = true;
 
     [Header("Camera whiskers")]
+    public bool useCamWhiskers = true;
+    public float whiskerPushStrength = 1f;
     [Min(2)] public int numWhiskers = 4;
     public float whiskerLength = 1f;
     [Range(0, 360)] public float whiskerSectorAngle = 180;
 
-    [Header("Collision avoidance")]
-    public float collisionPreemptDistance = 1f;
+    //[Header("Collision avoidance")]
 
+    [Header("Target orbit")]
+    public bool orbit = true;
+    public float orbitSpeed = 1f;
+    public float minOrbitYAngle, maxOrbitYAngle;
+
+    //tracks current mouse x and y angles
+    private float mouseX = 0f;
+    private float mouseY = 0f;
 
 
     //Const params - stuff that's not exposed to the inspector because it doesn't affect artistic aspects of camera control
     //so much as basic functioning of collision/occluson avoidance etc.
-    private const float REAR_COLLISION_AVOID_DIST = 0f;
-    private const float COLLISION_SPHERECAST_RADIUS = 0.5f;
+    private const float COLLISION_SPHERECAST_RADIUS = 1f;
     private const float OCCLUSION_CLIP_PANE_PADDING = 0.5f;
 
     //Layer masks
@@ -52,13 +60,25 @@ public class ThirdPersonFollowNew : MonoBehaviour
     //all camera movement is done here
     private void FixedUpdate()
     {
-        Vector3 newCamPosition = GetFollowPosition(GetDesiredFollowPosition(desiredOffset), Time.fixedDeltaTime);
+        Vector3 newCamPosition;
+
+        if(orbit)
+        {
+            newCamPosition = OrbitTarget(cam.transform.position, Time.fixedDeltaTime);
+        }
+        else
+        {
+            newCamPosition = GetFollowPosition(Time.fixedDeltaTime);
+        }
+        
         newCamPosition = GetOcclusionAvoidResult(newCamPosition, Time.fixedDeltaTime);
-        //newCamPosition = AvoidCollisions(newCamPosition);
-        GetCamWhiskerResult(newCamPosition, Time.fixedDeltaTime);
+
+        //if(useCamWhiskers) newCamPosition = GetCamWhiskerResult(newCamPosition, GetCamWhiskerOffset(), Time.fixedDeltaTime);
+        newCamPosition = AvoidCollisions(newCamPosition);
 
         cam.transform.position = newCamPosition;
-        cam.transform.rotation = GetTargetLookAtRotation();
+        cam.transform.rotation = GetTargetLookAtRotation(lookAtTarget.transform.position);
+        //cam.transform.rotation = GetTargetLookAtRotation(GetCamWhiskerResult(lookAtTarget.transform.position, GetCamWhiskerOffset(), Time.fixedDeltaTime));
     }
 
     //Returns the desired target follow position as specified by the target's position and the target follow offset params.
@@ -68,10 +88,22 @@ public class ThirdPersonFollowNew : MonoBehaviour
         return followTarget.transform.position + followTarget.transform.TransformDirection(desiredOffset);
     }
 
-    //Returns the camera position after interpolating between the current camera position and the desired follow position
-    private Vector3 GetFollowPosition(Vector3 desiredPosition, float deltaTime)
+    //Returns the camera position after interpolating between the current camera position and the desired follow position, 
+    //shortening the desired follow offset if it would be occluded
+    private Vector3 GetFollowPosition(float deltaTime)
     {
-        return Vector3.Lerp(cam.transform.position, desiredPosition, Time.fixedDeltaTime * followSpeed);
+        Vector3 newCamPos;
+        //if moving to desired orbit position would cause the camera to move into occlusion, shorten offset to before that happens
+        if (Physics.SphereCast(followTarget.transform.position, COLLISION_SPHERECAST_RADIUS, desiredOffset, out RaycastHit hit, desiredOffset.magnitude, occluderLayers))
+        {
+            newCamPos = followTarget.transform.position + (followTarget.transform.TransformDirection(desiredOffset).normalized * Vector3.Distance(followTarget.transform.position, hit.point));
+        }
+        else
+        {
+            newCamPos = followTarget.transform.position + followTarget.transform.TransformDirection(desiredOffset);
+        }
+
+        return Vector3.Lerp(cam.transform.position, newCamPos, deltaTime * followSpeed);
     }
 
     //Takes the new camera position (after interpolating between current and desired camera positions) and 
@@ -80,20 +112,23 @@ public class ThirdPersonFollowNew : MonoBehaviour
     //nor should it be used as the primary means of avoiding collision/occlusion, since it's too "snappy"
     private Vector3 AvoidCollisions(Vector3 camPos)
     {
-        Vector3 dir = camPos - followTarget.transform.position;
-        if (Physics.SphereCast(followTarget.transform.position, COLLISION_SPHERECAST_RADIUS, dir, out RaycastHit hit, dir.magnitude, colliderLayers))
+        //if camera is colliding with an obstacle
+        if(Physics.OverlapSphere(camPos, COLLISION_SPHERECAST_RADIUS, colliderLayers).Length > 0)
         {
-            Debug.DrawLine(followTarget.transform.position, camPos, Color.red, 0.1f);
-            return preserveCameraHeight ? new Vector3(hit.point.x, camPos.y, hit.point.z) : hit.point;
+            //cast a line from the follow target to the camera and move the camera in front of the first hit obstacle, if any
+            if(Physics.Linecast(followTarget.transform.position, camPos, out RaycastHit hit, colliderLayers))
+            {
+                return preserveCameraHeight ? new Vector3(hit.point.x, camPos.y, hit.point.z) : hit.point;
+            }
         }
 
         return camPos;
     }
 
     //Casts "whisker" rays from the follow target
-    private Vector3 GetCamWhiskerResult(Vector3 camPos, float deltaTime)
+    private Vector3 GetCamWhiskerOffset()
     {
-        Vector3 newCamPos = Vector3.zero;
+        Vector3 whiskerPushDir = Vector3.zero;
         Vector3 followTargetPos = followTarget.transform.position;
         float halfWhiskerSectorAngle = whiskerSectorAngle / 2;
         float angleInc = (halfWhiskerSectorAngle / numWhiskers) * 2;
@@ -102,16 +137,21 @@ public class ThirdPersonFollowNew : MonoBehaviour
         {
             Vector3 dir = Quaternion.AngleAxis(angle, Vector3.up) * -followTarget.transform.forward;
             Debug.DrawRay(followTargetPos, dir * whiskerLength, Color.HSVToRGB(Mathf.Abs(angle) / whiskerSectorAngle, 0.2f, 1f)); //visualise raycasts
-            if (Physics.Raycast(followTargetPos, dir, whiskerLength)) newCamPos -= new Vector3(dir.x, 0f, dir.z);
+            if (Physics.Raycast(followTargetPos, dir, whiskerLength)) whiskerPushDir -= new Vector3(dir.x, 0f, dir.z);
         }
 
         //zero local z (is there a better way to do this?)
-        newCamPos = followTarget.transform.InverseTransformDirection(newCamPos);
-        newCamPos.z = 0;
-        newCamPos = followTarget.transform.TransformDirection(newCamPos);
-        Debug.DrawRay(followTargetPos + Vector3.up, newCamPos, Color.yellow);
-        
-        return newCamPos;
+        whiskerPushDir = cam.transform.InverseTransformDirection(whiskerPushDir);
+        whiskerPushDir.z = 0;
+        whiskerPushDir = cam.transform.TransformDirection(whiskerPushDir);
+        Debug.DrawRay(followTargetPos, whiskerPushDir, Color.yellow);
+
+        return whiskerPushDir;
+    }
+
+    private Vector3 GetCamWhiskerResult(Vector3 camPos, Vector3 whiskerOffset, float deltaTime)
+    {
+        return Vector3.Lerp(camPos, camPos + whiskerOffset, whiskerPushStrength * deltaTime);
     }
 
     //Takes the desired camera position and adjusts it so the follow target isn't occluded by objects in the scene.
@@ -119,13 +159,15 @@ public class ThirdPersonFollowNew : MonoBehaviour
     //If there are no occluders in the way of the desired position, returns desiredPos unmodified
     private Vector3 GetOcclusionAvoidResult(Vector3 camPos, float deltaTime)
     {
-        foreach (Vector3 clipPaneCorner in cam.GetNearClipPaneCornersWorld())
+        float maxDistance = Vector3.Distance(followTarget.transform.position, camPos);
+        /*
+        if(cam.RaycastsFromNearClipPane(cam.transform.forward, out _, maxDistance, occluderLayers, OCCLUSION_CLIP_PANE_PADDING))
         {
-           Debug.DrawRay(clipPaneCorner, cam.transform.forward * Mathf.Abs(desiredOffset.z), Color.cyan);
-        }
+            foreach (Vector3 clipPaneCorner in cam.GetNearClipPaneCornersWorld(OCCLUSION_CLIP_PANE_PADDING))
+            {
+                Debug.DrawRay(clipPaneCorner, cam.transform.forward * maxDistance, Color.cyan);
+            }
 
-        if(cam.RaycastsFromNearClipPane(cam.transform.forward, out _, Mathf.Abs(desiredOffset.z), occluderLayers))
-        {
             Debug.DrawLine(cam.transform.position, Vector3.Lerp(camPos, followTarget.transform.position, deltaTime * cameraPullInSpeed), Color.green, 0.2f);
             Vector3 targetPos = preserveCameraHeight ? 
                 new Vector3(followTarget.transform.position.x, cam.transform.position.y, followTarget.transform.position.z) 
@@ -133,15 +175,71 @@ public class ThirdPersonFollowNew : MonoBehaviour
 
             return Vector3.Lerp(camPos, targetPos, deltaTime * cameraPullInSpeed);
         }
+        */
+
+        if(Physics.SphereCast(camPos, COLLISION_SPHERECAST_RADIUS, followTarget.transform.position - camPos, out _, maxDistance, occluderLayers))
+        {
+            Debug.DrawRay(camPos, (followTarget.transform.position - camPos).normalized * maxDistance, Color.cyan, 0.2f);
+            
+            Vector3 targetPos = preserveCameraHeight ?
+                new Vector3(followTarget.transform.position.x, cam.transform.position.y, followTarget.transform.position.z)
+                : followTarget.transform.position;
+
+            Debug.DrawLine(camPos, targetPos, Color.green, 0.2f);
+            return Vector3.Lerp(camPos, targetPos, deltaTime * cameraPullInSpeed);
+        }
 
         return camPos;
     }
 
-    //Returns the rotation which will make the camera look at the lookAtTarget
-    private Quaternion GetTargetLookAtRotation()
+    //Takes the camera's desired move direction and checks if moving to it would cause the follow target to be occluded.
+    //If so, returns the move direction shortened to stop before the occluding object, else returns the same move direction vector
+    private Vector3 ShortenMoveDirectionIfMovingIntoOcclusion(Vector3 camMoveDirection)
     {
-        return Quaternion.LookRotation(lookAtTarget.transform.position - cam.transform.position);
+        //if moving to desired orbit position would cause the camera to move into occlusion, shorten offset to before that happens
+        if (Physics.SphereCast(followTarget.transform.position, COLLISION_SPHERECAST_RADIUS, camMoveDirection, out RaycastHit hit, camMoveDirection.magnitude, occluderLayers))
+        {
+            return followTarget.transform.position + (camMoveDirection.normalized * Vector3.Distance(followTarget.transform.position, hit.point));
+        }
+    
+        return followTarget.transform.position + camMoveDirection;
     }
 
+    private Vector3 OrbitTarget(Vector3 camPos, float deltaTime)
+    {
+        mouseX += Input.GetAxis("Mouse X") * orbitSpeed;
+        mouseY -= Input.GetAxis("Mouse Y") * orbitSpeed;
+        mouseX = Orbit_ClampMouseAngle(mouseX);
+        mouseY = Mathf.Clamp(Orbit_ClampMouseAngle(mouseY), minOrbitYAngle, maxOrbitYAngle);
+
+        Quaternion rotation = Quaternion.Euler(mouseY, mouseX, 0f);
+
+        Vector3 newCamPos;
+        
+        //if moving to desired orbit position would cause the camera to move into occlusion, shorten offset to before that happens
+        if(Physics.SphereCast(followTarget.transform.position, COLLISION_SPHERECAST_RADIUS, rotation * desiredOffset, out RaycastHit hit, desiredOffset.magnitude, occluderLayers))
+        {
+            newCamPos = followTarget.transform.position + ((rotation * desiredOffset).normalized * Vector3.Distance(followTarget.transform.position, hit.point));
+        }
+        else
+        {
+            newCamPos = followTarget.transform.position + (rotation * desiredOffset);
+        }
+
+        return Vector3.Lerp(camPos, newCamPos, deltaTime * followSpeed);
+    }
+
+    private float Orbit_ClampMouseAngle(float mouseAngle)
+    {
+        if (mouseAngle < -360) return mouseAngle + 360;
+        if (mouseAngle >= 360) return mouseAngle - 360;
+        return mouseAngle;
+    }
+
+    //Returns the rotation which will make the camera look at the lookAtTarget
+    private Quaternion GetTargetLookAtRotation(Vector3 lookAtTargetPos)
+    {
+        return Quaternion.LookRotation(lookAtTargetPos - cam.transform.position);
+    }
 
 }
