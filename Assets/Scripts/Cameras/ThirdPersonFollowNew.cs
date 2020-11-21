@@ -28,7 +28,8 @@ public class ThirdPersonFollowNew : MonoBehaviour
     public float whiskerLength = 1f;
     [Range(0, 360)] public float whiskerSectorAngle = 180;
 
-    //[Header("Collision avoidance")]
+    [Header("Collision avoidance")]
+    public float collisionAvoidDistance = 1f;
 
     [Header("Target orbit")]
     public bool orbit = true;
@@ -92,24 +93,11 @@ public class ThirdPersonFollowNew : MonoBehaviour
     //shortening the desired follow offset if it would be occluded
     private Vector3 GetFollowPosition(float deltaTime)
     {
-        Vector3 newCamPos;
-        //if moving to desired orbit position would cause the camera to move into occlusion, shorten offset to before that happens
-        if (Physics.SphereCast(followTarget.transform.position, COLLISION_SPHERECAST_RADIUS, desiredOffset, out RaycastHit hit, desiredOffset.magnitude, occluderLayers))
-        {
-            newCamPos = followTarget.transform.position + (followTarget.transform.TransformDirection(desiredOffset).normalized * Vector3.Distance(followTarget.transform.position, hit.point));
-        }
-        else
-        {
-            newCamPos = followTarget.transform.position + followTarget.transform.TransformDirection(desiredOffset);
-        }
-
+        Vector3 newCamPos = ShortenMoveDirectionIfMovingIntoOcclusion(followTarget.transform.TransformDirection(desiredOffset));
         return Vector3.Lerp(cam.transform.position, newCamPos, deltaTime * followSpeed);
     }
 
-    //Takes the new camera position (after interpolating between current and desired camera positions) and 
-    //avoids obstacles, if any, by moving the camera in front of the closest obstacle.
-    //NOTE: This is the emergency "don't go inside geometry" function; its result shouldn't be interpolated, 
-    //nor should it be used as the primary means of avoiding collision/occlusion, since it's too "snappy"
+    //Takes a camera position and avoids obstacles, if any, by -instantly- moving the camera position in front of the closest obstacle.
     private Vector3 AvoidCollisions(Vector3 camPos)
     {
         //if camera is colliding with an obstacle
@@ -214,9 +202,9 @@ public class ThirdPersonFollowNew : MonoBehaviour
 
         Quaternion rotation = Quaternion.Euler(mouseY, mouseX, 0f);
 
-        Vector3 newCamPos;
-        
+        Vector3 newCamPos = ShortenMoveDirectionIfMovingIntoOcclusion(rotation * desiredOffset);
         //if moving to desired orbit position would cause the camera to move into occlusion, shorten offset to before that happens
+        /*
         if(Physics.SphereCast(followTarget.transform.position, COLLISION_SPHERECAST_RADIUS, rotation * desiredOffset, out RaycastHit hit, desiredOffset.magnitude, occluderLayers))
         {
             newCamPos = followTarget.transform.position + ((rotation * desiredOffset).normalized * Vector3.Distance(followTarget.transform.position, hit.point));
@@ -225,6 +213,7 @@ public class ThirdPersonFollowNew : MonoBehaviour
         {
             newCamPos = followTarget.transform.position + (rotation * desiredOffset);
         }
+        */
 
         return Vector3.Lerp(camPos, newCamPos, deltaTime * followSpeed);
     }

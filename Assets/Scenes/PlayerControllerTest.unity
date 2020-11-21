@@ -11162,8 +11162,8 @@ MonoBehaviour:
   desiredOffset: {x: 0, y: 1, z: -5}
   minOffset: {x: 0, y: 0, z: -1}
   maxOffset: {x: 0, y: 0, z: -1}
-  followSpeed: 4
-  cameraPullInSpeed: 2
+  followSpeed: 2
+  cameraPullInSpeed: 1
   preserveCameraHeight: 1
   useCamWhiskers: 1
   whiskerPushStrength: 1
